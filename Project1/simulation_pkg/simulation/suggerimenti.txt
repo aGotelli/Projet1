@@ -1,0 +1,3 @@
+For version 2
+
+1) the compute_twist should take the robot max speed
