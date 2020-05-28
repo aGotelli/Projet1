@@ -1,0 +1,54 @@
+ok first create a repository in the home called program_sources
+
+thend git clone the following: https://github.com/pyqtgraph/pyqtgraph.git
+
+once done the best pratce is to check so run :
+python -m pyqtgraph.examples
+ 
+if it doesn't work (it problably won't) and you will get an error like:
+agotelli@ProBook:~$ python -m pyqtgraph.examples
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/runpy.py", line 174, in _run_module_as_main
+    "__main__", fname, loader, pkg_name)
+  File "/usr/lib/python2.7/runpy.py", line 72, in _run_code
+    exec code in run_globals
+  File "/usr/local/lib/python2.7/dist-packages/pyqtgraph/examples/__main__.py", line 159, in <module>
+    run()
+  File "/usr/local/lib/python2.7/dist-packages/pyqtgraph/examples/__main__.py", line 154, in run
+    app = App([])
+  File "/usr/local/lib/python2.7/dist-packages/pyqtgraph/examples/__main__.py", line 28, in __init__
+    super().__init__(*args, **kwargs)
+TypeError: super() takes at least 1 argument (0 given)
+
+
+
+
+then run:
+python3 -m pyqtgraph.examples
+
+If it work so we are cool. If it doesn't work, that's because the package is in your computer but not installed. The problem should result in the following error:
+agotelli@ProBook:~$ python3 -m pyqtgraph.examples
+/usr/bin/python3: Error while finding module specification for 'pyqtgraph.examples' (ModuleNotFoundError: No module named 'pyqtgraph')
+
+
+So let's install it:
+sudo pip install pyqtgraph
+
+
+then run again:
+python3 -m pyqtgraph.examples
+
+
+If it work so we are cool. If it doesn't work, that's because you're missing PyQt5, You may have in your 
+OS but not installed, so let's install it: 
+sudo pip install pyqt5
+
+
+Ok at this point by running the command:
+python3 -m pyqtgraph.examples
+
+The tutorial should open istantaneusly. Then you can create the plot that you want. 
+
+
+
+
