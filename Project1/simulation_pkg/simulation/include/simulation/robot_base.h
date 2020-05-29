@@ -45,9 +45,13 @@
  *
  */
 
- #include "simulation/utility.h"
-
+ 
+//ROS
  #include <ros/ros.h>
+
+#include "simulation/utility.h"
+
+// Include here the ".h" files corresponding to the topic type you use.
  #include <geometry_msgs/Twist.h>
  #include <visualization_msgs/Marker.h>
  #include <geometry_msgs/PoseStamped.h>
@@ -83,16 +87,19 @@ protected:
 
   visualization_msgs::Marker robotMarker;     //  No need of default initialization
 
+  // Time handling
   ros::Time prevTime;
   ros::Time currentTime;
   ros::Duration timeElapsed;
 
 private:
 
+  //Node definition
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
   ros::Rate robotFrameRate {100};
 
+//Publisher and subscriber definition
   ros::Subscriber commandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
 
   ros::Publisher RobotMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;

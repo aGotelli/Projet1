@@ -1,11 +1,13 @@
 /**
- * \file
- * \brief
- * \author
+ * \file robot node
+ * \brief file for moving the robot
+ * \author Bianca & Andrea
  * \version 0.1
- * \date
+ * \date 28/05/2020
  *
  * \param[in]
+    world param : xSpacing, ySpacing
+    robot param : trackGauge, wheelRadius
  *
  * Subscribes to: <BR>
  *    °
@@ -14,6 +16,8 @@
  *    °
  *
  * Description
+            The aim of this file is to move the robot. So it contains all the 
+            information regarding the world and the robot.
  *
  */
 
