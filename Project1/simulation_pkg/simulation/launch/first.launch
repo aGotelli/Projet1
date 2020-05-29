@@ -1,0 +1,21 @@
+<launch>
+
+  <!-- joy node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy" >
+    <param name="dev" type="string" value="/dev/input/js1" />
+  </node>
+
+  <!-- The compute_twist adapter -->
+  <node pkg="simulation" type="simulation_compute_twist" name="compute_twist">
+  </node>
+
+  <!-- The robot_2_0 -->
+  <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
+  </node>
+
+  <!-- Launch Rviz -->
+  <node pkg="rviz" type="rviz" name="rviz">
+  </node>
+
+
+</launch>

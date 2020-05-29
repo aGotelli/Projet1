@@ -50,7 +50,7 @@ buttons: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 buttons: [1, 2, 3, 4, L1, R1, L2, R2, SELECT, START]
 
 */
-  double Kv;
+  double Kv = 1 ;
 
   if(joystick->buttons[0])
     Kv = 0.25*joystick->buttons[0] ;

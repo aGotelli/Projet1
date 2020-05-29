@@ -2,6 +2,7 @@
 #define UTILITY_H
 
 #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace utility
 {
@@ -41,6 +42,14 @@ namespace utility
 
 
     robotMarker.lifetime = ros::Duration();
+
+  }
+
+
+  void UpdateMarker(visualization_msgs::Marker& robotMarker, const geometry_msgs::PoseStamped& robotPosture)
+  {
+    robotMarker.pose.position.x = robotPosture.pose.position.x ;
+    robotMarker.pose.position.y = robotPosture.pose.position.y ;
 
   }
 

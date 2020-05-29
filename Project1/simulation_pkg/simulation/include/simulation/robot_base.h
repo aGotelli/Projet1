@@ -55,8 +55,7 @@
  #include <simulation_messages/IRSensors.h>
 
 
-class RobotBase
-{
+class RobotBase {
 public:
 
   RobotBase()=default;    //  Initialize all memeber to their default value i.e.
@@ -67,21 +66,26 @@ public:
 protected:
 
   //  Virtual Callback
-  virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist)=0;
+  inline void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist) { twistReceived = (*twist) ;}
 
-  virtual void ComputeInput()=0;
+  virtual void ComputeInput() const=0;
 
-  virtual void PerformMotion()=0;
+  virtual void PerformMotion() const=0;
 
-  virtual void CheckSensorStatus()=0;
+  virtual void CheckSensorStatus() const=0;
 
-  //virtual void PrepareMessages()=0;
+  virtual void PrepareMessages()=0;
 
   simulation_messages::Encoders wheelsAngles; //  No need of default initialization
   simulation_messages::IRSensors status;      //  No need of default initialization
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
+  geometry_msgs::Twist twistReceived;         //  No need of default initialization
 
   visualization_msgs::Marker robotMarker;     //  No need of default initialization
+
+  ros::Time prevTime;
+  ros::Time currentTime;
+  ros::Duration timeElapsed;
 
 private:
 
@@ -107,15 +111,28 @@ void RobotBase::isMoving()
 
   utility::InitMarker( robotMarker ) ;
 
+  prevTime = ros::Time::now() ;
+
   while (ros::ok()){
 
       ros::spinOnce();
+
+      //  First account the time elapsed in between two loops
+      currentTime = ros::Time::now() ;
+      timeElapsed = currentTime - prevTime;
+      prevTime = currentTime ;
+      //  Then perform all the computations
+
 
       ComputeInput() ;
 
       PerformMotion() ;
 
       CheckSensorStatus() ;
+
+      PrepareMessages() ;
+
+      utility::UpdateMarker( robotMarker, robotPosture ) ;
 
 
 
