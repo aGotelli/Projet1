@@ -34,10 +34,16 @@ class Robot_2_0 : public RobotBase {
 public:
   Robot_2_0() = default;
 
-  Robot_2_0(const double _trackGauge, const double _wheelRadius) :
+  Robot_2_0(const double _trackGauge, const double _wheelRadius,
+            const double _jointOffSet, const double _castorArmLength,
+            const double _wMax) :
             trackGauge(_trackGauge),
             wheelRadius(_wheelRadius),
-            RobotBase() {}
+            jointOffSet(_jointOffSet),
+            castorArmLength(_castorArmLength),
+            wMax(_wMax),
+            RobotBase() { /* All the rest is initialized as default */
+              ROS_INFO_STREAM("User-defined initialization called..."); }
 
 
   void ComputeInput() const override;
@@ -61,7 +67,7 @@ private:
     GeneralizedCorrdinates()=default;
 
     GeneralizedCorrdinates operator=(const GeneralizedCorrdinates& equal);
-    //============================ AGGIUNGI REGOLA DEI CINQUE ==============0===
+    //============================ AGGIUNGI REGOLA DEI CINQUE ==================
     GeneralizedCorrdinates operator=(const Eigen::VectorXd& result);
 
     GeneralizedCorrdinates operator+(const GeneralizedCorrdinates& addendum);
@@ -77,9 +83,25 @@ private:
 
   const double trackGauge {0.2} ;           //  [m]
   const double wheelRadius {0.05 };         //  [m]
+  const double jointOffSet {0.4};           //  [m]
+  const double castorArmLength {0.08};      //  [m]
   const double wMax { 10 };                 //  [RAD/s]
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
-  mutable Eigen::MatrixXd J{3, 2} ;
+  mutable Eigen::MatrixXd J{3, 2} ;         //  The kinematic model
+
+  const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
+
+  const Eigen::Matrix2d InitMotorizationMatrix()
+  {
+    Eigen::Matrix2d f;
+
+    f <<        wheelRadius/2,                  wheelRadius/2,
+          wheelRadius/(2*trackGauge),   -wheelRadius/(2*trackGauge);
+
+    return f;
+  }
+
+
 
 
 
@@ -103,8 +125,6 @@ void Robot_2_0::PerformMotion() const
 {
   UpdateMatrix();
 
-  ROS_INFO_STREAM("Velocities, v : " << u(0) << " omega : " << u(1) ) ;
-
   q_dot = J*u;
 
   q = q + q_dot.Integrate(timeElapsed);
@@ -127,7 +147,6 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.position.x = q.x;
   robotPosture.pose.position.y = q.y;
 
-  ROS_INFO_STREAM("Positions, x : " << q.x << " y : " << q.y ) ;
 }
 
 
@@ -145,9 +164,6 @@ void Robot_2_0::UpdateMatrix() const
 
 void Robot_2_0::EnsureMaxSpeed() const
 {
-  Eigen::Matrix2d F;
-  F <<        wheelRadius/2,                  wheelRadius/2,
-        wheelRadius/(2*trackGauge),   -wheelRadius/(2*trackGauge) ;
 
   Eigen::Vector2d phi_dot = F*u;
 

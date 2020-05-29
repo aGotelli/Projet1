@@ -37,7 +37,7 @@
           the Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:
-          ° C.2, C.48
+          ° C.2, C.48, C.120, C.128, C.132
           ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
           ° F.1, F.2, F.3, F.15, F.16, F.17
 

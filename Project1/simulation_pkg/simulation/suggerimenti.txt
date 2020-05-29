@@ -1,3 +1,5 @@
 For version 2
 
 1) the compute_twist should take the robot max speed
+2) Templete in utility
+3) smarter Robot_2_0 initialization
