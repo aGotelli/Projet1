@@ -1,6 +1,27 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+/**
+ * \file marker init 
+ * \brief contains the inizialization of the marker
+ * \author Bianca & Andrea
+ * \version 0.1
+ * \date 28/05/2020
+ *
+ * \param[in]
+ *
+ * Subscribes to: <BR>
+ *    °
+ *
+ * Publishes to: <BR>
+ *    °
+ *
+ * Description
+        In order to make a more readable and less complex code, it has been created
+        this header file that inizializes the markers.
+ *
+ */
+
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseStamped.h>
 
