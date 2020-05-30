@@ -68,6 +68,23 @@ namespace utility
     double yaw {0.0};
   };
 
+  struct Point2D {
+    Point2D()=default;
+
+    Point2D(const double _x, const double _y) : x(_x), y(_y) {}
+
+    double x { 0.0 } ;
+    double y { 0.0 } ;
+  };
+
+  enum SENSOR { RIGHT, LEFT };
+
+  enum COLOR { RED, GREEN };
+
+
+  //  Constrain an angle in the range [-M_PI, M_PI]
+  inline const double LimitAngle( double a) ;
+
 
   //  Converting specified Eulers angles to a Quaterion
   Quaternion ToQuaternion(const double& yaw, const double& pitch, const double& roll); // yaw (Z), pitch (Y), roll (X)
@@ -101,12 +118,19 @@ namespace utility
                             visualization_msgs::Marker& generatedPath );
 
 
-  //  Constrain an angle in the range [-M_PI, M_PI]
-  inline const double LimitAngle( double a) ;
+  void PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor);
+
+  void PlaceMarker(const Point2D& point, const COLOR& markerColor);
+
+
+
 
 
 
 ///////////////////////////////////////////~ DECLARATION ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+
 
   Quaternion ToQuaternion(const double& yaw, const double& pitch, const double& roll)
   // yaw (Z), pitch (Y), roll (X) converted to a Quaternion
@@ -153,6 +177,15 @@ namespace utility
     angles.yaw = std::atan2(siny_cosp, cosy_cosp);
 
     return angles;
+  }
+
+
+
+  inline const double LimitAngle(double a)
+  {
+      while( a >=  M_PI ) a -= 2*M_PI ;
+      while( a <  -M_PI ) a += 2*M_PI ;
+      return a ;
   }
 
 
@@ -273,11 +306,81 @@ namespace utility
   }
 
 
-  inline const double LimitAngle(double a)
+
+  void PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor)
   {
-      while( a >=  M_PI ) a -= 2*M_PI ;
-      while( a <  -M_PI ) a += 2*M_PI ;
-      return a ;
+    COLOR markerColor;
+
+    switch ( activeSensor ) {
+      case SENSOR::RIGHT :
+        markerColor = COLOR::RED ;
+        PlaceMarker(point, markerColor) ;
+        break;
+
+      case SENSOR::LEFT :
+        markerColor = COLOR::GREEN ;
+        PlaceMarker(point, markerColor) ;
+        break;
+    }
+  }
+
+
+
+  void PlaceMarker(const Point2D& point, const COLOR& markerColor)
+  {
+    //  Instantiate the marker
+    visualization_msgs::Marker sensorMarker;
+
+    // Set the frame ID and timestamp.  See the TF tutorials for information on these.
+    sensorMarker.header.frame_id = "/map";
+    sensorMarker.header.stamp = ros::Time::now();
+
+
+    // Set the namespace and id for this marker.  This serves to create a unique ID
+    // Any marker sent with the same namespace and id will overwrite the old one
+    sensorMarker.ns = "SensorMarker";
+    sensorMarker.id = 0;
+
+
+    // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+    sensorMarker.type = visualization_msgs::Marker::SPHERE;
+
+
+    // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
+    sensorMarker.action = visualization_msgs::Marker::ADD;
+
+    //  Set identity as orientation
+    sensorMarker.pose.orientation.w = 1.0 ;
+    sensorMarker.pose.orientation.x = 0.0 ;
+    sensorMarker.pose.orientation.y = 0.0 ;
+    sensorMarker.pose.orientation.z = 0.0 ;
+
+    //  Set position
+    sensorMarker.pose.position.x = point.x ;
+    sensorMarker.pose.position.y = point.y ;
+
+    //  Set the marker scale
+    sensorMarker.scale.x = 0.2;
+    sensorMarker.scale.y = 0.2;
+    sensorMarker.scale.z = 0.2;
+
+    //  Set the marker color
+    switch ( markerColor ) {
+      case COLOR::RED :
+        sensorMarker.color.r = 1.0f;
+        sensorMarker.color.g = 0.0f;
+        break;
+
+      case COLOR::GREEN :
+      sensorMarker.color.r = 0.0f;
+      sensorMarker.color.g = 1.0f;
+      break;
+    };
+    sensorMarker.color.b = 0.0f;
+    sensorMarker.color.a = 1.0f;
+
+    //  Set the lifetime as no end 
+    sensorMarker.lifetime = ros::Duration();
   }
 
 

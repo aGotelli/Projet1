@@ -6,7 +6,9 @@
  * \date 30/05/2020
  *
  * \param[in]
-    world param : x_spacing, y_spacing
+    world param 	: x_spacing, y_spacing
+		sensors param	: x1_pos, x1_pos
+		sensors param	: x2_pos, x2_pos 
 
  *
  * Subscribes to: <BR>
