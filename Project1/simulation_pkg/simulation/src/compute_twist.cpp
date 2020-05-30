@@ -82,6 +82,8 @@ buttons: [1, 2, 3, 4, L1, R1, L2, R2, SELECT, START]
 }
 
 
+
+
 int main (int argc, char** argv)
 {
 
@@ -103,7 +105,7 @@ int main (int argc, char** argv)
     ros::Rate rate(100);
     while (ros::ok()){
         ros::spinOnce();
-        
+
         // Not really much to do here..
         if( !joystickIsReceived )
           continue;

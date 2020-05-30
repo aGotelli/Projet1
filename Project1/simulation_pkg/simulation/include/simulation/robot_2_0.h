@@ -90,10 +90,6 @@ private:
 
     double x{0.0}, y{0.0}, theta{0.0};
 
-    double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
-
-    double beta_3c{0.0};
-
   };
 
   //  Matrix initialization
@@ -120,7 +116,6 @@ private:
   // Input vector
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
-  //mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
   mutable Eigen::MatrixXd J{3, 2} ;         //  The kinematic model
 
   const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
@@ -177,21 +172,9 @@ void Robot_2_0::PrepareMessages()
 
 void Robot_2_0::UpdateMatrix() const
 {
-  /*
-  J <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ,
-        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
-                  1/wheelRadius         ,                         trackGauge/wheelRadius                      ,
-                  1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
-          cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
-
-  */
-
-  J <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ;
-
+  J <<  cos(q.theta),     0 ,
+        sin(q.theta),     0 ,
+            0,            1 ;
 }
 
 
@@ -214,13 +197,9 @@ void Robot_2_0::EnsureMaxSpeed() const
 Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(const Eigen::VectorXd& result)
 {
 
-  this->x       = result(0) ;
-  this->y       = result(1) ;
-  this->theta   = result(2) ;
-  // this->beta_3c = result(3) ;
-  // this->phi_1f  = result(4) ;
-  // this->phi_2f  = result(5) ;
-  // this->phi_3c  = result(6) ;
+  this->x = result(0) ;
+  this->y = result(1) ;
+  this->theta = result(2) ;
 
   return (*this) ;
 }

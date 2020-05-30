@@ -37,8 +37,7 @@
 std::vector<Sensor> robotSensor;
 
 //	Positions of triggered sensors
-visualization_msgs::MarkerArray sensorsActivations;
-
+std::vector<visualization_msgs::Marker> sensorsActivations;
 
 // Service Callback
 bool ServiceCallback(simulation_messages::SensorStatus::Request& from,
@@ -52,15 +51,15 @@ bool ServiceCallback(simulation_messages::SensorStatus::Request& from,
 
 		if( robotSensor[0].GetState() ) {
 			current.status.sens1 = true;
-			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
-																																										utility::SENSOR::RIGHT ) );
+			sensorsActivations.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
+																																					utility::SENSOR::RIGHT ) );
 
 		}
 
 		if( robotSensor[1].GetState() ) {
 			current.status.sens1 = true;
-			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
-																																										utility::SENSOR::LEFT ) );
+			sensorsActivations.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
+																																					utility::SENSOR::LEFT ) );
 		}
 
 	return true;
@@ -98,12 +97,20 @@ int main (int argc, char** argv)
 
 		ros::Publisher markersPub = nh_glob.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
 
+		visualization_msgs::MarkerArray array;
+
   	ros::Rate rate(100);
 
-    while (ros::ok()) {
+    while (ros::ok()){
         ros::spinOnce();
 
-				markersPub.publish( sensorsActivations );
+				array.markers.resize( sensorsActivations.size() );
+
+				for(int i = 0; i<sensorsActivations.size(); i++) {
+					array.markers[i] = sensorsActivations[i];
+				}
+
+				markersPub.publish( array );
 
         rate.sleep();
     }

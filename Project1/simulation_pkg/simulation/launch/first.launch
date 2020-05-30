@@ -1,9 +1,5 @@
 <launch>
 
-
-
-
-
 <!-- The following is the table foa a (2, 0) robot inspired from the MOBRO course
 ______________________________________________________________________________________
 | Wheel |   L   |  alpha  |   d   |   beta    |  gamma  |   phi   |      psi         |
@@ -28,8 +24,8 @@ to the moving platform frame                                                    
   <arg name="y_spacing" value="0.2"/>
 
   <!-- joy node -->
-  <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy" >
-    <param name="dev" type="string" value="/dev/input/js1" />
+  <node respawn="true" pkg="joy" type="joy_node" name="joy_node" >
+    <param name="dev" type="string" value="/dev/input/js0" />
   </node>
 
   <!-- The compute_twist adapter -->
