@@ -56,8 +56,11 @@
  #include <geometry_msgs/Twist.h>
  #include <visualization_msgs/Marker.h>
  #include <geometry_msgs/PoseStamped.h>
+
  #include <simulation_messages/Encoders.h>
  #include <simulation_messages/IRSensors.h>
+ #include <simulation_messages/SensorStatus.h>
+
 
 
 class RobotBase {
@@ -101,8 +104,10 @@ private:
 
   ros::Rate robotFrameRate {100};
 
-//Publisher and subscriber definition
+  //Publisher and subscriber definition
   ros::Subscriber commandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
+
+  ros::ServiceClient sensorsServer { nh_glob.serviceClient<simulation_messages::SensorStatus>("CheckSensorStatus") } ;
 
   ros::Publisher RobotMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;
 
@@ -156,14 +161,26 @@ void RobotBase::isMoving()
       //  Publish current wheels orientations
       Encoders.publish( wheelsAngles );
 
-      //  Publish the status of the IR sensors
-      IRSensors.publish( status );
-
       //  Publish the marker for visualization
       RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
       RobotMarker.publish( generatedPath ) ;
+
+      //  On demand sensor status computation
+      simulation_messages::SensorStatus currentStatus;
+      currentStatus.request.robotPosture = robotPosture.pose;
+
+      if( !sensorsServer.exists() )
+        continue;   // No reason to do the following if the server does not exist yet
+
+      if( !sensorsServer.call( currentStatus )) {
+        ROS_WARN_STREAM("Failed to call the service");
+        continue;   // No reason to do the following if the call have failed
+      }
+      
+      //  Publish the status of the IR sensors
+      IRSensors.publish( currentStatus.response );
 
       //  Wait for next iteration
       robotFrameRate.sleep();
