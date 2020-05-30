@@ -25,22 +25,11 @@
 #include "simulation/sensor.h"
 #include "simulation_messages/SensorStatus.h"
 
-// Sensor parameters
-double x1, y1;
-nh_loc.param("x1_pos", x1, 0.2) ;
-nh_loc.param("y1_pos", y1, 0.2) ;
-
-double x2, y2;
-nh_loc.param("x2_pos", x2, 0.2) ;
-nh_loc.param("y2_pos", y2, 0.2) ;
 
 
 // Vector of sensors
 std::vector<Sensor> robotSensor;
 
-// Inizialize the vector
-robotSensor.push_back(sens1(x1_pos, y1_pos));
-robotSensor.push_back(sens2(x2_pos, y2_pos));
 
 
 // Service Callback
@@ -51,6 +40,10 @@ bool ServiceCallback(simulation_messages::SensorStatus::Request &req,
 			sens.UpdateTrasform();
 			sens.CheckSatus();
 		}
+
+		res.status.sens1 = robotSensor[0].GetState();
+		res.status.sens2 = robotSensor[1].GetState();
+
 }
 
 int main (int argc, char** argv)
@@ -66,6 +59,21 @@ int main (int argc, char** argv)
     double xSpacing, ySpacing;                    // [m]
     nh_glob.param("x_spacing", xSpacing, 0.2) ;
     nh_glob.param("y_spacing", ySpacing, 0.2) ;
+
+    // Sensor parameters
+	double x1, y1;
+	nh_loc.param("x1_pos", x1, 0.2) ;
+	nh_loc.param("y1_pos", y1, 0.2) ;
+
+	double x2, y2;
+	nh_loc.param("x2_pos", x2, 0.2) ;
+	nh_loc.param("y2_pos", y2, 0.2) ;
+
+	// Inizialize the vector
+	robotSensor.push_back(sens1(x1_pos, y1_pos));
+	robotSensor.push_back(sens2(x2_pos, y2_pos));
+
+
 
   	// Declare your node's subscriptions and service clients
   	ros::ServiceServer SensorService = nh_glob.advertiseService("sensor_status", ServiceCallback);
