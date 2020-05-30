@@ -34,7 +34,7 @@
 geometry_msgs::Twist twistToRobot;
 bool joystickIsReceived;
 
-// Callback to update the joystick state 
+// Callback to update the joystick state
 void JoystickStateUpdate(const sensor_msgs::Joy::ConstPtr& joystick)
 {
 
@@ -99,10 +99,11 @@ int main (int argc, char** argv)
     // Declare you publishers and service servers
     ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
 
+
     ros::Rate rate(100);
     while (ros::ok()){
         ros::spinOnce();
-
+        
         // Not really much to do here..
         if( !joystickIsReceived )
           continue;
