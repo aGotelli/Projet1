@@ -1,20 +1,38 @@
 #ifndef SESNOR_H
 #define SENSOR_H
 
+#include <eigen3/Eigen/Dense>
 
-#include "simulation/robot_base.h"
-#include "simulation/robot_2_0.h"
-#include <eigen3/Eigen/Dense> 
+#include <ros/ros.h>
+#include <geometry_msgs/Pose.h>
 
+#include <simulation/utility.h>
 
 // Definition of World class
 class World {
 public:
  World()=default;
 
- const bool CheckWorldLines(const Eigen::Vector3d& HCoord, const Robot_2_0& robot) const;
+ World(const double _xSpacing,
+        const double _ySpacing) :
+          xSpacing( _xSpacing ),
+          ySpacing( _ySpacing ) { /*  lineWidth has default value  */
+            ROS_INFO_STREAM("User-defined world only for line offset") ;
+          }
 
- const bool CheckWorldLines(const Eigen::Vector3d& HCoord, const Robot_2_0::GeneralizedCorrdinates& q) const;
+ World(const double _xSpacing,
+        const double _ySpacing,
+          const double _lineWidth) :
+            xSpacing( _xSpacing ),
+            ySpacing( _ySpacing ),
+            lineWidth( _lineWidth ) {
+              ROS_INFO_STREAM("Completely user-defined world") ;
+            }
+
+ // Provided function to access private data
+ inline const double& XSpacing() const {return xSpacing; }
+ inline const double& YSpacing() const {return ySpacing; }
+ inline const double& LineWidth() const {return lineWidth; }
 
 private:
 
@@ -30,33 +48,85 @@ class Sensor {
 public:
  Sensor()=default;
 
- Sensor(const double _x, const double _y) : HCoord( Eigen::Vector3d(_x, _y, 1.0) ) {}
+ Sensor(const double _x, const double _y) : HCoord( Eigen::Vector3d(_x, _y, 1.0) ) {
+   ROS_INFO_STREAM("User-defined sensor only for position") ;
+ }
+
+ Sensor(const double _x, const double _y, const World& _world) :
+                                HCoord( Eigen::Vector3d(_x, _y, 1.0) ),
+                                world(_world) {
+                                  ROS_INFO_STREAM("Completely user-defined sensor") ;
+                                }
 
 
- inline void setState(bool stateSensor ){ stateSensor = state; }
+ // Get the current sensor status
+ inline const bool GetState(){ return state; }
 
- inline const bool getState(){ return state; }
-
+ // Access the sensor position in homogeneus coordinates
  inline const Eigen::Vector3d& Coord() const { return HCoord; }
- inline const std::vector<Sensor> sensorVector() const { return robotSensors; }
+
+ void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
+
+ void CheckStatus() const;
+
 
 private:
 
-  // Sensor parameters
+  // Sensor position in homogeneus coordinates
   const Eigen::Vector3d HCoord {0.05, 0.0, 1.0};
-  mutable bool state {false};
 
-
-  friend class World;
+  //  Sensor has its own istance of the world
   const World world;
 
-  // Vector of sensor
-  mutable std::vector<Sensor> robotSensors;
+  //  Sensor has information about the robot posture in term of
+  //  the homogeneus transform from the reference frame (frame O indicated "o")
+  //  to the moving platform frame (frame M indicated "m")
+  mutable Eigen::Matrix3d oTm { Eigen::MatrixBase<Eigen::Matrix3d>::Identity() } ;
+
+  //  The measurement
+  mutable bool state {false};
 
 };
 
+void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
+{
+  //  First convert from quaternion to Euler Angles
+  const utility::EulerAngles eulers = utility::ToEulerAngles( robotPosture.orientation ) ;
+
+  oTm <<  cos( eulers.yaw ), -sin( eulers.yaw ), robotPosture.position.x  ,
+          sin( eulers.yaw ),  cos( eulers.yaw ), robotPosture.position.y  ,
+                  0        ,          0        ,            1             ;
+
+}
 
 
+
+void Sensor::CheckStatus() const
+{
+  //  First, with the knowledge of the robot position obtain the coordinates
+  //  of the lines surrounding it
+
+
+
+  //  Then compute their equations in homogeneus coordinates
+
+
+
+  //  Concatenate the equations
+
+
+
+  //  Compute the dot product column-wise
+
+}
+
+
+
+
+
+
+
+/*
 
 
 
@@ -99,5 +169,7 @@ void Robot_2_0::CheckSensorStatus() const
   }
 
 }
+
+*/
 
 #endif //SENSOR_H

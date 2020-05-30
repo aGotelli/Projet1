@@ -25,6 +25,8 @@
 //Cpp
 #include <simulation/robot_2_0.h>
 
+#include <simulation/sensor.h>
+
 
 int main (int argc, char** argv)
 {

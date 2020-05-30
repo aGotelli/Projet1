@@ -36,6 +36,7 @@
 
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 
 #include <cmath>
 
@@ -47,6 +48,10 @@ namespace utility
   //  Wikipedia comes in help for solving the tedius angles conversions
   struct Quaternion {
   Quaternion()=default;
+
+  Quaternion(const double _w, const double _x,
+              const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
+
 
     double w {1.0};
     double x {0.0};
@@ -75,6 +80,8 @@ namespace utility
   //  Converting a quatersion to Euler Angles
   EulerAngles ToEulerAngles(const Quaternion q);
 
+  //  Converting a quatersion to Euler Angles
+  inline EulerAngles ToEulerAngles(const geometry_msgs::Quaternion q) {return ToEulerAngles( Quaternion(q.w, q.x, q.y, q.z) ); }
 
   //  Initialize a marker for the robot (remember to deprecate)
   void InitMarker(visualization_msgs::Marker& robotMarker);

@@ -46,11 +46,12 @@ robotSensor.push_back(sens2(x2_pos, y2_pos));
 // Service Callback
 bool ServiceCallback(simulation_messages::SensorStatus::Request &req,
 					simulation_messages::SensorStatus::Response &res){
-		
+
 		for(const auto& sens : robotSensor){
 			sens.UpdateTrasform();
 			sens.CheckSatus();
 		}
+
 }
 
 int main (int argc, char** argv)
@@ -69,17 +70,17 @@ int main (int argc, char** argv)
 
   	// Declare your node's subscriptions and service clients
   	ros::ServiceServer SensorService = nh_glob.advertiseService("sensor_status", ServiceCallback);
-  	
-  	
+
+
 
   	ros::Rate rate(100);
     while (ros::ok()){
         ros::spinOnce();
 
-        
+
         rate.sleep();
     }
 
 
-    
+
 }
