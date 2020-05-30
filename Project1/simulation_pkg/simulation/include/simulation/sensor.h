@@ -36,9 +36,9 @@ public:
 
 private:
 
- const double xSpacing { 0.2 };
- const double ySpacing { 0.2 };
- const double lineWidth { 0.0 };
+ const double xSpacing { 1.0 };
+ const double ySpacing { 1.0 };
+ const double lineWidth { 0.01 };
 
 };
 
@@ -68,6 +68,8 @@ public:
  void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
 
  void CheckStatus() const;
+
+ const utility::Point2D AbsolutePosition() const;
 
 
 private:
@@ -103,96 +105,57 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 
 void Sensor::CheckStatus() const
 {
+  //  Obtain the robot position from the homogeneus transform
+  const Eigen::Vector3d robotPose = oTm.col(2) ;
+
   //  First, with the knowledge of the robot position obtain the coordinates
   //  of the lines surrounding it
-  const int deltaX = std::floor( robot.q.x/xSpacing )*xSpacing;
-  const int deltaY = std::floor( robot.q.y/ySpacing )*ySpacing;
+  const int deltaX = std::floor( robotPose[0]/world.XSpacing() )*world.XSpacing();
+  const int deltaY = std::floor( robotPose[1]/world.YSpacing() )*world.YSpacing();
 
-  const int distToNextLine_x = deltaX + xSpacing;
-  const int distToNextLine_y = deltaY + ySpacing;
+  const int distToNextLine_x = deltaX + world.XSpacing();
+  const int distToNextLine_y = deltaY + world.YSpacing();
 
 
   //  Then compute their equations in homogeneus coordinates (line equation: ax + by + c = 0.)
 
   //  For a "vertical" line x = a -> x - a = 0.
   //  that is in homogeneus coordinates 1*x + 0*y -a*c = 0
-  const Eigen::Vector3d leftLine(0.0f, 1.0f, -deltaX);
-  const Eigen::Vector3d rightLine(0.0f, 1.0f, -distToNextLine_x);
+  const Eigen::Vector3d leftLine(1.0f, 0.0f, -deltaX);
+  const Eigen::Vector3d rightLine(1.0f, 0.0f, -distToNextLine_x);
 
   //  For a "horizontal" line y = b -> y - b = 0.
   //  that is in homogeneus coordinates 0*x + 1*y -b*c = 0
-  const Eigen::Vector3d bottomLine(1.0f, 0.0f, -deltaY);
-  const Eigen::Vector3d upperLine(1.0f, 0.0f, -distToNextLine_y);
+  const Eigen::Vector3d bottomLine(0.0f, 1.0f, -deltaY);
+  const Eigen::Vector3d upperLine(0.0f, 1.0f, -distToNextLine_y);
 
   //  Concatenate the equations
   Eigen::MatrixXd worldLines(3, 4);
-  worldLines << leftLine, rightLine, bottomLine,upperLine ;
+  worldLines << leftLine, rightLine, bottomLine, upperLine ;
 
+  const Eigen::Vector3d oHCoord = oTm*HCoord;
 
   //  Compute the dot product column-wise
-  const Eigen::Vector3d overLine = HCoord.transpose()*worldLines;
-
+  const Eigen::VectorXd overLine = oHCoord.transpose()*worldLines;
 
   // Update the sensor states
-  if(overLine.minCoeff() <= (lineWidth/2)){
+  if( overLine.cwiseAbs().minCoeff() <= world.LineWidth()/2 ) {
       state = true;
   } else {
-    state = false;
-  }  
-
-
-}
-
-
-
-
-
-
-
-/*
-
-
-
-const bool World::CheckWorldLines(const Eigen::Vector3d& HCoord, const Robot_2_0& robot) const
-{
-
-  const int nx = std::floor( robot.q.x/xSpacing )*xSpacing;
-  const int ny = std::floor( robot.q.y/ySpacing )*ySpacing;
-
-  const int next_nx = nx + xSpacing;
-  const int next_ny = ny + ySpacing;
-
-  //  In homogeneus coordinates a line has the equation: ax + by + c = 0.
-
-  //  For a "vertical" line x = a -> x - a = 0.
-  //  that is in homogeneus coordinates 1*x + 0*y -a*c = 0
-  const Eigen::Vector3d leftLine(0.0f, 1.0f, -nx);
-  const Eigen::Vector3d rightLine(0.0f, 1.0f, -next_nx);
-
-  //  For a "horizontal" line y = b -> y - b = 0.
-  //  that is in homogeneus coordinates 0*x + 1*y -b*c = 0
-  const Eigen::Vector3d bottomLine(1.0f, 0.0f, -ny);
-  const Eigen::Vector3d upperLine(1.0f, 0.0f, -next_ny);
-
-  //  Comcatenate the line into a matrix
-  Eigen::MatrixXd worldLines(3, 4);
-  worldLines << leftLine, rightLine, bottomLine,upperLine ;
-
-  const Eigen::Vector3d overLine = HCoord.transpose()*worldLines;
-
-  return !overLine.minCoeff() ;
-
-}
-
-void Robot_2_0::CheckSensorStatus() const
-{
-  for(const auto sensor : robotSensors) {
-
-    sensor.setState( world.CheckWorldLines( sensor.Coord(), this->q ) );
+      state = false;
   }
 
 }
 
-*/
+
+const utility::Point2D Sensor::AbsolutePosition() const
+{
+  const Eigen::Vector3d oHCoord = oTm*HCoord;
+
+  return utility::Point2D( oHCoord[0], oHCoord[1] ) ;
+}
+
+
+
 
 #endif //SENSOR_H

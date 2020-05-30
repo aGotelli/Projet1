@@ -178,9 +178,9 @@ void RobotBase::isMoving()
         ROS_WARN_STREAM("Failed to call the service");
         continue;   // No reason to do the following if the call have failed
       }
-      
+
       //  Publish the status of the IR sensors
-      IRSensors.publish( currentStatus.response );
+      IRSensors.publish( currentStatus.response.status );
 
       //  Wait for next iteration
       robotFrameRate.sleep();

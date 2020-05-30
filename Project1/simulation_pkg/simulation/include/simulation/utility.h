@@ -37,8 +37,11 @@
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <ros/ros.h>
 
 #include <cmath>
+#include <iostream>
+#include <string>
 
 namespace utility
 {
@@ -118,9 +121,9 @@ namespace utility
                             visualization_msgs::Marker& generatedPath );
 
 
-  void PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor);
+  visualization_msgs::Marker PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor);
 
-  void PlaceMarker(const Point2D& point, const COLOR& markerColor);
+  visualization_msgs::Marker PlaceMarker(const Point2D& point, const COLOR& markerColor, const std::string side, const int index);
 
 
 
@@ -189,7 +192,6 @@ namespace utility
   }
 
 
-
   void InitMarker(visualization_msgs::Marker& robotMarker)
   //  More practical to have the initialization here, it is needed but not
   //  a key point the scope of the simulation
@@ -221,8 +223,8 @@ namespace utility
 
     //  Set the marker scale
     robotMarker.scale.x = 1.0;
-    robotMarker.scale.y = 1.0;
-    robotMarker.scale.z = 1.0;
+    robotMarker.scale.y = 0.4;
+    robotMarker.scale.z = 0.4;
 
     //  Set the marker color
     robotMarker.color.r = 0.0f;
@@ -306,27 +308,31 @@ namespace utility
   }
 
 
-
-  void PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor)
+  int index_left = -1;
+  int index_right = -1;
+  visualization_msgs::Marker PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor)
   {
     COLOR markerColor;
 
-    switch ( activeSensor ) {
-      case SENSOR::RIGHT :
-        markerColor = COLOR::RED ;
-        PlaceMarker(point, markerColor) ;
-        break;
+    if( activeSensor == SENSOR::RIGHT ) {
 
-      case SENSOR::LEFT :
-        markerColor = COLOR::GREEN ;
-        PlaceMarker(point, markerColor) ;
-        break;
+      index_right ++;
+      markerColor = COLOR::RED ;
+      return PlaceMarker(point, markerColor, "Right", index_right) ;
     }
+
+    if( activeSensor == SENSOR::LEFT ) {
+
+      index_left ++;
+      markerColor = COLOR::GREEN ;
+      return PlaceMarker(point, markerColor, "Left", index_left) ;
+    }
+
   }
 
 
 
-  void PlaceMarker(const Point2D& point, const COLOR& markerColor)
+  visualization_msgs::Marker PlaceMarker(const Point2D& point, const COLOR& markerColor, const std::string side, const int index)
   {
     //  Instantiate the marker
     visualization_msgs::Marker sensorMarker;
@@ -338,8 +344,9 @@ namespace utility
 
     // Set the namespace and id for this marker.  This serves to create a unique ID
     // Any marker sent with the same namespace and id will overwrite the old one
-    sensorMarker.ns = "SensorMarker";
-    sensorMarker.id = 0;
+    sensorMarker.ns = side + "SensorMarker";
+    sensorMarker.id = index;
+
 
 
     // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
@@ -360,9 +367,9 @@ namespace utility
     sensorMarker.pose.position.y = point.y ;
 
     //  Set the marker scale
-    sensorMarker.scale.x = 0.2;
-    sensorMarker.scale.y = 0.2;
-    sensorMarker.scale.z = 0.2;
+    sensorMarker.scale.x = 0.1;
+    sensorMarker.scale.y = 0.1;
+    sensorMarker.scale.z = 0.1;
 
     //  Set the marker color
     switch ( markerColor ) {
@@ -379,8 +386,10 @@ namespace utility
     sensorMarker.color.b = 0.0f;
     sensorMarker.color.a = 1.0f;
 
-    //  Set the lifetime as no end 
+    //  Set the lifetime as no end
     sensorMarker.lifetime = ros::Duration();
+
+    return sensorMarker;
   }
 
 
