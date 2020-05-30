@@ -6,3 +6,10 @@ For version 2
 4) check dei nomi
 5) error handling in server
 6) unique pointer in marker return
+
+
+
+
+===========
+crea la plot RobotOdometry
+===========

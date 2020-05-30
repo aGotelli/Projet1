@@ -38,7 +38,7 @@ private:
 
  const double xSpacing { 1.0 };
  const double ySpacing { 1.0 };
- const double lineWidth { 0.01 };
+ const double lineWidth { 0.005 };
 
 };
 

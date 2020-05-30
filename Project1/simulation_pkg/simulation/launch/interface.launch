@@ -1,0 +1,37 @@
+<launch>
+
+  <!-- The following is the table foa a (2, 0) robot inspired from the MOBRO course
+  ______________________________________________________________________________________
+  | Wheel |   L   |  alpha  |   d   |   beta    |  gamma  |   phi   |      psi         |
+  ______________________________________________________________________________________
+  |  1f   |   a   | -M_PI/2 |   0   |    0      |  M_PI/2 | phi_1f  |       0          |
+  |  2f   |   a   |  M_PI/2 |   0   |    0      | -M_PI/2 | phi_2f  |       0          |
+  |  3c   |   b   |  M_PI   |   c   |  beta_3c  |    0    | phi_3c  | M_PI + beta_3c   |
+
+  You are allowed to change the length of the robot part. You should not try to change
+  the angles and orientation of the robot as all the kinematic will change. Moreover,
+  it does not make much sense to change the robot parts orientation with respect
+  to the moving platform frame                                                        -->
+
+  <arg name="a" value="0.2"/>
+  <arg name="b" value="0.4"/>
+  <arg name="c" value="0.08"/>
+
+  <arg name="r" value="0.05"/>
+  <arg name="w_max" value="10.0"/>
+
+  <arg name="x_spacing" value="1"/>
+  <arg name="y_spacing" value="1"/>
+
+  <arg name="sensor_right_x" value="0.0"/>
+  <arg name="sensor_right_y" value="-0.2"/>
+
+  <arg name="sensor_left_x" value="0.0"/>
+  <arg name="sensor_left_y" value="0.2"/>
+
+  <arg name="file_name" value="bag_and_param"/>
+
+  <include file="$(find simulation)/launch/simulation_setup.launch" pass_all_args="true">
+  </include>
+
+</launch>

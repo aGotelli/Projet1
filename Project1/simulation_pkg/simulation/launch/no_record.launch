@@ -32,22 +32,24 @@ to the moving platform frame                                                    
   <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen">
   </node>
 
-  <!-- The robot_2_0 -->
-  <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-    <param name="track_gauge"         value="$(arg a)"      />
-    <param name="wheel_radius"        value="$(arg r)"      />
-    <param name="joint_offset"        value="$(arg b)"      />
-    <param name="castor_arm"          value="$(arg c)"      />
-    <param name="actuator_max_speed"  value="$(arg w_max)"  />
-  </node>
+  <group ns="simulation">
+    <!-- The robot_2_0 -->
+    <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
+      <param name="track_gauge"         value="$(arg a)"      />
+      <param name="wheel_radius"        value="$(arg r)"      />
+      <param name="joint_offset"        value="$(arg b)"      />
+      <param name="castor_arm"          value="$(arg c)"      />
+      <param name="actuator_max_speed"  value="$(arg w_max)"  />
+    </node>
 
-  <!-- The sensor server -->
-  <node pkg="simulation" type="simulation_sensor_server" name="sensor_server" output="screen">
-  </node>
+    <!-- The sensor server -->
+    <node pkg="simulation" type="simulation_sensor_server" name="sensor_server" output="screen">
+    </node>
 
-  <!-- Launch Rviz -->
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">
-  </node>
+    <!-- Launch Rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">
+    </node>
+  </group>
 
 
 </launch>

@@ -90,6 +90,10 @@ private:
 
     double x{0.0}, y{0.0}, theta{0.0};
 
+    double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
+
+    double beta_3c{0.0};
+
   };
 
   //  Matrix initialization
@@ -116,7 +120,7 @@ private:
   // Input vector
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
-  mutable Eigen::MatrixXd J{3, 2} ;         //  The kinematic model
+  mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
 
   const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
 
@@ -153,17 +157,20 @@ void Robot_2_0::PerformMotion() const
 
 void Robot_2_0::PrepareMessages()
 {
+  //  Set robot posture PoseStamped message
   robotPosture.header.stamp = currentTime ;
-
   robotPosture.pose.position.x = q.x ;
   robotPosture.pose.position.y = q.y ;
 
-  //const auto quat = utility::ToQuaternion( q.theta, 0.0, 0.0 ) ;
   const auto quat = utility::ToQuaternion( utility::EulerAngles(q.theta) ) ;
   robotPosture.pose.orientation.w = quat.w ;
   robotPosture.pose.orientation.x = quat.x ;
   robotPosture.pose.orientation.y = quat.y ;
   robotPosture.pose.orientation.z = quat.z ;
+
+  //  Set the wheels angles message
+  wheelsAngles.phi_1f = q.phi_1f;
+  wheelsAngles.phi_2f = q.phi_2f;
 
 }
 
@@ -172,9 +179,16 @@ void Robot_2_0::PrepareMessages()
 
 void Robot_2_0::UpdateMatrix() const
 {
-  J <<  cos(q.theta),     0 ,
-        sin(q.theta),     0 ,
-            0,            1 ;
+
+  J <<            cos(q.theta)          ,                                    0                                ,
+                  sin(q.theta)          ,                                    0                                ,
+                      0                 ,                                    1                                ,
+        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
+                  1/wheelRadius         ,                         trackGauge/wheelRadius                      ,
+                  1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
+          cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
+
+
 }
 
 
@@ -197,9 +211,13 @@ void Robot_2_0::EnsureMaxSpeed() const
 Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(const Eigen::VectorXd& result)
 {
 
-  this->x = result(0) ;
-  this->y = result(1) ;
-  this->theta = result(2) ;
+  this->x       = result(0) ;
+  this->y       = result(1) ;
+  this->theta   = result(2) ;
+  this->beta_3c = result(3) ;
+  this->phi_1f  = result(4) ;
+  this->phi_2f  = result(5) ;
+  this->phi_3c  = result(6) ;
 
   return (*this) ;
 }
@@ -208,9 +226,14 @@ Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(c
 
 Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(const GeneralizedCorrdinates& equal)
 {
-  this->x = equal.x ;
-  this->y = equal.y ;
-  this->theta = equal.theta ;
+
+  this->x       = equal.x       ;
+  this->y       = equal.y       ;
+  this->theta   = equal.theta   ;
+  this->beta_3c = equal.beta_3c ;
+  this->phi_1f  = equal.phi_1f  ;
+  this->phi_2f  = equal.phi_2f  ;
+  this->phi_3c  = equal.phi_3c  ;
 
   return (*this) ;
 }
@@ -221,7 +244,11 @@ Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator+(c
 {
   this->x += addendum.x ;
   this->y += addendum.y ;
-  this->theta = utility::LimitAngle( this->theta + addendum.theta ) ;
+  this->theta   = utility::LimitAngle( this->theta    + addendum.theta    ) ;
+  this->beta_3c = utility::LimitAngle( this->beta_3c  + addendum.beta_3c  ) ;
+  this->phi_1f  = utility::LimitAngle( this->phi_1f   + addendum.phi_1f   ) ;
+  this->phi_2f  = utility::LimitAngle( this->phi_2f   + addendum.phi_2f   ) ;
+  this->phi_3c  = utility::LimitAngle( this->phi_3c   + addendum.phi_3c   ) ;
 
   return (*this) ;
 }
@@ -233,9 +260,13 @@ Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::Integrate(c
   GeneralizedCorrdinates delta;
 
   //  Function called from a q_dot object, actually x, y, theta represents velocities
-  delta.x = x*timeElapsed.toSec() ;
-  delta.y = y*timeElapsed.toSec() ;
-  delta.theta = theta*timeElapsed.toSec() ;
+  delta.x       = x       *timeElapsed.toSec() ;
+  delta.y       = y       *timeElapsed.toSec() ;
+  delta.theta   = theta   *timeElapsed.toSec() ;
+  delta.beta_3c = beta_3c *timeElapsed.toSec() ;
+  delta.phi_1f  = phi_1f  *timeElapsed.toSec() ;
+  delta.phi_2f  = phi_2f  *timeElapsed.toSec() ;
+  delta.phi_3c  = phi_3c  *timeElapsed.toSec() ;
 
   return delta;
 }
