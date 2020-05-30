@@ -105,18 +105,41 @@ void Sensor::CheckStatus() const
 {
   //  First, with the knowledge of the robot position obtain the coordinates
   //  of the lines surrounding it
+  const int deltaX = std::floor( robot.q.x/xSpacing )*xSpacing;
+  const int deltaY = std::floor( robot.q.y/ySpacing )*ySpacing;
+
+  const int distToNextLine_x = deltaX + xSpacing;
+  const int distToNextLine_y = deltaY + ySpacing;
 
 
+  //  Then compute their equations in homogeneus coordinates (line equation: ax + by + c = 0.)
 
-  //  Then compute their equations in homogeneus coordinates
+  //  For a "vertical" line x = a -> x - a = 0.
+  //  that is in homogeneus coordinates 1*x + 0*y -a*c = 0
+  const Eigen::Vector3d leftLine(0.0f, 1.0f, -deltaX);
+  const Eigen::Vector3d rightLine(0.0f, 1.0f, -distToNextLine_x);
 
-
+  //  For a "horizontal" line y = b -> y - b = 0.
+  //  that is in homogeneus coordinates 0*x + 1*y -b*c = 0
+  const Eigen::Vector3d bottomLine(1.0f, 0.0f, -deltaY);
+  const Eigen::Vector3d upperLine(1.0f, 0.0f, -distToNextLine_y);
 
   //  Concatenate the equations
-
+  Eigen::MatrixXd worldLines(3, 4);
+  worldLines << leftLine, rightLine, bottomLine,upperLine ;
 
 
   //  Compute the dot product column-wise
+  const Eigen::Vector3d overLine = HCoord.transpose()*worldLines;
+
+
+  // Update the sensor states
+  if(overLine.minCoeff() <= (lineWidth/2)){
+      state = true;
+  } else {
+    state = false;
+  }  
+
 
 }
 
