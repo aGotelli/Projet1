@@ -6,8 +6,8 @@
  * \date 28/05/2020
  *
  * \param[in]
-    world param : xSpacing, ySpacing
-    robot param : trackGauge, wheelRadius
+    world param : x_spacing, y_spacing
+    robot param : track_gauge, wheel_radius, joint_offset, castor_arm, actuator_max_speed
  *
  * Subscribes to: <BR>
  *    °
@@ -16,7 +16,7 @@
  *    °
  *
  * Description
-            The aim of this file is to move the robot. So it contains all the 
+            The aim of this file is to move the robot. So it contains all the
             information regarding the world and the robot.
  *
  */

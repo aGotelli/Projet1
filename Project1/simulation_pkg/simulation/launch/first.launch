@@ -12,7 +12,11 @@ ________________________________________________________________________________
 |  2f   |   a   |  M_PI/2 |   0   |    0      | -M_PI/2 | phi_2f  |       0          |
 |  3c   |   b   |  M_PI   |   c   |  beta_3c  |    0    | phi_3c  | M_PI + beta_3c   |
 
--->
+You are allowed to change the length of the robot part. You should not try to change
+the angles and orientation of the robot as all the kinematic will change. Moreover,
+it does not make much sense to change the robot parts orientation with respect
+to the moving platform frame                                                        -->
+
   <arg name="a" value="0.2"/>
   <arg name="b" value="0.4"/>
   <arg name="c" value="0.08"/>
@@ -42,7 +46,7 @@ ________________________________________________________________________________
   </node>
 
   <!-- Launch Rviz -->
-  <node pkg="rviz" type="rviz" name="rviz">
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">
   </node>
 
 

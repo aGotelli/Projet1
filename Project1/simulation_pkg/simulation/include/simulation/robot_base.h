@@ -40,12 +40,13 @@
           ° C.2, C.48, C.120, C.128, C.132
           ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
           ° F.1, F.2, F.3, F.15, F.16, F.17
+          ° All the SF section.
 
 
  *
  */
 
- 
+
 //ROS
  #include <ros/ros.h>
 
@@ -76,7 +77,7 @@ protected:
 
   virtual void PerformMotion() const=0;
 
-  virtual void CheckSensorStatus() const=0;
+  //virtual void CheckSensorStatus() const=0;
 
   virtual void PrepareMessages()=0;
 
@@ -86,6 +87,7 @@ protected:
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
 
   visualization_msgs::Marker robotMarker;     //  No need of default initialization
+  visualization_msgs::Marker generatedPath;   //  No need of default initialization
 
   // Time handling
   ros::Time prevTime;
@@ -118,6 +120,8 @@ void RobotBase::isMoving()
 
   utility::InitMarker( robotMarker ) ;
 
+  utility::InitLineStrip( generatedPath ) ;
+
   prevTime = ros::Time::now() ;
 
   while (ros::ok()){
@@ -130,28 +134,38 @@ void RobotBase::isMoving()
       prevTime = currentTime ;
       //  Then perform all the computations
 
-
+      //  First compute the input for the robot actuators
       ComputeInput() ;
 
+      //  Then compute the matematical integration (displacement)
+      //  that the robot performed due to the input
       PerformMotion() ;
 
-      CheckSensorStatus() ;
-
+      //  Elaborate the data for being published
       PrepareMessages() ;
 
-      utility::UpdateMarker( robotMarker, robotPosture ) ;
+      //  Update the marker position for visualization
+      utility::UpdateMarker( robotPosture, robotMarker ) ;
 
+      //  Update the line strip for visualization
+      utility::UpdatePath( robotPosture, generatedPath ) ;
 
-
+      //  Publish current robot posture
       Robot.publish( robotPosture );
 
+      //  Publish current wheels orientations
       Encoders.publish( wheelsAngles );
 
+      //  Publish the status of the IR sensors
       IRSensors.publish( status );
 
+      //  Publish the marker for visualization
       RobotMarker.publish( robotMarker ) ;
 
+      //  Publish the line strip for visualization
+      RobotMarker.publish( generatedPath ) ;
 
+      //  Wait for next iteration
       robotFrameRate.sleep();
   }
 }
