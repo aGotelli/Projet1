@@ -164,6 +164,11 @@ add_executable(${PROJECT_NAME}_robot_2_0 src/robot_2_0.cpp)
 target_link_libraries(${PROJECT_NAME}_robot_2_0	${catkin_LIBRARIES} )
 
 
+############################~ SENSOR SERVER ~###################################
+add_executable(${PROJECT_NAME}_sensor_server src/sensor_server.cpp)
+target_link_libraries(${PROJECT_NAME}_sensor_server	${catkin_LIBRARIES} )
+
+
 
 
 

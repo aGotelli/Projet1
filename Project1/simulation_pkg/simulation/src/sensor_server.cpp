@@ -24,26 +24,24 @@
 #include "ros/ros.h"
 #include "simulation/sensor.h"
 #include "simulation_messages/SensorStatus.h"
+#include <geometry_msgs/PoseStamped.h>
 
 
 
 // Vector of sensors
 std::vector<Sensor> robotSensor;
 
-
-
 // Service Callback
-bool ServiceCallback(simulation_messages::SensorStatus::Request &req,
-					simulation_messages::SensorStatus::Response &res){
+bool ServiceCallback(simulation_messages::SensorStatus::Request& from,
+					simulation_messages::SensorStatus::Response& current){
 
-		for(const auto& sens : robotSensor){
-			sens.UpdateTrasform();
-			sens.CheckSatus();
+		for(const auto& sens : robotSensor) {
+			sens.UpdateTransform( from.robotPosture );
+			sens.CheckStatus();
 		}
 
-		res.status.sens1 = robotSensor[0].GetState();
-		res.status.sens2 = robotSensor[1].GetState();
-
+		current.status.sens1 = robotSensor[0].GetState();
+		current.status.sens2 = robotSensor[1].GetState();
 }
 
 int main (int argc, char** argv)
@@ -70,8 +68,8 @@ int main (int argc, char** argv)
 	nh_loc.param("y2_pos", y2, 0.2) ;
 
 	// Inizialize the vector
-	robotSensor.push_back(sens1(x1_pos, y1_pos));
-	robotSensor.push_back(sens2(x2_pos, y2_pos));
+	robotSensor.push_back( Sensor( x1, y1 ));
+	robotSensor.push_back( Sensor( x2, y2 ));
 
 
 
