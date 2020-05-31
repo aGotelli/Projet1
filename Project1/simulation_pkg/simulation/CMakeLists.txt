@@ -169,6 +169,16 @@ add_executable(${PROJECT_NAME}_sensor_server src/sensor_server.cpp)
 target_link_libraries(${PROJECT_NAME}_sensor_server	${catkin_LIBRARIES} )
 
 
+############################~ FILE HANDLER ~###################################
+add_executable(${PROJECT_NAME}_file_handler src/file_handler.cpp)
+target_link_libraries(${PROJECT_NAME}_file_handler	${catkin_LIBRARIES} )
+
+
+################################~ SENSOR ~######################################
+add_executable(${PROJECT_NAME}_sensor src/sensor.cpp)
+target_link_libraries(${PROJECT_NAME}_sensor	${catkin_LIBRARIES} )
+
+
 
 
 

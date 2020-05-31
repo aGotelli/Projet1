@@ -20,13 +20,14 @@
  *
  * Description
             The aim of this file is to provide and interface to simulate the
-						sensor behaviur. The node is designed as On Demand service provider.
+						sensor behaviur. The node simply subscribes to the robot position.
+						With the knowled of this position and the coordinates of the sensor
+						in the robot frame it simulates the sensors.
 
  *
  */
 
 #include "simulation/sensor.h"
-#include "simulation_messages/SensorStatus.h"
 #include "simulation/utility.h"
 #include <vector>
 
@@ -34,6 +35,18 @@
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "simulation_messages/IRSensors.h"
+
+
+
+
+//	Position of the robot
+geometry_msgs::Pose robotPosture;
+
+void RobotPostureReceived(const geometry_msgs::PoseStamped::ConstPtr& _robotPosture)
+{
+	robotPosture = _robotPosture->pose;
+}
 
 
 //	Vector of sensors
@@ -42,38 +55,41 @@ std::vector<Sensor> robotSensor;
 //	Positions of triggered sensors
 visualization_msgs::MarkerArray sensorsActivations;
 
-
 // Service Callback
-bool ServiceCallback(simulation_messages::SensorStatus::Request& from,
-					simulation_messages::SensorStatus::Response& current)
+simulation_messages::IRSensors SensorsStatus()
 {
+	simulation_messages::IRSensors status;
 
 		for(const auto& sens : robotSensor) {
-			sens.UpdateTransform( from.robotPosture );
+			sens.UpdateTransform( robotPosture );
 			sens.CheckStatus();
 		}
 
 		if( robotSensor[0].GetState() ) {
-			current.status.sens1 = true;
+			status.sens1 = true;
 			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
 																																										utility::SENSOR::RIGHT ) );
 
 		}
 
 		if( robotSensor[1].GetState() ) {
-			current.status.sens1 = true;
+			status.sens1 = true;
 			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
 																																										utility::SENSOR::LEFT ) );
 		}
 
-	return true;
+		return status;
+
 }
+
+
+
 
 int main (int argc, char** argv)
 {
 
   // ROS Initialization
-  ros::init(argc, argv, "sensor_server");
+  ros::init(argc, argv, "sensor");
 
   //  Required NodeHandles
   ros::NodeHandle nh_loc("~"), nh_glob;
@@ -96,20 +112,28 @@ int main (int argc, char** argv)
 	robotSensor.push_back( Sensor( x1, y1 ));
 	robotSensor.push_back( Sensor( x2, y2 ));
 
-  	// Declare your node's subscriptions and service clients
-  	ros::ServiceServer SensorService = nh_glob.advertiseService("CheckSensorStatus", ServiceCallback);
+	//	Subscribe to the published robot position to obtain infromation about its pose
+	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
 
-		ros::Publisher markersPub = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
+	//	Publishes the sensors status
+	ros::Publisher IRSensors = nh_glob.advertise<simulation_messages::IRSensors>("SensorStatus", 1);
 
-  	ros::Rate rate(150);
+	//	Publishes marker to help understand
+	ros::Publisher SensorsDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
-    while (ros::ok()) {
-        ros::spinOnce();
 
-				markersPub.publish( sensorsActivations );
 
-        rate.sleep();
-    }
+	ros::Rate rate(150);
+
+  while (ros::ok()) {
+      ros::spinOnce();
+
+			IRSensors.publish( SensorsStatus() ) ;
+
+			SensorsDisplay.publish( sensorsActivations );
+
+      rate.sleep();
+  }
 
 
 

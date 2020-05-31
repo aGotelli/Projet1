@@ -266,7 +266,7 @@ namespace utility
     generatedPath.pose.orientation.z = 0.0 ;
 
     // LINE_STRIP markers use only the x component of scale, for the line width
-    generatedPath.scale.x = 0.1;
+    generatedPath.scale.x = 0.05;
 
     //  Set the line color
     generatedPath.color.r = 0.0f;

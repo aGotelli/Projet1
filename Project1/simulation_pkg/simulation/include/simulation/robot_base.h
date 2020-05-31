@@ -20,19 +20,19 @@
  *    ° IRSensorsStatus
  *
  * Description
-          The aim of this file is to embed all the ros related functions, i.e.
+            The aim of this file is to embed all the ros related functions, i.e.
           all the publishers, subscribers and operations. The idea is to separate
           what is related to the kinematics of the robot and what is needed to
           make the simulation to work.
 
-          The function that have to be implemented are declared as pure virtual.
+            The function that have to be implemented are declared as pure virtual.
           The reason is that they have to be declared accordingly with the robot
           kinematics but they should be a RobotBase members functions, in order
           to be called in the isMoving() member function. Without any surprise,
           this memeber function executes all the others needed to make the
           simulation possible and accurate.
 
-          The choice of have multiple member function was completely albitrary,
+            The choice of have multiple member function was completely albitrary,
           as well as other assumptions in this code. However we were inspired by
           the Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
@@ -56,6 +56,7 @@
  #include <geometry_msgs/Twist.h>
  #include <visualization_msgs/Marker.h>
  #include <geometry_msgs/PoseStamped.h>
+ #include <nav_msgs/Odometry.h>
 
  #include <simulation_messages/Encoders.h>
  #include <simulation_messages/IRSensors.h>
@@ -80,7 +81,7 @@ protected:
 
   virtual void PerformMotion() const=0;
 
-  //virtual void CheckSensorStatus() const=0;
+  virtual void ComputeOdometry() const=0;
 
   virtual void PrepareMessages()=0;
 
@@ -88,6 +89,7 @@ protected:
   simulation_messages::IRSensors status;      //  No need of default initialization
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
+  nav_msgs::Odometry robotOdometry;           //  No need of default initialization
 
   visualization_msgs::Marker robotMarker;     //  No need of default initialization
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
@@ -102,7 +104,7 @@ private:
   //Node definition
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
-  ros::Rate robotFrameRate {100};
+  ros::Rate robotFrameRate {150};
 
   //Publisher and subscriber definition
   ros::Subscriber commandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
@@ -114,6 +116,7 @@ private:
   ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
   ros::Publisher IRSensors { nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1) } ;
+  ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 1) } ;
 
 };
 
@@ -146,6 +149,9 @@ void RobotBase::isMoving()
       //  that the robot performed due to the input
       PerformMotion() ;
 
+      //  Compute the odometry to show 
+      ComputeOdometry();
+
       //  Elaborate the data for being published
       PrepareMessages() ;
 
@@ -167,6 +173,11 @@ void RobotBase::isMoving()
       //  Publish the line strip for visualization
       RobotMarker.publish( generatedPath ) ;
 
+      //  Publish the computed odometry
+      Odometry.publish( robotOdometry ) ;
+
+      /*
+
       //  On demand sensor status computation
       simulation_messages::SensorStatus currentStatus;
       currentStatus.request.robotPosture = robotPosture.pose;
@@ -182,8 +193,11 @@ void RobotBase::isMoving()
       //  Publish the status of the IR sensors
       IRSensors.publish( currentStatus.response.status );
 
+      */
+
       //  Wait for next iteration
       robotFrameRate.sleep();
+
   }
 }
 

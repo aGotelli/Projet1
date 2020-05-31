@@ -27,7 +27,7 @@
   <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen">
   </node>
 
-  <node pkg="rosbag" type="record" name="simulation_recorder" args="--output-name=$(find simulation)/recorded_data/$(arg file_name) /simulation/EncodersReading /simulation/IRSensorsStatus /simulation/RobotPosture">
+  <node pkg="rosbag" type="record" name="simulation_recorder" args="--output-name=$(find data)/recorded_data/$(arg file_name) /simulation/EncodersReading /simulation/IRSensorsStatus /simulation/RobotPosture">
   </node>
 
   <group ns="simulation">
@@ -40,8 +40,18 @@
       <param name="actuator_max_speed"  value="$(arg w_max)"  />
     </node>
 
-    <!-- The sensor server -->
+    <!-- The sensor server
     <node pkg="simulation" type="simulation_sensor_server" name="sensor_server" output="screen">
+      <param name="x1_pos" value="$(arg sensor_right_x)" />
+      <param name="y1_pos" value="$(arg sensor_right_y)" />
+      <param name="x2_pos" value="$(arg sensor_left_x)" />
+      <param name="y2_pos" value="$(arg sensor_left_y)" />
+      <param name="x_spacing" value="$(arg x_spacing)" />
+      <param name="y_spacing" value="$(arg y_spacing)" />
+    </node> -->
+
+    <!-- The sensor server -->
+    <node pkg="simulation" type="simulation_sensor_server" name="sensor" output="screen">
       <param name="x1_pos" value="$(arg sensor_right_x)" />
       <param name="y1_pos" value="$(arg sensor_right_y)" />
       <param name="x2_pos" value="$(arg sensor_left_x)" />
@@ -57,7 +67,9 @@
   </group>
 
   <!-- Save the parameters -->
-  <rosparam command="dump" file="$(find simulation)/recorded_data/$(arg file_name).yaml"  />
+  <rosparam command="dump" file="$(find data)/recorded_data/$(arg file_name).yaml"  />
+
+
 
 
 </launch>

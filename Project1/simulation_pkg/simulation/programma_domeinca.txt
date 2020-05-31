@@ -1,0 +1,15 @@
+
+
+2) bisgna completare e aggiornare il report sulla versione 1
+
+3) bisogna implementare la linea dell'odometry
+
+
+
+~) documenta e initizia la versione 2
+
+6) il nodo per salvare
+
+7) templated function
+
+8) risolvi problema dei sensori non sempre accurati

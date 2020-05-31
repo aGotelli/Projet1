@@ -64,6 +64,9 @@ public:
   // Function to publish the robot position and odometry
   void PrepareMessages() override;
 
+  // Function to compute the odometry
+  void ComputeOdometry() const override;
+
   // Function to update the J matrix elements
   void UpdateMatrix() const;
 
@@ -71,8 +74,6 @@ public:
   void EnsureMaxSpeed() const;
 
 private:
-
-  friend class World;
 
   //  Powerfull structure for kinematic computations
   struct GeneralizedCorrdinates  {
@@ -96,6 +97,13 @@ private:
 
   };
 
+  struct Encoder {
+    Encoder()=default;
+
+    //  dots per wheel rotation
+    const int resolution {180};
+  };
+
   //  Matrix initialization
   const Eigen::Matrix2d InitMotorizationMatrix()
   {
@@ -109,6 +117,12 @@ private:
 
   // Generalized coordinates
   mutable GeneralizedCorrdinates q, q_dot;
+
+  //  Robot has its encoders
+  const Encoder encoders;
+
+  // Generalized coordinates for odometry
+  mutable GeneralizedCorrdinates q_odom, q_dot_odom;
 
   // Robot parameters
   const double trackGauge {0.2} ;           //  [m]
@@ -172,6 +186,26 @@ void Robot_2_0::PrepareMessages()
   wheelsAngles.phi_1f = q.phi_1f;
   wheelsAngles.phi_2f = q.phi_2f;
 
+  // Odometry : set the position
+  robotOdometry.pose.pose.position.x = q_odom.x;
+  robotOdometry.pose.pose.position.y = q_odom.y;
+
+  // Odometry : set the orientation
+  const auto quat_odom = utility::ToQuaternion( utility::EulerAngles(q_odom.theta) ) ;
+  robotOdometry.pose.pose.orientation.x = quat_odom.x;
+  robotOdometry.pose.pose.orientation.y = quat_odom.y;
+  robotOdometry.pose.pose.orientation.z = quat_odom.z;
+  robotOdometry.pose.pose.orientation.w = quat_odom.w;
+
+  // Odometry : set the velocity
+  robotOdometry.twist.twist.linear.x = q_dot_odom.x;
+  robotOdometry.twist.twist.linear.y = q_dot_odom.y;
+  robotOdometry.twist.twist.angular.z = q_dot_odom.theta;
+
+  // Odometry : set header
+  robotOdometry.header.stamp = currentTime;
+  robotOdometry.header.frame_id = "map";
+
 }
 
 
@@ -204,6 +238,24 @@ void Robot_2_0::EnsureMaxSpeed() const
   phi_dot /= scaleFactor;
 
   u = F.inverse()*phi_dot ;
+}
+
+
+void Robot_2_0::ComputeOdometry() const
+{
+  // Discretization of phi_1f and phi_2f
+  const Eigen::Vector2d phi_discretized( std::floor(q.phi_1f/encoders.resolution)*encoders.resolution,
+                                          std::floor(q.phi_2f/encoders.resolution)*encoders.resolution ) ;
+
+  // Discretization of the input
+  Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+
+  // Discretization of the state vector
+  q_dot_odom = J*U_discretized;
+
+  // Next iteration
+  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
+
 }
 
 

@@ -42,10 +42,6 @@ to the moving platform frame                                                    
       <param name="actuator_max_speed"  value="$(arg w_max)"  />
     </node>
 
-    <!-- The sensor server -->
-    <node pkg="simulation" type="simulation_sensor_server" name="sensor_server" output="screen">
-    </node>
-
     <!-- Launch Rviz -->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">
     </node>

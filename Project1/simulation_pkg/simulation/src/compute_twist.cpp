@@ -102,7 +102,7 @@ int main (int argc, char** argv)
     ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
 
 
-    ros::Rate rate(100);
+    ros::Rate rate(150);
     while (ros::ok()){
         ros::spinOnce();
 
