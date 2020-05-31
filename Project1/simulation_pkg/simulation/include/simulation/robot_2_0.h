@@ -70,6 +70,11 @@ public:
   // Function to control the max value of the velocities
   void EnsureMaxSpeed() const;
 
+  // Function to compute the odometry
+  void ComputeOdometry() const;
+
+
+
 private:
 
   friend class World;
@@ -110,6 +115,10 @@ private:
   // Generalized coordinates
   mutable GeneralizedCorrdinates q, q_dot;
 
+
+  // Generalized coordinates for odometry
+  mutable GeneralizedCorrdinates q_odom, q_dot_odom;
+
   // Robot parameters
   const double trackGauge {0.2} ;           //  [m]
   const double wheelRadius {0.05 };         //  [m]
@@ -120,13 +129,14 @@ private:
   // Input vector
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
-  //mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
-  mutable Eigen::MatrixXd J{3, 2} ;         //  The kinematic model
-
+  mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
+  
   const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
 
 
 };
+
+
 
 
 
@@ -170,6 +180,30 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.orientation.y = quat.y ;
   robotPosture.pose.orientation.z = quat.z ;
 
+
+  // Odometry : set the position
+  robotOdometry.pose.pose.position.x = x_odom;
+  robotOdometry.pose.pose.position.y = y_odom;
+  robotOdometry.pose.pose.position.z = 0.0;
+
+  // Odometry : set the orientation
+  const auto quat_odom = utility::ToQuaternion( utility::EulerAngles(q_odom.theta) ) ;
+  robotOdometry.pose.pose.orientation.x = quat_odom.x;
+  robotOdometry.pose.pose.orientation.y = quat_odom.y;
+  robotOdometry.pose.pose.orientation.z = quat_odom.z;
+  robotOdometry.pose.pose.orientation.w = quat_odom.w;
+
+  // Odometry : set the velocity
+  
+  robotOdometry.twist.twist.linear.x = q_dot_odom.x;
+  robotOdometry.twist.twist.linear.y = q_dot_odom.y;
+  robotOdometry.twist.twist.angular.z = q_dot_odom.theta;
+
+  // Odometry : set header 
+  robotOdometry.header.stamp = currentTime;
+  robotOdometry.header.frame_id = "Odometry";
+
+
 }
 
 
@@ -177,7 +211,7 @@ void Robot_2_0::PrepareMessages()
 
 void Robot_2_0::UpdateMatrix() const
 {
-  /*
+
   J <<            cos(q.theta)          ,                                    0                                ,
                   sin(q.theta)          ,                                    0                                ,
                       0                 ,                                    1                                ,
@@ -186,11 +220,6 @@ void Robot_2_0::UpdateMatrix() const
                   1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
           cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
 
-  */
-
-  J <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ;
 
 }
 
@@ -210,6 +239,26 @@ void Robot_2_0::EnsureMaxSpeed() const
 }
 
 
+
+
+void Robot_2_0::ComputeOdometry() const
+{
+  // Discretization of phi_1f and phi_2f
+  Eigen::Vector2d phi_discretized;
+  phi_discretized(0) = std::floor(phi_1f/resolution)*resolution;
+  phi_discretized(1) = std::floor(phi_2f/resolution)*resolution;
+
+  // Discretization of the input
+  Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+
+  // Discretization of the state vector
+  q_dot_odom = J*U_discretized;
+
+  // Next iteration
+  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
+}
+
+
 // Genralized coordinates' functions and operatos
 Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(const Eigen::VectorXd& result)
 {
@@ -217,10 +266,10 @@ Robot_2_0::GeneralizedCorrdinates Robot_2_0::GeneralizedCorrdinates::operator=(c
   this->x       = result(0) ;
   this->y       = result(1) ;
   this->theta   = result(2) ;
-  // this->beta_3c = result(3) ;
-  // this->phi_1f  = result(4) ;
-  // this->phi_2f  = result(5) ;
-  // this->phi_3c  = result(6) ;
+  this->beta_3c = result(3) ;
+  this->phi_1f  = result(4) ;
+  this->phi_2f  = result(5) ;
+  this->phi_3c  = result(6) ;
 
   return (*this) ;
 }
