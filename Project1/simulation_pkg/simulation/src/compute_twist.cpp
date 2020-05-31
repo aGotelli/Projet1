@@ -30,6 +30,8 @@
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
 
+#include "simulation/robot_2_0_characteristics.h"
+
 
 geometry_msgs::Twist twistToRobot;
 bool joystickIsReceived;

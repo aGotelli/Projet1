@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(simulation)
+project(simulation_description)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,14 +8,8 @@ project(simulation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   roscpp
-  sensor_msgs
   std_msgs
-  tf
-  nav_msgs
-  visualization_msgs
-  simulation_messages
 )
 
 ## System dependencies are found with CMake's conventions
@@ -75,7 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs
+#   std_msgs
 # )
 
 ################################################
@@ -109,8 +103,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES simulation
-#  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs visualization_marker
+#  LIBRARIES simulation_description
+#  CATKIN_DEPENDS roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -121,13 +115,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+# include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/simulation.cpp
+#   src/${PROJECT_NAME}/simulation_description.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -138,7 +132,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/simulation_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/simulation_description_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,36 +148,6 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
-
-##########################~ COMPUTE TWIST ~#####################################
-add_executable(${PROJECT_NAME}_compute_twist src/compute_twist.cpp)
-target_link_libraries(${PROJECT_NAME}_compute_twist	${catkin_LIBRARIES} )
-
-
-############################~ ROBOT(2, 0) ~#####################################
-add_executable(${PROJECT_NAME}_robot_2_0 src/robot_2_0.cpp)
-target_link_libraries(${PROJECT_NAME}_robot_2_0	${catkin_LIBRARIES} )
-
-
-############################~ FILE HANDLER ~###################################
-add_executable(${PROJECT_NAME}_file_handler src/file_handler.cpp)
-target_link_libraries(${PROJECT_NAME}_file_handler	${catkin_LIBRARIES} )
-
-
-################################~ SENSOR ~######################################
-add_executable(${PROJECT_NAME}_sensor src/sensor.cpp)
-target_link_libraries(${PROJECT_NAME}_sensor	${catkin_LIBRARIES} )
-
-
-
-
-
-
-
-
-
-
 
 #############
 ## Install ##
@@ -232,7 +196,7 @@ target_link_libraries(${PROJECT_NAME}_sensor	${catkin_LIBRARIES} )
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_simulation.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_simulation_description.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

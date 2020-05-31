@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /Marker1
         - /Odometry1
+        - /Odometry1/Shape1
       Splitter Ratio: 0.5
     Tree Height: 416
   - Class: rviz/Selection
@@ -60,7 +61,6 @@ Visualization Manager:
       Name: Marker
       Namespaces:
         RobotPath: true
-        RobotShape: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -78,6 +78,86 @@ Visualization Manager:
       Radius: 0.10000000149011612
       Reference Frame: <Fixed Frame>
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        joint_offset:
+          Value: true
+        left_wheel:
+          Value: true
+        map:
+          Value: true
+        moving_platform:
+          Value: true
+        right_wheel:
+          Value: true
+        track_gauge:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        map:
+          moving_platform:
+            joint_offset:
+              {}
+            left_wheel:
+              {}
+            right_wheel:
+              {}
+            track_gauge:
+              {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        castor_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        joint_offset:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        moving_platform:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        track_gauge:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -104,12 +184,12 @@ Visualization Manager:
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 255; 25; 0
-        Head Length: 0.30000001192092896
-        Head Radius: 0.10000000149011612
-        Shaft Length: 1
-        Shaft Radius: 0.05000000074505806
+        Head Length: 0.07999999821186066
+        Head Radius: 0.05000000074505806
+        Shaft Length: 0.10000000149011612
+        Shaft Radius: 0.019999999552965164
         Value: Arrow
-      Topic: RobotOdometry
+      Topic: /simulation/RobotOdometry
       Unreliable: false
       Value: true
   Enabled: true
@@ -140,25 +220,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.066532135009766
+      Distance: 2.267611503601074
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.42824533581733704
-        Y: -0.08553948998451233
-        Z: -0.15265588462352753
+        X: -1.3332643508911133
+        Y: 2.6837403774261475
+        Z: 1.4294835329055786
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8203979730606079
+      Pitch: 1.0153977870941162
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.37857723236084
+      Yaw: 5.6935858726501465
     Saved: ~
 Window Geometry:
   Displays:

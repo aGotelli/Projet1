@@ -57,6 +57,8 @@
  #include <visualization_msgs/Marker.h>
  #include <geometry_msgs/PoseStamped.h>
  #include <nav_msgs/Odometry.h>
+ #include <tf/transform_broadcaster.h>
+ #include <sensor_msgs/JointState.h>
 
  #include <simulation_messages/Encoders.h>
  #include <simulation_messages/IRSensors.h>
@@ -89,15 +91,19 @@ protected:
   simulation_messages::IRSensors status;      //  No need of default initialization
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
-  nav_msgs::Odometry robotOdometry;           //  No need of default initialization
+  tf::Transform movingPlatformFrame;
 
-  visualization_msgs::Marker robotMarker;     //  No need of default initialization
+  //visualization_msgs::Marker robotMarker;     //  No need of default initialization
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
 
   // Time handling
   ros::Time prevTime;
   ros::Time currentTime;
   ros::Duration timeElapsed;
+
+  sensor_msgs::JointState beta;
+
+
 
 private:
 
@@ -116,7 +122,11 @@ private:
   ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
   ros::Publisher IRSensors { nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1) } ;
-  ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 1) } ;
+  ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 10) } ;
+
+  tf::TransformBroadcaster br;
+
+  ros::Publisher castorJoint { nh_glob.advertise<sensor_msgs::JointState>("/joint_command", 1) } ;
 
 };
 
@@ -126,7 +136,7 @@ private:
 void RobotBase::isMoving()
 {
 
-  utility::InitMarker( robotMarker ) ;
+  //utility::InitMarker( robotMarker ) ;
 
   utility::InitLineStrip( generatedPath ) ;
 
@@ -149,14 +159,19 @@ void RobotBase::isMoving()
       //  that the robot performed due to the input
       PerformMotion() ;
 
-      //  Compute the odometry to show 
+      //  Compute the odometry to show
       ComputeOdometry();
 
       //  Elaborate the data for being published
       PrepareMessages() ;
 
+      br.sendTransform(tf::StampedTransform(movingPlatformFrame,
+                                                  ros::Time::now(),
+                                                  "map", "moving_platform"));
+
+
       //  Update the marker position for visualization
-      utility::UpdateMarker( robotPosture, robotMarker ) ;
+      //utility::UpdateMarker( robotPosture, robotMarker ) ;
 
       //  Update the line strip for visualization
       utility::UpdatePath( robotPosture, generatedPath ) ;
@@ -168,32 +183,31 @@ void RobotBase::isMoving()
       Encoders.publish( wheelsAngles );
 
       //  Publish the marker for visualization
-      RobotMarker.publish( robotMarker ) ;
+      //RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
       RobotMarker.publish( generatedPath ) ;
 
+      //  Publish the joint state
+      castorJoint.publish( beta );
+
+
+      //  Declare the message
+      nav_msgs::Odometry robotOdometry;
+
+      //  Stamp the current time
+      robotOdometry.header.stamp = currentTime;
+
+      //  Set the frames
+      robotOdometry.header.frame_id = "map";
+      robotOdometry.child_frame_id = "moving_platform";
+
+      //  Set the position
+      robotOdometry.pose.pose = robotPosture.pose;
+
       //  Publish the computed odometry
       Odometry.publish( robotOdometry ) ;
 
-      /*
-
-      //  On demand sensor status computation
-      simulation_messages::SensorStatus currentStatus;
-      currentStatus.request.robotPosture = robotPosture.pose;
-
-      if( !sensorsServer.exists() )
-        continue;   // No reason to do the following if the server does not exist yet
-
-      if( !sensorsServer.call( currentStatus )) {
-        ROS_WARN_STREAM("Failed to call the service");
-        continue;   // No reason to do the following if the call have failed
-      }
-
-      //  Publish the status of the IR sensors
-      IRSensors.publish( currentStatus.response.status );
-
-      */
 
       //  Wait for next iteration
       robotFrameRate.sleep();

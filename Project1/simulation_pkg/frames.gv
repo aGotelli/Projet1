@@ -1,0 +1,11 @@
+digraph G {
+"moving_platform" -> "track_gauge"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1590940389.077 sec old)\nBuffer length: 0.000 sec\n"];
+"map" -> "moving_platform"[label="Broadcaster: /simulation/robot_2_0\nAverage rate: 150.200 Hz\nMost recent transform: 1590940389.072 ( 0.005 sec old)\nBuffer length: 4.987 sec\n"];
+"moving_platform" -> "joint_offset"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1590940389.077 sec old)\nBuffer length: 0.000 sec\n"];
+"moving_platform" -> "left_wheel"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1590940389.077 sec old)\nBuffer length: 0.000 sec\n"];
+"moving_platform" -> "right_wheel"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1590940389.077 sec old)\nBuffer length: 0.000 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1590940389.077"[ shape=plaintext ] ;
+ }->"map";
+}

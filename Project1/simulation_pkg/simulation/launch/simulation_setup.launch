@@ -51,7 +51,7 @@
     </node> -->
 
     <!-- The sensor server -->
-    <node pkg="simulation" type="simulation_sensor_server" name="sensor" output="screen">
+    <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen">
       <param name="x1_pos" value="$(arg sensor_right_x)" />
       <param name="y1_pos" value="$(arg sensor_right_y)" />
       <param name="x2_pos" value="$(arg sensor_left_x)" />

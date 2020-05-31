@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot name="robot_2_0">
+
+<link name="moving_platform">
+</link>
+
+
+
+
+
+
+</robot>

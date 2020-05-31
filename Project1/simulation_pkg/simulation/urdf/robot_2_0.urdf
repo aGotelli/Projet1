@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<robot name="robot_2_0">
+
+    <link name="moving_platform">
+    </link>
+
+    <link name="track_gauge">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.02 0.4 0.02"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="left_wheel">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57075 0 0" />
+        <geometry>
+          <cylinder length="0.1" radius="0.05"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="right_wheel">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57075 0 0" />
+        <geometry>
+          <cylinder length="0.1" radius="0.05"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="joint_offset">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.4 0.02  0.02"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="castor_arm">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.08 0.5  0.02"/>
+        </geometry>
+        <material name="Cyan">
+          <color rgba="0 1.0 1.0 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+
+
+<!-- Joints -->
+
+    <joint name="attach_to_tf" type="fixed">
+      <parent link="moving_platform"/>
+      <child link="track_gauge"/>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+
+    <joint name="left_wheel_joint" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="moving_platform"/>
+      <child link="left_wheel"/>
+      <origin rpy="0 0 0" xyz="0 0.2 0"/>
+    </joint>
+
+    <joint name="right_wheel_joint" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="moving_platform"/>
+      <child link="right_wheel"/>
+      <origin rpy="0 0 0" xyz="0 -0.2 0"/>
+    </joint>
+
+    <joint name="joint_offset_joint" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="moving_platform"/>
+      <child link="joint_offset"/>
+      <origin rpy="0 0 0" xyz="-0.2 0 0"/>
+    </joint>
+
+    <joint name="castor_joint" type="revolute">
+      <limit lower="-1.57" upper="1.57" effort="10" velocity="3"/>
+      <parent link="joint_offset"/>
+      <child link="castor_arm"/>
+      <origin xyz="0 0 0" rpy="-0.04 0 0" />
+      <axis xyz="0 0 1" />
+    </joint>
+
+
+
+
+</robot>

@@ -38,6 +38,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
 
 #include <cmath>
 #include <iostream>
@@ -55,6 +56,20 @@ namespace utility
   Quaternion(const double _w, const double _x,
               const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
 
+    double w {1.0};
+    double x {0.0};
+    double y {0.0};
+    double z {0.0};
+  };
+
+  template<class QuaternionTemplated>
+  struct item_return {
+    item_return()=default;
+
+    item_return(const double _w, const double _x,
+                const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
+
+    typedef QuaternionTemplated type;
 
     double w {1.0};
     double x {0.0};
@@ -90,20 +105,32 @@ namespace utility
 
 
   //  Converting specified Eulers angles to a Quaterion
+  [[deprecated("use the templated one for more consistent code")]]
   Quaternion ToQuaternion(const double& yaw, const double& pitch, const double& roll); // yaw (Z), pitch (Y), roll (X)
 
 
   //  Function delagation allowing more user friendly interface
+  [[deprecated("use the templated one for more consistent code")]]
   inline Quaternion ToQuaternion(const EulerAngles angles) {return ToQuaternion( angles.yaw, angles.pitch, angles.roll); }
+
+  //  Converting specified Eulers angles to a Quaterion (generic)
+  template<class QuaternionTemplated>
+  typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch=0.0, const double roll=0.0);
 
 
   //  Converting a quatersion to Euler Angles
+  [[deprecated("use the templated one for more consistent code")]]
   EulerAngles ToEulerAngles(const Quaternion q);
 
   //  Converting a quatersion to Euler Angles
   inline EulerAngles ToEulerAngles(const geometry_msgs::Quaternion q) {return ToEulerAngles( Quaternion(q.w, q.x, q.y, q.z) ); }
 
-  //  Initialize a marker for the robot (remember to deprecate)
+  //  Converting a quatersion to Euler Angles
+  template<class QuaternionTemplated>
+  EulerAngles ToEulerAngles(const QuaternionTemplated& q);
+
+  //  Initialize a marker for the robot
+  [[deprecated("You should not use the visualization marker as the URDF is now available to use")]]
   void InitMarker(visualization_msgs::Marker& robotMarker);
 
 
@@ -112,6 +139,7 @@ namespace utility
 
 
   //  Used to upate the robot marker (remember to deprecate)
+  [[deprecated("You should not use the visualization marker as the URDF is now available to use")]]
   void UpdateMarker(const geometry_msgs::PoseStamped& robotPosture,
                             visualization_msgs::Marker& robotMarker );
 
@@ -132,6 +160,28 @@ namespace utility
 
 ///////////////////////////////////////////~ DECLARATION ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+
+  template<class QuaternionTemplated>
+  typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch, const double roll)
+  {
+
+      // Abbreviations for the various angular functions
+      double cy = cos(yaw * 0.5);
+      double sy = sin(yaw * 0.5);
+      double cp = cos(pitch * 0.5);
+      double sp = sin(pitch * 0.5);
+      double cr = cos(roll * 0.5);
+      double sr = sin(roll * 0.5);
+
+      QuaternionTemplated q;
+      q.w = cr * cp * cy + sr * sp * sy;
+      q.x = sr * cp * cy - cr * sp * sy;
+      q.y = cr * sp * cy + sr * cp * sy;
+      q.z = cr * cp * sy - sr * sp * cy;
+
+      return q;
+
+  }
 
 
 
@@ -159,6 +209,33 @@ namespace utility
 
   EulerAngles ToEulerAngles(const Quaternion q)
   // Quaternion converted to Euler Angles: yaw (Z), pitch (Y), roll (X)
+  {
+    EulerAngles angles;
+
+    // roll (x-axis rotation)
+    double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    angles.roll = std::atan2(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    double sinp = 2 * (q.w * q.y - q.z * q.x);
+    if (std::abs(sinp) >= 1)
+        angles.pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    else
+        angles.pitch = std::asin(sinp);
+
+    // yaw (z-axis rotation)
+    double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    angles.yaw = std::atan2(siny_cosp, cosy_cosp);
+
+    return angles;
+  }
+
+
+
+  template<class QuaternionTemplated>
+  EulerAngles ToEulerAngles(const QuaternionTemplated& q)
   {
     EulerAngles angles;
 

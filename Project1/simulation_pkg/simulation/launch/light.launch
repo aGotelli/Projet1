@@ -47,5 +47,10 @@ to the moving platform frame                                                    
     </node>
   </group>
 
+  <param name="robot_description" textfile="$(find simulation)/urdf/robot_2_0.urdf" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  </node>
+
 
 </launch>
