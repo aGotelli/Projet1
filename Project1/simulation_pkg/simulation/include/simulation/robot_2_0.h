@@ -111,7 +111,7 @@ private:
 
 
     GeneralizedCoordinates operator=(const GeneralizedCoordinates& equal);
-    //============================ AGGIUNGI REGOLA DEI CINQUE ==================
+
     GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
 
     GeneralizedCoordinates operator+(const GeneralizedCoordinates& addendum);
@@ -125,6 +125,13 @@ private:
 
     double beta_3c{0.0};
 
+  };
+
+  struct Encoders {
+    Encoders()=default;
+
+    //  dots per wheel rotation
+    const int resolution{180} ;
   };
 
   //  Matrix initialization
@@ -141,22 +148,23 @@ private:
   // Generalized coordinates
   mutable GeneralizedCoordinates q, q_dot;
 
-
   // Generalized coordinates for odometry
   mutable GeneralizedCoordinates q_odom, q_dot_odom;
 
+  const Encoders encoder;
+
   // Robot parameters
-  const double trackGauge {0.2} ;           //  [m]
-  const double wheelRadius {0.05 };         //  [m]
-  const double jointOffSet {0.4 };           //  [m]
-  const double castorArmLength {0.08 };      //  [m]
-  const double wMax { 10 };                 //  [RAD/s]
+  const double trackGauge {0.2} ;             //  [m]
+  const double wheelRadius {0.05 };           //  [m]
+  const double jointOffSet {0.4 };            //  [m]
+  const double castorArmLength {0.08 };       //  [m]
+  const double wMax { 10 };                   //  [RAD/s]
 
   // Input vector
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
   mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
-  
+
   const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
 
 
@@ -200,49 +208,31 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-<<<<<<< HEAD
+  //ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
+
+  odomPosture.pose.position.x = q_odom.x ;
+  odomPosture.pose.position.y = q_odom.y ;
+  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
+
 
   movingPlatformFrame.setOrigin( tf::Vector3(q.x, q.y, wheelRadius));
   tf::Quaternion quaternion;
   quaternion.setRPY(0.0, 0.0, q.theta);
   movingPlatformFrame.setRotation( quaternion );
 
-=======
-  //const auto quat = utility::ToQuaternion( q.theta, 0.0, 0.0 ) ;
-  const auto quat = utility::ToQuaternion( utility::EulerAngles(q.theta) ) ;
-  robotPosture.pose.orientation.w = quat.w ;
-  robotPosture.pose.orientation.x = quat.x ;
-  robotPosture.pose.orientation.y = quat.y ;
-  robotPosture.pose.orientation.z = quat.z ;
-
-
-  // Odometry : set the position
-  robotOdometry.pose.pose.position.x = x_odom;
-  robotOdometry.pose.pose.position.y = y_odom;
-  robotOdometry.pose.pose.position.z = 0.0;
->>>>>>> 1bb76e4570593a810e709e3318968a1b0b0f34c2
 
   //  Set the wheels angles message
   wheelsAngles.phi_1f = q_dot_odom.phi_1f;
   wheelsAngles.phi_2f = q_dot_odom.phi_2f;
 
-<<<<<<< HEAD
 
+  //  Set the angle of the castor joint
   beta.header.stamp = currentTime ;
   beta.name.push_back("castor_joint") ;
   beta.position.push_back(q.beta_3c) ;
-=======
-  // Odometry : set the velocity
-  
-  robotOdometry.twist.twist.linear.x = q_dot_odom.x;
-  robotOdometry.twist.twist.linear.y = q_dot_odom.y;
-  robotOdometry.twist.twist.angular.z = q_dot_odom.theta;
 
-  // Odometry : set header 
-  robotOdometry.header.stamp = currentTime;
-  robotOdometry.header.frame_id = "Odometry";
 
->>>>>>> 1bb76e4570593a810e709e3318968a1b0b0f34c2
+
 
 }
 
@@ -283,13 +273,14 @@ void Robot_2_0::EnsureMaxSpeed() const
 
 void Robot_2_0::ComputeOdometry() const
 {
+  ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
   // Discretization of phi_1f and phi_2f
-  Eigen::Vector2d phi_discretized;
-  phi_discretized(0) = std::floor(phi_1f/resolution)*resolution;
-  phi_discretized(1) = std::floor(phi_2f/resolution)*resolution;
+  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f/encoder.resolution)*encoder.resolution,
+                                          std::floor(q.phi_2f/encoder.resolution)*encoder.resolution ) ;
 
+  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
   // Discretization of the input
-  Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+  const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
 
   // Discretization of the state vector
   q_dot_odom = J*U_discretized;
@@ -318,9 +309,13 @@ Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(c
 
 Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(const GeneralizedCoordinates& equal)
 {
-  this->x = equal.x ;
-  this->y = equal.y ;
-  this->theta = equal.theta ;
+  this->x       = equal.x       ;
+  this->y       = equal.y       ;
+  this->theta   = equal.theta   ;
+  this->beta_3c = equal.beta_3c ;
+  this->phi_1f  = equal.phi_1f  ;
+  this->phi_2f  = equal.phi_2f  ;
+  this->phi_3c  = equal.phi_3c  ;
 
   return (*this) ;
 }
@@ -331,7 +326,11 @@ Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator+(c
 {
   this->x += addendum.x ;
   this->y += addendum.y ;
-  this->theta = utility::LimitAngle( this->theta + addendum.theta ) ;
+  this->theta   = utility::LimitAngle( this->theta    + addendum.theta    ) ;
+  this->beta_3c = utility::LimitAngle( this->beta_3c  + addendum.beta_3c  ) ;
+  this->phi_1f  = utility::LimitAngle( this->phi_1f   + addendum.phi_1f   ) ;
+  this->phi_2f  = utility::LimitAngle( this->phi_2f   + addendum.phi_2f   ) ;
+  this->phi_3c  = utility::LimitAngle( this->phi_3c   + addendum.phi_3c   ) ;
 
   return (*this) ;
 }
@@ -340,14 +339,13 @@ Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator+(c
 
 Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
 {
-  GeneralizedCoordinates delta;
-
-  //  Function called from a q_dot object, actually x, y, theta represents velocities
-  delta.x = x*timeElapsed.toSec() ;
-  delta.y = y*timeElapsed.toSec() ;
-  delta.theta = theta*timeElapsed.toSec() ;
-
-  return delta;
+  return GeneralizedCoordinates(x       *timeElapsed.toSec() ,
+                                y       *timeElapsed.toSec() ,
+                                theta   *timeElapsed.toSec() ,
+                                beta_3c *timeElapsed.toSec() ,
+                                phi_1f  *timeElapsed.toSec() ,
+                                phi_2f  *timeElapsed.toSec() ,
+                                phi_3c  *timeElapsed.toSec() ) ;
 }
 
 

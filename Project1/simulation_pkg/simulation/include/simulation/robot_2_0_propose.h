@@ -156,7 +156,49 @@ void Robot_2_0::PerformMotion() const
 
 }
 
+void Robot_2_0::ComputeOdometry() const
+{
+  // Discretization of phi_1f and phi_2f
+  const Eigen::Vector2d phi_discretized( std::floor(q.phi_1f/encoders.resolution)*encoders.resolution,
+                                          std::floor(q.phi_2f/encoders.resolution)*encoders.resolution ) ;
 
+  // Discretization of the input
+  Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+
+  // Discretization of the state vector
+  q_dot_odom = J*U_discretized;
+
+  // Next iteration
+  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
+
+}
+
+
+void Robot_2_0::EnsureMaxSpeed() const
+{
+
+  Eigen::Vector2d phi_dot = F*u;
+
+  const double scaleFactor = std::max(phi_dot(0), phi_dot(1)) > wMax ? std::max(phi_dot(0), phi_dot(1)) : 1 ;
+
+  phi_dot /= scaleFactor;
+
+  u = F.inverse()*phi_dot ;
+}
+
+
+void Robot_2_0::UpdateMatrix() const
+{
+
+  J <<            cos(q.theta)          ,                                    0                                ,
+                  sin(q.theta)          ,                                    0                                ,
+                      0                 ,                                    1                                ,
+        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
+                  1/wheelRadius         ,                         trackGauge/wheelRadius                      ,
+                  1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
+          cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
+
+}
 
 
 void Robot_2_0::PrepareMessages()
@@ -184,57 +226,6 @@ void Robot_2_0::PrepareMessages()
   beta.position.push_back(q.beta_3c) ;
 
 }
-
-
-
-
-void Robot_2_0::UpdateMatrix() const
-{
-
-  J <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ,
-        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
-                  1/wheelRadius         ,                         trackGauge/wheelRadius                      ,
-                  1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
-          cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
-
-
-}
-
-
-
-
-void Robot_2_0::EnsureMaxSpeed() const
-{
-
-  Eigen::Vector2d phi_dot = F*u;
-
-  const double scaleFactor = std::max(phi_dot(0), phi_dot(1)) > wMax ? std::max(phi_dot(0), phi_dot(1)) : 1 ;
-
-  phi_dot /= scaleFactor;
-
-  u = F.inverse()*phi_dot ;
-}
-
-
-void Robot_2_0::ComputeOdometry() const
-{
-  // Discretization of phi_1f and phi_2f
-  const Eigen::Vector2d phi_discretized( std::floor(q.phi_1f/encoders.resolution)*encoders.resolution,
-                                          std::floor(q.phi_2f/encoders.resolution)*encoders.resolution ) ;
-
-  // Discretization of the input
-  Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
-
-  // Discretization of the state vector
-  q_dot_odom = J*U_discretized;
-
-  // Next iteration
-  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
-
-}
-
 
 
 #endif //ROBOT_2_0_PROPOSE_H

@@ -90,6 +90,7 @@ protected:
   simulation_messages::Encoders wheelsAngles; //  No need of default initialization
   simulation_messages::IRSensors status;      //  No need of default initialization
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
+  geometry_msgs::PoseStamped odomPosture;     //  No need of default initialization
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
   tf::Transform movingPlatformFrame;
 
@@ -203,7 +204,7 @@ void RobotBase::isMoving()
       robotOdometry.child_frame_id = "moving_platform";
 
       //  Set the position
-      robotOdometry.pose.pose = robotPosture.pose;
+      robotOdometry.pose.pose = odomPosture.pose;
 
       //  Publish the computed odometry
       Odometry.publish( robotOdometry ) ;
