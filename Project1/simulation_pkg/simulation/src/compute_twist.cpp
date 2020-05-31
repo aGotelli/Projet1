@@ -30,7 +30,7 @@
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Joy.h"
 
-#include "simulation/robot_2_0_characteristics.h"
+#include "simulation/robot_2_0_propose.h"
 
 
 geometry_msgs::Twist twistToRobot;

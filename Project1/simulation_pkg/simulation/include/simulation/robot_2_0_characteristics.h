@@ -54,41 +54,82 @@ namespace robot_2_0 {
 
     GeneralizedCoordinates()=default;
 
-    GeneralizedCoordinates(GeneralizedCoordinates& other) :
-    GeneralizedCoordinates(other.x, other.y, other.theta, other.phi_1f,
-                                  other.phi_2f, other.phi_3c, other.beta_3c) {}
+    //  Copy Constructor
+    GeneralizedCoordinates(GeneralizedCoordinates& other);
 
+    //  Specific Constructor
     GeneralizedCoordinates(const double _x, const double _y, const double _theta,
                             const double _phi_1f, const double _phi_2f,
-                            const double _phi_3c, const double _beta_3c) :
-                            x(_x), y(_y), theta(_theta), phi_1f(_phi_1f),
-                            phi_2f(_phi_2f), beta_3c(_beta_3c) {}
+                            const double _phi_3c, const double _beta_3c);
 
     ~GeneralizedCoordinates() {/* no new objects to delete */}
 
-    //GeneralizedCoordinates(GeneralizedCoordinates&& other)=delete;
+    //  Move Constructor
+    GeneralizedCoordinates(GeneralizedCoordinates&& other) noexcept;
 
-    //GeneralizedCoordinates& operator=(GeneralizedCoordinates&& other)=delete;
+    //  Move Operator
+    GeneralizedCoordinates& operator=(GeneralizedCoordinates&& other) noexcept;
 
-
+    //  Operator Equal
     GeneralizedCoordinates operator=(const GeneralizedCoordinates& equal);
-    //============================ AGGIUNGI REGOLA DEI CINQUE ==================
-    GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
 
+    //  Operator Plus
     GeneralizedCoordinates operator+(const GeneralizedCoordinates& addendum);
 
+    //  Operator equal to an Eigen Vector
+    GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
 
+    //  Performing the computation of the dispacement
     GeneralizedCoordinates Integrate(const ros::Duration& timeElapsed);
 
+
+    //  Robot position and orientation
     double x{0.0}, y{0.0}, theta{0.0};
 
+    //  Wheels angles of rotation
     double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
 
+    //  Angle of the castor joint
     double beta_3c{0.0};
 
   };
 
+  //  Constructor for passing each member
+  GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates& other) :
+                            GeneralizedCoordinates(other.x, other.y, other.theta, other.phi_1f,
+                                                      other.phi_2f, other.phi_3c, other.beta_3c) {}
 
+  //  Specific Constructor
+  GeneralizedCoordinates::GeneralizedCoordinates(const double _x, const double _y, const double _theta,
+                                                  const double _phi_1f, const double _phi_2f,
+                                                  const double _phi_3c, const double _beta_3c) :
+                                                  x(_x), y(_y), theta(_theta), phi_1f(_phi_1f),
+                                                  phi_2f(_phi_2f), beta_3c(_beta_3c) {}
+
+  //  Move Constructor
+  GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates&& other) noexcept :
+                    x( other.x ),
+                    y( other.y ),
+                    theta( other.theta ),
+                    phi_1f( other.phi_1f ),
+                    phi_2f( other.phi_2f),
+                    phi_3c( other.phi_3c),
+                    beta_3c( other.beta_3c) {}
+
+
+  //  Move Operator
+  GeneralizedCoordinates& GeneralizedCoordinates::operator=(GeneralizedCoordinates&& other) noexcept
+  {
+    std::swap(x, other.x);
+    std::swap(y, other.y);
+    std::swap(theta, other.theta);
+    std::swap(beta_3c, other.beta_3c);
+    std::swap(phi_1f, other.phi_1f);
+    std::swap(phi_2f, other.phi_2f);
+    std::swap(phi_3c, other.phi_3c);
+
+    return *this;
+  }
 
 
   // Genralized coordinates' functions and operatos
@@ -141,21 +182,18 @@ namespace robot_2_0 {
 
   GeneralizedCoordinates GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
   {
-    GeneralizedCoordinates delta;
-
-    //  Function called from a q_dot object, actually x, y, theta represents velocities
-    delta.x       = x       *timeElapsed.toSec() ;
-    delta.y       = y       *timeElapsed.toSec() ;
-    delta.theta   = theta   *timeElapsed.toSec() ;
-    delta.beta_3c = beta_3c *timeElapsed.toSec() ;
-    delta.phi_1f  = phi_1f  *timeElapsed.toSec() ;
-    delta.phi_2f  = phi_2f  *timeElapsed.toSec() ;
-    delta.phi_3c  = phi_3c  *timeElapsed.toSec() ;
-
-    return delta;
+  
+    return GeneralizedCoordinates(x       *timeElapsed.toSec() ,
+                                  y       *timeElapsed.toSec() ,
+                                  theta   *timeElapsed.toSec() ,
+                                  beta_3c *timeElapsed.toSec() ,
+                                  phi_1f  *timeElapsed.toSec() ,
+                                  phi_2f  *timeElapsed.toSec() ,
+                                  phi_3c  *timeElapsed.toSec() ) ;
   }
 
-}
+
+} //  End of the namespace
 
 
 

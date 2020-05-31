@@ -96,20 +96,20 @@ int main (int argc, char** argv)
 	robotSensor.push_back( Sensor( x1, y1 ));
 	robotSensor.push_back( Sensor( x2, y2 ));
 
-  	// Declare your node's subscriptions and service clients
-  	ros::ServiceServer SensorService = nh_glob.advertiseService("CheckSensorStatus", ServiceCallback);
+	// Declare your node's subscriptions and service clients
+	ros::ServiceServer SensorService = nh_glob.advertiseService("CheckSensorStatus", ServiceCallback);
 
-		ros::Publisher markersPub = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
+	ros::Publisher markersPub = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
-  	ros::Rate rate(150);
+	ros::Rate rate(150);
 
-    while (ros::ok()) {
-        ros::spinOnce();
+  while (ros::ok()) {
+      ros::spinOnce();
 
-				markersPub.publish( sensorsActivations );
+			markersPub.publish( sensorsActivations );
 
-        rate.sleep();
-    }
+      rate.sleep();
+  }
 
 
 

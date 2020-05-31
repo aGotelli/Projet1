@@ -1,5 +1,5 @@
-#ifndef ROBOT_2_0_H
-#define ROBOT_2_0_H
+#ifndef ROBOT_2_0_PROPOSE_H
+#define ROBOT_2_0_PROPOSE_H
 
 /**
  * \file robot 2_0 file
@@ -45,6 +45,7 @@
 
 
 #include "simulation/robot_base.h"
+#include "simulation/robot_2_0_characteristics.h"
 #include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
 
 
@@ -75,56 +76,22 @@ public:
   // Function to publish the robot position and odometry
   void PrepareMessages() override;
 
+  // Function to compute the odometry
+  void ComputeOdometry() const override;
+
   // Function to update the J matrix elements
   void UpdateMatrix() const;
 
   // Function to control the max value of the velocities
   void EnsureMaxSpeed() const;
 
-  // Function to compute the odometry
-  void ComputeOdometry() const;
-
-
-
 private:
 
-  friend class World;
+  struct Encoder {
+    Encoder()=default;
 
-  //  Powerfull structure for kinematic computations
-  struct GeneralizedCoordinates  {
-
-    GeneralizedCoordinates()=default;
-
-    //GeneralizedCoordinates(GeneralizedCoordinates& other); define it later
-
-    GeneralizedCoordinates(const double _x, const double _y, const double _theta,
-                            const double _phi_1f, const double _phi_2f,
-                            const double _phi_3c, const double _beta_3c) :
-                            x(_x), y(_y), theta(_theta), phi_1f(_phi_1f),
-                            phi_2f(_phi_2f), beta_3c(_beta_3c) {}
-
-    ~GeneralizedCoordinates() {/* no new objects to delete */}
-
-    //GeneralizedCoordinates(GeneralizedCoordinates&& other)=delete;
-
-    //GeneralizedCoordinates& operator=(GeneralizedCoordinates&& other)=delete;
-
-
-    GeneralizedCoordinates operator=(const GeneralizedCoordinates& equal);
-    //============================ AGGIUNGI REGOLA DEI CINQUE ==================
-    GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
-
-    GeneralizedCoordinates operator+(const GeneralizedCoordinates& addendum);
-
-
-    GeneralizedCoordinates Integrate(const ros::Duration& timeElapsed);
-
-    double x{0.0}, y{0.0}, theta{0.0};
-
-    double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
-
-    double beta_3c{0.0};
-
+    //  dots per wheel rotation
+    const int resolution {180};
   };
 
   //  Matrix initialization
@@ -139,11 +106,13 @@ private:
   }
 
   // Generalized coordinates
-  mutable GeneralizedCoordinates q, q_dot;
-
+  mutable robot_2_0::GeneralizedCoordinates q, q_dot;
 
   // Generalized coordinates for odometry
-  mutable GeneralizedCoordinates q_odom, q_dot_odom;
+  mutable robot_2_0::GeneralizedCoordinates q_odom, q_dot_odom;
+
+  //  Robot has its encoders
+  const Encoder encoders;
 
   // Robot parameters
   const double trackGauge {0.2} ;           //  [m]
@@ -156,13 +125,11 @@ private:
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
   mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
-  
+
   const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
 
 
 };
-
-
 
 
 
@@ -194,55 +161,27 @@ void Robot_2_0::PerformMotion() const
 
 void Robot_2_0::PrepareMessages()
 {
+  //  Set robot posture PoseStamped message
   robotPosture.header.stamp = currentTime ;
-
   robotPosture.pose.position.x = q.x ;
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-<<<<<<< HEAD
 
   movingPlatformFrame.setOrigin( tf::Vector3(q.x, q.y, wheelRadius));
   tf::Quaternion quaternion;
   quaternion.setRPY(0.0, 0.0, q.theta);
   movingPlatformFrame.setRotation( quaternion );
 
-=======
-  //const auto quat = utility::ToQuaternion( q.theta, 0.0, 0.0 ) ;
-  const auto quat = utility::ToQuaternion( utility::EulerAngles(q.theta) ) ;
-  robotPosture.pose.orientation.w = quat.w ;
-  robotPosture.pose.orientation.x = quat.x ;
-  robotPosture.pose.orientation.y = quat.y ;
-  robotPosture.pose.orientation.z = quat.z ;
-
-
-  // Odometry : set the position
-  robotOdometry.pose.pose.position.x = x_odom;
-  robotOdometry.pose.pose.position.y = y_odom;
-  robotOdometry.pose.pose.position.z = 0.0;
->>>>>>> 1bb76e4570593a810e709e3318968a1b0b0f34c2
 
   //  Set the wheels angles message
   wheelsAngles.phi_1f = q_dot_odom.phi_1f;
   wheelsAngles.phi_2f = q_dot_odom.phi_2f;
 
-<<<<<<< HEAD
 
   beta.header.stamp = currentTime ;
   beta.name.push_back("castor_joint") ;
   beta.position.push_back(q.beta_3c) ;
-=======
-  // Odometry : set the velocity
-  
-  robotOdometry.twist.twist.linear.x = q_dot_odom.x;
-  robotOdometry.twist.twist.linear.y = q_dot_odom.y;
-  robotOdometry.twist.twist.angular.z = q_dot_odom.theta;
-
-  // Odometry : set header 
-  robotOdometry.header.stamp = currentTime;
-  robotOdometry.header.frame_id = "Odometry";
-
->>>>>>> 1bb76e4570593a810e709e3318968a1b0b0f34c2
 
 }
 
@@ -279,14 +218,11 @@ void Robot_2_0::EnsureMaxSpeed() const
 }
 
 
-
-
 void Robot_2_0::ComputeOdometry() const
 {
   // Discretization of phi_1f and phi_2f
-  Eigen::Vector2d phi_discretized;
-  phi_discretized(0) = std::floor(phi_1f/resolution)*resolution;
-  phi_discretized(1) = std::floor(phi_2f/resolution)*resolution;
+  const Eigen::Vector2d phi_discretized( std::floor(q.phi_1f/encoders.resolution)*encoders.resolution,
+                                          std::floor(q.phi_2f/encoders.resolution)*encoders.resolution ) ;
 
   // Discretization of the input
   Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
@@ -296,60 +232,9 @@ void Robot_2_0::ComputeOdometry() const
 
   // Next iteration
   q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
-}
 
-
-// Genralized coordinates' functions and operatos
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(const Eigen::VectorXd& result)
-{
-
-  this->x       = result(0) ;
-  this->y       = result(1) ;
-  this->theta   = result(2) ;
-  this->beta_3c = result(3) ;
-  this->phi_1f  = result(4) ;
-  this->phi_2f  = result(5) ;
-  this->phi_3c  = result(6) ;
-
-  return (*this) ;
 }
 
 
 
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(const GeneralizedCoordinates& equal)
-{
-  this->x = equal.x ;
-  this->y = equal.y ;
-  this->theta = equal.theta ;
-
-  return (*this) ;
-}
-
-
-
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator+(const GeneralizedCoordinates& addendum)
-{
-  this->x += addendum.x ;
-  this->y += addendum.y ;
-  this->theta = utility::LimitAngle( this->theta + addendum.theta ) ;
-
-  return (*this) ;
-}
-
-
-
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
-{
-  GeneralizedCoordinates delta;
-
-  //  Function called from a q_dot object, actually x, y, theta represents velocities
-  delta.x = x*timeElapsed.toSec() ;
-  delta.y = y*timeElapsed.toSec() ;
-  delta.theta = theta*timeElapsed.toSec() ;
-
-  return delta;
-}
-
-
-
-#endif //ROBOT_2_0_H
+#endif //ROBOT_2_0_PROPOSE_H
