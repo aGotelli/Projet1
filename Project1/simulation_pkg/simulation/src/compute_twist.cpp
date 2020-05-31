@@ -82,6 +82,8 @@ buttons: [1, 2, 3, 4, L1, R1, L2, R2, SELECT, START]
 }
 
 
+
+
 int main (int argc, char** argv)
 {
 
@@ -100,10 +102,10 @@ int main (int argc, char** argv)
     ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
 
 
-    ros::Rate rate(100);
+    ros::Rate rate(150);
     while (ros::ok()){
         ros::spinOnce();
-        
+
         // Not really much to do here..
         if( !joystickIsReceived )
           continue;

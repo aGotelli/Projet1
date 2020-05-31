@@ -6,7 +6,6 @@
  * \date 28/05/2020
  *
  * \param[in]
-    world param : x_spacing, y_spacing
     robot param : track_gauge, wheel_radius, joint_offset, castor_arm, actuator_max_speed
  *
  * Subscribes to: <BR>
@@ -16,8 +15,19 @@
  *    °
  *
  * Description
-            The aim of this file is to move the robot. So it contains all the
+              The aim of this file is to move the robot. So it contains all the
             information regarding the world and the robot.
+
+              In this executable there is just the collection of the parameters.
+            These are used to initialize the robot class and then all the
+            computations are embedded in member functions.
+
+              The idea is that, as the simulation is based on two main parts:
+            the robot kinematic and the interface with the R.O.S. environment;
+            they should be separated. This is done with the use of two header
+            files. The class Robot_2_0 contains all the kinematic operations to
+            obtain data from the simulation. Meanwhile the base class RobotBase
+            provides all the R.O.S. interfaces.
  *
  */
 

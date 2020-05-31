@@ -266,7 +266,7 @@ namespace utility
     generatedPath.pose.orientation.z = 0.0 ;
 
     // LINE_STRIP markers use only the x component of scale, for the line width
-    generatedPath.scale.x = 0.1;
+    generatedPath.scale.x = 0.05;
 
     //  Set the line color
     generatedPath.color.r = 0.0f;
@@ -350,7 +350,7 @@ namespace utility
 
 
     // Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
-    sensorMarker.type = visualization_msgs::Marker::SPHERE;
+    sensorMarker.type = visualization_msgs::Marker::CYLINDER;
 
 
     // Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
@@ -367,9 +367,9 @@ namespace utility
     sensorMarker.pose.position.y = point.y ;
 
     //  Set the marker scale
-    sensorMarker.scale.x = 0.1;
-    sensorMarker.scale.y = 0.1;
-    sensorMarker.scale.z = 0.1;
+    sensorMarker.scale.x = 0.01;
+    sensorMarker.scale.y = 0.01;
+    sensorMarker.scale.z = 0.5;
 
     //  Set the marker color
     switch ( markerColor ) {

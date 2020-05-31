@@ -1,0 +1,7 @@
+
+
+1) posizione delle ruore viaggia male (scatti)
+2) dopo un po di marker è lento
+3) a volte salta qualche misura
+4) qualche indizio per fare il unit testing?
+5) dopo un pò rviz crasha
