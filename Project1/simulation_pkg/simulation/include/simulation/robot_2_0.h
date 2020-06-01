@@ -165,11 +165,15 @@ void Robot_2_0::ComputeOdometry() const
   //ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
   // Discretization of phi_1f and phi_2f
 
-  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*180/M_PI/encoder.resolution*encoder.resolution)*M_PI/180,
-                                          std::floor(q.phi_2f*180/M_PI/encoder.resolution*encoder.resolution)*M_PI/180 ) ;
+  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*/encoder.resolution*encoder.resolution),
+                                          std::floor(q.phi_2f*/encoder.resolution*encoder.resolution) ) ;
 
 
+<<<<<<< HEAD
 
+=======
+  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized*180/M_PI ) ;
+>>>>>>> d311f18d921dba15e1b72d6aaf3c4117e1ce39b8
   // Discretization of the input
   const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
 
