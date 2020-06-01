@@ -160,39 +160,24 @@ void Robot_2_0::PerformMotion() const
 }
 
 
-
-
-void Robot_2_0::PrepareMessages()
+void Robot_2_0::ComputeOdometry() const
 {
-  robotPosture.header.stamp = currentTime ;
+  ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
+  // Discretization of phi_1f and phi_2f
 
-  robotPosture.pose.position.x = q.x ;
-  robotPosture.pose.position.y = q.y ;
-  robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
-
-  //ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
-
-  odomPosture.pose.position.x = q_odom.x ;
-  odomPosture.pose.position.y = q_odom.y ;
-  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
+  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*180/M_PI/encoder.resolution*encoder.resolution),
+                                          std::floor(q.phi_2f*180/M_PI/encoder.resolution*encoder.resolution) ) ;
 
 
-  movingPlatformFrame.setOrigin( tf::Vector3(q.x, q.y, wheelRadius));
-  tf::Quaternion quaternion;
-  quaternion.setRPY(0.0, 0.0, q.theta);
-  movingPlatformFrame.setRotation( quaternion );
+  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
+  // Discretization of the input
+  const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
 
+  // Discretization of the state vector
+  q_dot_odom = J*U_discretized;
 
-  //  Set the wheels angles message
-  wheelsAngles.phi_1f = q_dot_odom.phi_1f;
-  wheelsAngles.phi_2f = q_dot_odom.phi_2f;
-
-
-  //  Set the angle of the castor joint
-  beta.header.stamp = currentTime ;
-  beta.name.push_back("castor_joint") ;
-  beta.position.push_back(q.beta_3c) ;
-
+  // Next iteration
+  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
 }
 
 
@@ -232,32 +217,47 @@ void Robot_2_0::EnsureMaxSpeed() const
 
 
 
-void Robot_2_0::ComputeOdometry() const
+
+
+
+
+
+void Robot_2_0::PrepareMessages()
 {
-  ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
-  // Discretization of phi_1f and phi_2f
-<<<<<<< HEAD
-  // const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f/encoder.resolution)*encoder.resolution,
-  //                                         std::floor(q.phi_2f/encoder.resolution)*encoder.resolution ) ;
+  robotPosture.header.stamp = currentTime ;
 
-  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*encoder.resolution/M_PI)*M_PI,
-                                          std::floor(q.phi_2f*encoder.resolution/M_PI)*M_PI ) ;
+  robotPosture.pose.position.x = q.x ;
+  robotPosture.pose.position.y = q.y ;
+  robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-=======
-  const Eigen::Vector2d phi_discretized ( std::floor(std::abs(q.phi_1f/encoder.resolution)*encoder.resolution),
-                                          std::floor(std::abs(q.phi_2f/encoder.resolution)*encoder.resolution) ) ;
->>>>>>> c617241868525846f977f0ea89a4392ac3426cbf
+  //ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
 
-  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
-  // Discretization of the input
-  const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+  odomPosture.pose.position.x = q_odom.x ;
+  odomPosture.pose.position.y = q_odom.y ;
+  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
 
-  // Discretization of the state vector
-  q_dot_odom = J*U_discretized;
 
-  // Next iteration
-  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
+  movingPlatformFrame.setOrigin( tf::Vector3(q.x, q.y, wheelRadius));
+  tf::Quaternion quaternion;
+  quaternion.setRPY(0.0, 0.0, q.theta);
+  movingPlatformFrame.setRotation( quaternion );
+
+
+  //  Set the wheels angles message
+  wheelsAngles.phi_1f = q_dot_odom.phi_1f;
+  wheelsAngles.phi_2f = q_dot_odom.phi_2f;
+
+
+  //  Set the angle of the castor joint
+  beta.header.stamp = currentTime ;
+  beta.name.push_back("castor_joint") ;
+  beta.position.push_back(q.beta_3c) ;
+
 }
+
+
+
+
 
 
 
