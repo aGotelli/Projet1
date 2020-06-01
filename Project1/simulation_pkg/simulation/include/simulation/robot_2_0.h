@@ -5,8 +5,8 @@
  * \file robot 2_0 file
  * \brief contains the model of the robot
  * \author Bianca & Andrea
- * \version 0.1
- * \date 28/05/2020
+ * \version 0.2
+ * \date 01/06/2020
  *
  * \param[in]
  *
@@ -45,6 +45,8 @@
 
 
 #include "simulation/robot_base.h"
+#include "simulation/robot_2_0_generalizedcoord.h"
+
 #include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
 
 
@@ -88,45 +90,6 @@ public:
 
 private:
 
-  friend class World;
-
-  //  Powerfull structure for kinematic computations
-  struct GeneralizedCoordinates  {
-
-    GeneralizedCoordinates()=default;
-
-    //GeneralizedCoordinates(GeneralizedCoordinates& other); define it later
-
-    GeneralizedCoordinates(const double _x, const double _y, const double _theta,
-                            const double _phi_1f, const double _phi_2f,
-                            const double _phi_3c, const double _beta_3c) :
-                            x(_x), y(_y), theta(_theta), phi_1f(_phi_1f),
-                            phi_2f(_phi_2f), beta_3c(_beta_3c) {}
-
-    ~GeneralizedCoordinates() {/* no new objects to delete */}
-
-    //GeneralizedCoordinates(GeneralizedCoordinates&& other)=delete;
-
-    //GeneralizedCoordinates& operator=(GeneralizedCoordinates&& other)=delete;
-
-
-    GeneralizedCoordinates operator=(const GeneralizedCoordinates& equal);
-
-    GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
-
-    GeneralizedCoordinates operator+(const GeneralizedCoordinates& addendum);
-
-
-    GeneralizedCoordinates Integrate(const ros::Duration& timeElapsed);
-
-    double x{0.0}, y{0.0}, theta{0.0};
-
-    double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
-
-    double beta_3c{0.0};
-
-  };
-
   struct Encoders {
     Encoders()=default;
 
@@ -146,10 +109,10 @@ private:
   }
 
   // Generalized coordinates
-  mutable GeneralizedCoordinates q, q_dot;
+  mutable robot_2_0::GeneralizedCoordinates q, q_dot;
 
   // Generalized coordinates for odometry
-  mutable GeneralizedCoordinates q_odom, q_dot_odom;
+  mutable robot_2_0::GeneralizedCoordinates q_odom, q_dot_odom;
 
   const Encoders encoder;
 
@@ -169,7 +132,6 @@ private:
 
 
 };
-
 
 
 
@@ -231,11 +193,7 @@ void Robot_2_0::PrepareMessages()
   beta.name.push_back("castor_joint") ;
   beta.position.push_back(q.beta_3c) ;
 
-
-
-
 }
-
 
 
 
@@ -278,12 +236,17 @@ void Robot_2_0::ComputeOdometry() const
 {
   ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
   // Discretization of phi_1f and phi_2f
+<<<<<<< HEAD
   // const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f/encoder.resolution)*encoder.resolution,
   //                                         std::floor(q.phi_2f/encoder.resolution)*encoder.resolution ) ;
 
   const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*encoder.resolution/M_PI)*M_PI,
                                           std::floor(q.phi_2f*encoder.resolution/M_PI)*M_PI ) ;
 
+=======
+  const Eigen::Vector2d phi_discretized ( std::floor(std::abs(q.phi_1f/encoder.resolution)*encoder.resolution),
+                                          std::floor(std::abs(q.phi_2f/encoder.resolution)*encoder.resolution) ) ;
+>>>>>>> c617241868525846f977f0ea89a4392ac3426cbf
 
   ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
   // Discretization of the input
@@ -294,65 +257,6 @@ void Robot_2_0::ComputeOdometry() const
 
   // Next iteration
   q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
-}
-
-
-// Genralized coordinates' functions and operatos
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(const Eigen::VectorXd& result)
-{
-
-  this->x       = result(0) ;
-  this->y       = result(1) ;
-  this->theta   = result(2) ;
-  this->beta_3c = result(3) ;
-  this->phi_1f  = result(4) ;
-  this->phi_2f  = result(5) ;
-  this->phi_3c  = result(6) ;
-
-  return (*this) ;
-}
-
-
-
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator=(const GeneralizedCoordinates& equal)
-{
-  this->x       = equal.x       ;
-  this->y       = equal.y       ;
-  this->theta   = equal.theta   ;
-  this->beta_3c = equal.beta_3c ;
-  this->phi_1f  = equal.phi_1f  ;
-  this->phi_2f  = equal.phi_2f  ;
-  this->phi_3c  = equal.phi_3c  ;
-
-  return (*this) ;
-}
-
-
-
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::operator+(const GeneralizedCoordinates& addendum)
-{
-  this->x += addendum.x ;
-  this->y += addendum.y ;
-  this->theta   = utility::LimitAngle( this->theta    + addendum.theta    ) ;
-  this->beta_3c = utility::LimitAngle( this->beta_3c  + addendum.beta_3c  ) ;
-  this->phi_1f  = utility::LimitAngle( this->phi_1f   + addendum.phi_1f   ) ;
-  this->phi_2f  = utility::LimitAngle( this->phi_2f   + addendum.phi_2f   ) ;
-  this->phi_3c  = utility::LimitAngle( this->phi_3c   + addendum.phi_3c   ) ;
-
-  return (*this) ;
-}
-
-
-
-Robot_2_0::GeneralizedCoordinates Robot_2_0::GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
-{
-  return GeneralizedCoordinates(x       *timeElapsed.toSec() ,
-                                y       *timeElapsed.toSec() ,
-                                theta   *timeElapsed.toSec() ,
-                                beta_3c *timeElapsed.toSec() ,
-                                phi_1f  *timeElapsed.toSec() ,
-                                phi_2f  *timeElapsed.toSec() ,
-                                phi_3c  *timeElapsed.toSec() ) ;
 }
 
 
