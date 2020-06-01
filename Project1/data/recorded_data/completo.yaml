@@ -1,0 +1,2 @@
+robot_2_0: {actuator_max_speed: 10.0, castor_arm: 0.08, joint_offset: 0.4, track_gauge: 0.2,
+  wheel_radius: 0.05}

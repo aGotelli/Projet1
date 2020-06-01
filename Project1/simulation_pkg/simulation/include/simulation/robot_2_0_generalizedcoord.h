@@ -67,6 +67,9 @@ namespace robot_2_0 {
     //  Operator equal to an Eigen Vector
     GeneralizedCoordinates operator=(const Eigen::VectorXd& result);
 
+    //  Operator equal to an Eigen Vector
+    GeneralizedCoordinates operator+(const Eigen::VectorXd& result);
+
     //  Performing the computation of the dispacement
     GeneralizedCoordinates Integrate(const ros::Duration& timeElapsed);
 
@@ -131,6 +134,22 @@ namespace robot_2_0 {
     this->phi_1f  = result(4) ;
     this->phi_2f  = result(5) ;
     this->phi_3c  = result(6) ;
+
+    return (*this) ;
+  }
+
+
+  // Genralized coordinates' functions and operatos
+  GeneralizedCoordinates GeneralizedCoordinates::operator+(const Eigen::VectorXd& result)
+  {
+
+    this->x       += result(0) ;
+    this->y       += result(1) ;
+    this->theta   = utility::LimitAngle( this->theta    + result(2)  ) ;
+    this->beta_3c = utility::LimitAngle( this->beta_3c  + result(3)  ) ;
+    this->phi_1f  = utility::LimitAngle( this->phi_1f   + result(4)  ) ;
+    this->phi_2f  = utility::LimitAngle( this->phi_2f   + result(5)  ) ;
+    this->phi_3c  = utility::LimitAngle( this->phi_3c   + result(6)  ) ;
 
     return (*this) ;
   }

@@ -56,10 +56,10 @@ class Robot_2_0 : public RobotBase {
 public:
   Robot_2_0()=default;
 
-  Robot_2_0(const double _trackGauge, const double _wheelRadius,
+  Robot_2_0(const double _frontAxle, const double _wheelRadius,
             const double _jointOffSet, const double _castorArmLength,
             const double _wMax) :
-            trackGauge(_trackGauge),
+            frontAxle(_frontAxle),
             wheelRadius(_wheelRadius),
             jointOffSet(_jointOffSet),
             castorArmLength(_castorArmLength),
@@ -95,18 +95,8 @@ private:
 
     //  dots per wheel rotation
     const int resolution{180} ;
+
   };
-
-  //  Matrix initialization
-  const Eigen::Matrix2d InitMotorizationMatrix()
-  {
-    Eigen::Matrix2d f;
-
-    f <<        wheelRadius/2,                  wheelRadius/2,
-          wheelRadius/(2*trackGauge),   -wheelRadius/(2*trackGauge);
-
-    return f;
-  }
 
   // Generalized coordinates
   mutable robot_2_0::GeneralizedCoordinates q, q_dot;
@@ -117,7 +107,7 @@ private:
   const Encoders encoder;
 
   // Robot parameters
-  const double trackGauge {0.2} ;             //  [m]
+  const double frontAxle {0.2} ;              //  [m]
   const double wheelRadius {0.05 };           //  [m]
   const double jointOffSet {0.4 };            //  [m]
   const double castorArmLength {0.08 };       //  [m]
@@ -126,11 +116,11 @@ private:
   // Input vector
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
-  mutable Eigen::MatrixXd J{7, 2} ;         //  The kinematic model
-
-  const Eigen::Matrix2d F { InitMotorizationMatrix() } ;
+  mutable Eigen::MatrixXd S{7, 2} ;         //  The kinematic model
 
 
+  mutable Eigen::Vector2d currentReading{0, 0};
+  mutable Eigen::Vector2d previusReading{0, 0};
 };
 
 
@@ -140,6 +130,8 @@ private:
 
 void Robot_2_0::ComputeInput() const
 {
+  UpdateMatrix();
+
   u(0) = twistReceived.linear.x;
   u(1) = twistReceived.angular.z;
 
@@ -151,9 +143,8 @@ void Robot_2_0::ComputeInput() const
 
 void Robot_2_0::PerformMotion() const
 {
-  UpdateMatrix();
 
-  q_dot = J*u;
+  q_dot = S*u;
 
   q = q + q_dot.Integrate(timeElapsed);
 
@@ -162,26 +153,16 @@ void Robot_2_0::PerformMotion() const
 
 void Robot_2_0::ComputeOdometry() const
 {
-  //ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
-  // Discretization of phi_1f and phi_2f
 
-  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*/encoder.resolution*encoder.resolution),
-                                          std::floor(q.phi_2f*/encoder.resolution*encoder.resolution) ) ;
+  currentReading[0] =  std::floor( q.phi_1f*encoder.resolution*M_PI/180 );
+  currentReading[1] =  std::floor( q.phi_2f*encoder.resolution*M_PI/180 );
 
+  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*(currentReading - previusReading)/(encoder.resolution*M_PI/180) ;
 
-<<<<<<< HEAD
+  q_odom = q_odom + S*d_input;
 
-=======
-  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized*180/M_PI ) ;
->>>>>>> d311f18d921dba15e1b72d6aaf3c4117e1ce39b8
-  // Discretization of the input
-  const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
+  previusReading = currentReading ;
 
-  // Discretization of the state vector
-  q_dot_odom = J*U_discretized;
-
-  // Next iteration
-  q_odom = q_odom + q_dot_odom.Integrate(timeElapsed);
 }
 
 
@@ -189,12 +170,12 @@ void Robot_2_0::ComputeOdometry() const
 void Robot_2_0::UpdateMatrix() const
 {
 
-  J <<            cos(q.theta)          ,                                    0                                ,
+  S <<            cos(q.theta)          ,                                    0                                ,
                   sin(q.theta)          ,                                    0                                ,
                       0                 ,                                    1                                ,
         -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
-                  1/wheelRadius         ,                         trackGauge/wheelRadius                      ,
-                  1/wheelRadius         ,                        -trackGauge/wheelRadius                      ,
+                  1/wheelRadius         ,                          frontAxle/wheelRadius                      ,
+                  1/wheelRadius         ,                         -frontAxle/wheelRadius                      ,
           cos(q.beta_3c)/wheelRadius    ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
 
 
@@ -206,15 +187,15 @@ void Robot_2_0::UpdateMatrix() const
 void Robot_2_0::EnsureMaxSpeed() const
 {
 
-  Eigen::Vector2d phi_dot = F*u;
+  Eigen::Vector2d phi_dot = S.block<2,2>(4,0)*u;
 
-  const double scaleFactor = std::max(phi_dot(0), phi_dot(1)) > wMax ? std::max(phi_dot(0), phi_dot(1)) : 1 ;
+  const double scaleFactor = Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff() > wMax ?
+                              Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff()/wMax : 1 ;
 
   phi_dot /= scaleFactor;
 
-  u = F.inverse()*phi_dot ;
+  u = S.block<2,2>(4,0).inverse()*phi_dot ;
 }
-
 
 
 
@@ -234,7 +215,7 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-  
+
 
   odomPosture.pose.position.x = q_odom.x ;
   odomPosture.pose.position.y = q_odom.y ;
@@ -248,8 +229,8 @@ void Robot_2_0::PrepareMessages()
 
 
   //  Set the wheels angles message
-  wheelsAngles.phi_1f = q_dot_odom.phi_1f;
-  wheelsAngles.phi_2f = q_dot_odom.phi_2f;
+  wheelsAngles.phi_1f = q_odom.phi_1f;
+  wheelsAngles.phi_2f = q_odom.phi_2f;
 
 
   //  Set the angle of the castor joint
