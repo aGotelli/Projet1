@@ -1,12 +1,12 @@
-#ifndef ROBOT_2_0_CHARACTERISTICS_H
-#define ROBOT_2_0_CHARACTERISTICS_H
+#ifndef ROBOT_2_0_GENERALIZEDCOORD_H
+#define ROBOT_2_0_GENERALIZEDCOORD_H
 
 /**
  * \file robot 2_0 file
- * \brief contains the model of the robot
+ * \brief generalized coordinates of the robot
  * \author Bianca & Andrea
  * \version 0.1
- * \date 28/05/2020
+ * \date 01/06/2020
  *
  * \param[in]
  *
@@ -17,21 +17,9 @@
  *    °
  *
  * Description
-            This file contains all the functions related to the simulation of the robot motion.
-          The aim is to get information regarding the robot position and velocity and regarding
-          the state of the sensors. So the kinematic of the robot is defined by the functions
-          and method implemented here.
-
-            First the imput is computed from the twist message, and the max speed
-          of the wheels in ensured to both. Then with the knowledge of the input,
-          the matrix which represents the kinematic model is updated and used to
-          obain the derivative of the generalized robot coordinates.
-
-            Once the derivative of the robot generalized coordinates is computed
-          it is necessary to perform and integration over the time elapsed from
-          the last one (so it is more like to compute a displacement). Then the
-          displacement is added to the current value so all the coordinates are
-          updated.
+            This file contains everything that is related to the generalized coordinates
+          of the robot, that are used to compute the kinematic model.
+          The generalized coordinates is a powerfull structure for kinematic computations.
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -182,7 +170,7 @@ namespace robot_2_0 {
 
   GeneralizedCoordinates GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
   {
-  
+
     return GeneralizedCoordinates(x       *timeElapsed.toSec() ,
                                   y       *timeElapsed.toSec() ,
                                   theta   *timeElapsed.toSec() ,
@@ -199,4 +187,4 @@ namespace robot_2_0 {
 
 
 
-#endif //ROBOT_2_0_CHARACTERISTICS_H
+#endif //ROBOT_2_0_GENERALIZEDCOORD_H
