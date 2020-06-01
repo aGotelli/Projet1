@@ -271,12 +271,19 @@ void Robot_2_0::EnsureMaxSpeed() const
 
 
 
+
+
+
 void Robot_2_0::ComputeOdometry() const
 {
   ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
   // Discretization of phi_1f and phi_2f
-  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f/encoder.resolution)*encoder.resolution,
-                                          std::floor(q.phi_2f/encoder.resolution)*encoder.resolution ) ;
+  // const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f/encoder.resolution)*encoder.resolution,
+  //                                         std::floor(q.phi_2f/encoder.resolution)*encoder.resolution ) ;
+
+  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*encoder.resolution/M_PI)*M_PI,
+                                          std::floor(q.phi_2f*encoder.resolution/M_PI)*M_PI ) ;
+
 
   ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
   // Discretization of the input

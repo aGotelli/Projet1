@@ -64,18 +64,10 @@ namespace utility
 
   template<class QuaternionTemplated>
   struct item_return {
-    item_return()=default;
-
-    item_return(const double _w, const double _x,
-                const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
 
     typedef QuaternionTemplated type;
-
-    double w {1.0};
-    double x {0.0};
-    double y {0.0};
-    double z {0.0};
   };
+
 
   struct EulerAngles {
     EulerAngles()=default;
@@ -123,6 +115,7 @@ namespace utility
   EulerAngles ToEulerAngles(const Quaternion q);
 
   //  Converting a quatersion to Euler Angles
+  [[deprecated("use the templated one for more consistent code")]]
   inline EulerAngles ToEulerAngles(const geometry_msgs::Quaternion q) {return ToEulerAngles( Quaternion(q.w, q.x, q.y, q.z) ); }
 
   //  Converting a quatersion to Euler Angles

@@ -1,0 +1,6 @@
+<launch>
+
+  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/recorded_data  bag_and_param.bag" output="screen">
+  </node>
+
+</launch>
