@@ -169,7 +169,7 @@ void Robot_2_0::ComputeOdometry() const
                                           std::floor(q.phi_2f*180/M_PI/encoder.resolution*encoder.resolution)*M_PI/180 ) ;
 
 
-  ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
+
   // Discretization of the input
   const Eigen::Vector2d U_discretized = F.inverse()*phi_discretized;
 
@@ -230,7 +230,7 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-  ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
+  
 
   odomPosture.pose.position.x = q_odom.x ;
   odomPosture.pose.position.y = q_odom.y ;

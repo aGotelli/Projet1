@@ -34,19 +34,19 @@
 #include <rosbag/bag.h>
 #include <geometry_msgs/PoseStamped.h>
 
-bool FindFile(const boost::filesystem::path& dir_path,
-              const boost::filesystem::path& file_name)
+bool FindFile(const boost::filesystem::path& folderPath,
+              const boost::filesystem::path& fileName)
 {
   //  Set iterator at the end of a file
   const boost::filesystem::recursive_directory_iterator end;
 
   //  Creation of the predicate to feed into std::find_if
-  auto lambdaCorrespondence = [&file_name](const boost::filesystem::directory_entry& e) {
-                              return e.path().filename() == file_name;
+  auto lambdaCorrespondence = [&fileName](const boost::filesystem::directory_entry& e) {
+                              return e.path().filename() == fileName;
                               };
 
   //  Find the position in the directory where the correspondance occour
-  const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(dir_path),
+  const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(folderPath),
                                 end, lambdaCorrespondence) ;
   //  Check the result
   if ( it == end ) {
@@ -100,7 +100,7 @@ int main (int argc, char** argv)
 
   //  Check if the file already exists in the folder
   if( FindFile(folderPath, fileName) ) {
-    ROS_ERROR_STREAM(ros::this_node::getName() << " The file already exist ! ");
+    ROS_ERROR_STREAM(ros::this_node::getName() << " The file : " << fileName.string() << " already exist ! ");
   }
 
   //  Obtain the namespace
@@ -115,8 +115,8 @@ int main (int argc, char** argv)
 
 
   //  Record all the messages
-  const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag"
-                                      + group + "/EncodersReading"  + group + "/IRSensorsStatus"  + group + "/RobotPosture" ;
+  const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag " + group + "/EncodersReading " + group + "/IRSensorsStatus " + group + "/RobotPosture " ;
+  ROS_INFO_STREAM(rosbagCommand);
   system( const_cast<char*>( rosbagCommand.c_str() ) );
 
 

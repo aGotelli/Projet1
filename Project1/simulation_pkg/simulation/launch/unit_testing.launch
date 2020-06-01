@@ -1,24 +1,9 @@
 <launch>
 
-  <arg name="x_spacing" default="0.2"/>
-  <arg name="y_spacing" default="0.2"/>
+  <arg name="file_name" value="completo"/>
+  <arg name="folder_name" value="recorded_data"/>
 
-  <arg name="sensor_right_x" default="0.0"/>
-  <arg name="sensor_right_y" default="-0.2"/>
-
-  <arg name="sensor_left_x" default="0.0"/>
-  <arg name="sensor_left_y" default="0.2"/>
-
-  <arg name="max_sensors_marks" default="5"/>
-
-  <!-- The sensor -->
-  <node pkg="simulation" type="simulation_sensor" name="sensor" args="$(arg max_sensors_marks)" output="screen">
-    <param name="x1_pos" value="$(arg sensor_right_x)" />
-    <param name="y1_pos" value="$(arg sensor_right_y)" />
-    <param name="x2_pos" value="$(arg sensor_left_x)" />
-    <param name="y2_pos" value="$(arg sensor_left_y)" />
-    <param name="x_spacing" value="$(arg x_spacing)" />
-    <param name="y_spacing" value="$(arg y_spacing)" />
+  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen">
   </node>
 
 

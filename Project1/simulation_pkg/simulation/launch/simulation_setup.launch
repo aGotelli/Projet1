@@ -71,9 +71,10 @@
 
   </group>
 
-  <!-- Save the parameters -->
-  <rosparam command="dump" file="$(find data)/recorded_data/$(arg file_name).yaml"  />
+  <param name="robot_description" textfile="$(find simulation)/urdf/robot_2_0.urdf" />
 
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  </node>
 
 
 
