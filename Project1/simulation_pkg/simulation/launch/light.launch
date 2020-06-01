@@ -23,6 +23,9 @@ to the moving platform frame                                                    
   <arg name="x_spacing" value="0.2"/>
   <arg name="y_spacing" value="0.2"/>
 
+  <arg name="file_name" value="completo"/>
+  <arg name="folder_name" value="recorded_data"/>
+
   <!-- joy node -->
   <node respawn="true" pkg="joy" type="joy_node" name="joy_node" >
     <param name="dev" type="string" value="/dev/input/js0" />
@@ -33,6 +36,10 @@ to the moving platform frame                                                    
   </node>
 
   <group ns="simulation">
+
+    <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen">
+    </node>
+
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
       <param name="track_gauge"         value="$(arg a)"      />

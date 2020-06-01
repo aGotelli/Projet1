@@ -30,7 +30,9 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 //ROS
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <rosbag/bag.h>
+#include <geometry_msgs/PoseStamped.h>
 
 bool FindFile(const boost::filesystem::path& dir_path,
               const boost::filesystem::path& file_name)
@@ -42,17 +44,20 @@ bool FindFile(const boost::filesystem::path& dir_path,
   auto lambdaCorrespondence = [&file_name](const boost::filesystem::directory_entry& e) {
                               return e.path().filename() == file_name;
                               };
+
   //  Find the position in the directory where the correspondance occour
   const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(dir_path),
                                 end, lambdaCorrespondence) ;
   //  Check the result
-  if (it == end) {
+  if ( it == end ) {
     return false;
   } else {
     // path_found = it->path();
     return true;
   }
 }
+
+
 
 
 int main (int argc, char** argv)
@@ -91,15 +96,6 @@ int main (int argc, char** argv)
     ROS_INFO_STREAM("found the path : " << folderPath ) ;
   }
 
-  //  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp
-  ROS_INFO_STREAM("Founded the followed files : " ) ;
-  for ( boost::filesystem::directory_entry& file : boost::filesystem::directory_iterator(folderPath) ) {
-      ROS_INFO_STREAM( file.path() ) ;
-      //ROS_INFO_STREAM( file.file_status.file_type() ) ;
-
-  }
-  //  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp  temp
-
 
 
   //  Check if the file already exists in the folder
@@ -107,8 +103,21 @@ int main (int argc, char** argv)
     ROS_ERROR_STREAM(ros::this_node::getName() << " The file already exist ! ");
   }
 
+  //  Obtain the namespace
+  const std::string group = ros::this_node::getNamespace() ;
 
-  
+  //  Save all the parameters
+  const std::string rosparamCommand = "rosparam dump " + folderPath.string() + "/" + fileName.string() + ".yaml " + group ;
+  system( const_cast<char*>( rosparamCommand.c_str() ) );
+
+
+
+
+
+  //  Record all the messages
+  const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag"
+                                      + group + "/EncodersReading"  + group + "/IRSensorsStatus"  + group + "/RobotPosture" ;
+  system( const_cast<char*>( rosbagCommand.c_str() ) );
 
 
 

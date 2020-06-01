@@ -162,11 +162,11 @@ void Robot_2_0::PerformMotion() const
 
 void Robot_2_0::ComputeOdometry() const
 {
-  ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
+  //ROS_INFO_STREAM("Odometry, phi_1f : " << q.phi_1f << " phi_2f : " << q.phi_2f ) ;
   // Discretization of phi_1f and phi_2f
 
-  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*180/M_PI/encoder.resolution*encoder.resolution),
-                                          std::floor(q.phi_2f*180/M_PI/encoder.resolution*encoder.resolution) ) ;
+  const Eigen::Vector2d phi_discretized ( std::floor(q.phi_1f*180/M_PI/encoder.resolution*encoder.resolution)*M_PI/180,
+                                          std::floor(q.phi_2f*180/M_PI/encoder.resolution*encoder.resolution)*M_PI/180 ) ;
 
 
   ROS_INFO_STREAM("Odometry, phi_discretized : " << phi_discretized ) ;
@@ -230,7 +230,7 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
-  //ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
+  ROS_INFO_STREAM("Odometry, x : " << q_odom.x << " y : " << q_odom.y << " theta : " << q_odom.theta ) ;
 
   odomPosture.pose.position.x = q_odom.x ;
   odomPosture.pose.position.y = q_odom.y ;

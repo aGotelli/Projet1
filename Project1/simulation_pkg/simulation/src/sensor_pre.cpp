@@ -53,11 +53,7 @@ void RobotPostureReceived(const geometry_msgs::PoseStamped::ConstPtr& _robotPost
 std::vector<Sensor> robotSensor;
 
 //	Positions of triggered sensors
-visualization_msgs::MarkerArray rightSensorActivations;
-visualization_msgs::MarkerArray leftSensorsActivations;
-
-//	Max size to avoid lag
-int MAX_SIZE = -1;
+visualization_msgs::MarkerArray sensorsActivations;
 
 // Service Callback
 simulation_messages::IRSensors SensorsStatus()
@@ -68,36 +64,19 @@ simulation_messages::IRSensors SensorsStatus()
 			sens.UpdateTransform( robotPosture );
 			sens.CheckStatus();
 		}
-		//	check status of the sensor on the right
+
 		if( robotSensor[0].GetState() ) {
 			status.sens1 = true;
-
-
-			if( MAX_SIZE > 0 && MAX_SIZE == rightSensorActivations.markers.size() )
-				rightSensorActivations.markers.erase( rightSensorActivations.markers.begin() );
-
-			//	Then add the new marker
-			rightSensorActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
+			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
 																																										utility::SENSOR::RIGHT ) );
 
 		}
-		//	check status of the sensor on the left
+
 		if( robotSensor[1].GetState() ) {
 			status.sens1 = true;
-
-			//	Now ensure max size if provided
-			if( MAX_SIZE > 0 && MAX_SIZE < leftSensorsActivations.markers.size() )
-				leftSensorsActivations.markers.erase( rightSensorActivations.markers.begin() );
-
-			//	Then add the new marker
-			leftSensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
+			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
 																																										utility::SENSOR::LEFT ) );
 		}
-
-
-
-
-
 
 		return status;
 
@@ -142,16 +121,6 @@ int main (int argc, char** argv)
 	//	Publishes marker to help understand
 	ros::Publisher SensorsDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
-	//	Initialize the size of the visualizations markers array if given
-	if( argc > 1 ) {
-		MAX_SIZE = std::atoi(argv[1]);
-		if( MAX_SIZE > 0 ) {
-			ROS_INFO_STREAM("ooooooooooooooooook Initialization");
-			rightSensorActivations.markers.reserve( MAX_SIZE );
-			leftSensorsActivations.markers.reserve( MAX_SIZE );
-		}
-	}
-
 
 
 	ros::Rate rate(150);
@@ -161,8 +130,7 @@ int main (int argc, char** argv)
 
 			IRSensors.publish( SensorsStatus() ) ;
 
-			SensorsDisplay.publish( rightSensorActivations );
-			SensorsDisplay.publish( leftSensorsActivations );
+			SensorsDisplay.publish( sensorsActivations );
 
       rate.sleep();
   }

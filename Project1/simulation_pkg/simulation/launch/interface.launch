@@ -30,7 +30,7 @@
   <arg name="sensor_left_y" value="0.2"/>
 
   <arg name="file_name" value="bag_and_param"/>
-  <arg name="folder" value="recorded_data"/>
+  <arg name="folder_name" value="recorded_data"/>
 
   <include file="$(find simulation)/launch/simulation_setup.launch" pass_all_args="true">
   </include>
