@@ -18,11 +18,9 @@
  *
  * Description
             This file contains all the functions related to the simulation of the robot motion.
-          The aim is to get information regarding the robot position and velocity and regarding
-          the state of the sensors. So the kinematic of the robot is defined by the functions
-          and method implemented here.
+          The aim is to get information regarding the robot position and velocity and regarding. 
 
-            First the imput is computed from the twist message, and the max speed
+            First the input is computed from the twist message, and the max speed
           of the wheels in ensured to both. Then with the knowledge of the input,
           the matrix which represents the kinematic model is updated and used to
           obain the derivative of the generalized robot coordinates.

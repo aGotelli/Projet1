@@ -93,9 +93,7 @@ int main (int argc, char** argv)
 
     ros::NodeHandle nh_glob;
 
-    // Read the node parameters if any
-    // Not for version 1
-
+    
     // Declare your node's subscriptions and service clients
     ros::Subscriber joystickState = nh_glob.subscribe<sensor_msgs::Joy>("/joy", 1, JoystickStateUpdate) ;
 

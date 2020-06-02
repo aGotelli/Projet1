@@ -102,6 +102,8 @@ protected:
   ros::Time currentTime;
   ros::Duration timeElapsed;
 
+
+  // jointstate for castor wheel
   sensor_msgs::JointState beta;
 
 

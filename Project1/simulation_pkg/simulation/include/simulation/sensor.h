@@ -91,12 +91,16 @@
 
 
 
+// ROS
+#include <ros/ros.h>
+
+#include "simulation/utility.h"
+
+// Include here the ".h" files corresponding to the topic type you use.
+#include <geometry_msgs/Pose.h>
 #include <eigen3/Eigen/Dense>
 
-#include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
 
-#include <simulation/utility.h>
 
 // Definition of World class
 class World {
@@ -155,10 +159,14 @@ public:
  // Access the sensor position in homogeneus coordinates
  inline const Eigen::Vector3d& Coord() const { return HCoord; }
 
+
+ // Function to update the transformation matrix
  void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
 
+// Function to check the status of the sensors
  void CheckStatus() const;
 
+// Function to get the sensor position in the absolute frame
  const utility::Point2D AbsolutePosition() const;
 
 
@@ -177,6 +185,9 @@ private:
   mutable bool state {false};
 
 };
+
+
+///////////////////////////////////////////~ FUNCTIONS DECLARATION ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 {

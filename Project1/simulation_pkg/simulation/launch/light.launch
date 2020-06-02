@@ -1,6 +1,6 @@
 <launch>
 
-<!-- The following is the table foa a (2, 0) robot inspired from the MOBRO course
+<!-- The following is the table for a (2, 0) robot inspired from the MOBRO course
 ______________________________________________________________________________________
 | Wheel |   L   |  alpha  |   d   |   beta    |  gamma  |   phi   |      psi         |
 ______________________________________________________________________________________

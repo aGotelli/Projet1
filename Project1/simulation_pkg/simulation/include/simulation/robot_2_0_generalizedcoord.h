@@ -2,10 +2,10 @@
 #define ROBOT_2_0_GENERALIZEDCOORD_H
 
 /**
- * \file robot 2_0 file
+ * \file robot_2_o generalized coordinates
  * \brief generalized coordinates of the robot
  * \author Bianca & Andrea
- * \version 0.1
+ * \version 0.2
  * \date 01/06/2020
  *
  * \param[in]
@@ -17,9 +17,10 @@
  *    °
  *
  * Description
-            This file contains everything that is related to the generalized coordinates
-          of the robot, that are used to compute the kinematic model.
-          The generalized coordinates is a powerfull structure for kinematic computations.
+            This file cointains all the functions and methods implemented to define the kinematic
+          of the robot. All the computations used the generalized coordinates as it is a powerfull
+          structure, perfectly suitable for type of calculations.  
+
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -123,7 +124,6 @@ namespace robot_2_0 {
   }
 
 
-  // Genralized coordinates' functions and operatos
   GeneralizedCoordinates GeneralizedCoordinates::operator=(const Eigen::VectorXd& result)
   {
 
@@ -139,7 +139,7 @@ namespace robot_2_0 {
   }
 
 
-  // Genralized coordinates' functions and operatos
+
   GeneralizedCoordinates GeneralizedCoordinates::operator+(const Eigen::VectorXd& result)
   {
 
@@ -155,7 +155,7 @@ namespace robot_2_0 {
   }
 
 
-
+  
   GeneralizedCoordinates GeneralizedCoordinates::operator=(const GeneralizedCoordinates& equal)
   {
 
@@ -169,7 +169,6 @@ namespace robot_2_0 {
 
     return (*this) ;
   }
-
 
 
   GeneralizedCoordinates GeneralizedCoordinates::operator+(const GeneralizedCoordinates& addendum)

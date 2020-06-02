@@ -14,6 +14,11 @@
  *    °
  *
  * Description
+            The aim of this file is to save all the recorded data in the proper folder. 
+              Moreover, as the architecture is versatile and some parameters can be changes, 
+              based on the specification of the project, all the informations regarding this, 
+              are also saved. In this way, the details of the robot, of the world and of the 
+              sensor are always visible and available. 
  *
  */
 
