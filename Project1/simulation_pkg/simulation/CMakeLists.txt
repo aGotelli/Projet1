@@ -176,6 +176,9 @@ add_executable(${PROJECT_NAME}_sensor src/sensor.cpp)
 target_link_libraries(${PROJECT_NAME}_sensor	${catkin_LIBRARIES} )
 
 
+############################~ GROUND GENERATOR ~#####################################
+add_executable(${PROJECT_NAME}_ground_generator src/ground_generator.cpp)
+target_link_libraries(${PROJECT_NAME}_ground_generator	${catkin_LIBRARIES} )
 
 
 
