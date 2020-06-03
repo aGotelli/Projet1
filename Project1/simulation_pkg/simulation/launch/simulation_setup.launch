@@ -1,33 +1,40 @@
 <launch>
 
-  <arg name="a" default="0.2"/>
-  <arg name="b" default="0.4"/>
-  <arg name="c" default="0.08"/>
+  <arg name="a" default="0.2"   />
+  <arg name="b" default="0.4"   />
+  <arg name="c" default="0.08"  />
 
-  <arg name="r" default="0.05"/>
-  <arg name="w_max" default="10.0"/>
+  <arg name="r"     default="0.05"  />
+  <arg name="w_max" default="10.0"  />
 
-  <arg name="x_spacing" default="0.2"/>
-  <arg name="y_spacing" default="0.2"/>
+  <arg name="x_init"      default="0.0" />
+  <arg name="y_init"      default="0.0" />
+  <arg name="theta_init"  default="0.0" />
 
-  <arg name="sensor_right_x" default="0.0"/>
-  <arg name="sensor_right_y" default="-0.2"/>
+  <arg name="x_spacing"       default="0.2"   />
+  <arg name="y_spacing"       default="0.2"   />
+  <arg name="line_thickness"  default="0.005" />
 
-  <arg name="sensor_left_x" default="0.0"/>
-  <arg name="sensor_left_y" default="0.2"/>
+  <arg name="sensor_right_x" default="0.0"  />
+  <arg name="sensor_right_y" default="-0.2" />
 
-  <arg name="file_name" default="you_forgot_to_put_a_name"/>
-  <arg name="folder_name" default="recorded_data"/>
+  <arg name="sensor_left_x" default="0.0" />
+  <arg name="sensor_left_y" default="0.2" />
 
-  <arg name="max_sensors_marks" default="5"/>
+  <arg name="file_name"   default="you_forgot_to_put_a_name"  />
+  <arg name="folder_name" default="recorded_data"             />
+
+  <arg name="use_joystick"  default="false" />
+  <arg name="joystick_tag"  default="js0"   />
+
 
   <!-- joy node -->
-  <node respawn="true" pkg="joy" type="joy_node" name="joy_node" >
-    <param name="dev" type="string" value="/dev/input/js0" />
+  <node respawn="true" pkg="joy" type="joy_node" name="joy_node" if="$(arg use_joystick)">
+    <param name="dev" type="string" value="/dev/input/$(arg joystick_tag)" />
   </node>
 
   <!-- The compute_twist adapter -->
-  <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen">
+  <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen" if="$(arg use_joystick)">
   </node>
 
   <group ns="simulation">
@@ -38,21 +45,24 @@
 
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-      <param name="track_gauge"         value="$(arg a)"      />
-      <param name="wheel_radius"        value="$(arg r)"      />
-      <param name="joint_offset"        value="$(arg b)"      />
-      <param name="castor_arm"          value="$(arg c)"      />
-      <param name="actuator_max_speed"  value="$(arg w_max)"  />
+      <param name="track_gauge"         value="$(arg a)"          />
+      <param name="wheel_radius"        value="$(arg r)"          />
+      <param name="joint_offset"        value="$(arg b)"          />
+      <param name="castor_arm"          value="$(arg c)"          />
+      <param name="actuator_max_speed"  value="$(arg w_max)"      />
+      <param name="x_init"              value="$(arg x_init)"     />
+      <param name="y_init"              value="$(arg y_init)"     />
+      <param name="theta_init"          value="$(arg theta_init)" />
     </node>
 
     <!-- The sensor -->
-    <node pkg="simulation" type="simulation_sensor" name="sensor" args="$(arg max_sensors_marks)" output="screen">
-      <param name="x1_pos" value="$(arg sensor_right_x)" />
-      <param name="y1_pos" value="$(arg sensor_right_y)" />
-      <param name="x2_pos" value="$(arg sensor_left_x)" />
-      <param name="y2_pos" value="$(arg sensor_left_y)" />
-      <param name="x_spacing" value="$(arg x_spacing)" />
-      <param name="y_spacing" value="$(arg y_spacing)" />
+    <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen">
+      <param name="x1_pos" value="$(arg sensor_right_x)"  />
+      <param name="y1_pos" value="$(arg sensor_right_y)"  />
+      <param name="x2_pos" value="$(arg sensor_left_x)"   />
+      <param name="y2_pos" value="$(arg sensor_left_y)"   />
+      <param name="x_spacing" value="$(arg x_spacing)"    />
+      <param name="y_spacing" value="$(arg y_spacing)"    />
     </node>
 
     <!-- Launch Rviz -->

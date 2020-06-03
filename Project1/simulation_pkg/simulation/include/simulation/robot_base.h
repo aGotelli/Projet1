@@ -104,6 +104,8 @@ protected:
 
   sensor_msgs::JointState beta;
 
+  geometry_msgs::TransformStamped geometryStamp;
+
 
 
 private:
@@ -187,27 +189,45 @@ void RobotBase::isMoving()
       //RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
-      RobotMarker.publish( generatedPath ) ;
+      //RobotMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
-      castorJoint.publish( beta );
+      //castorJoint.publish( beta );
 
 
-      //  Declare the message
-      nav_msgs::Odometry robotOdometry;
 
-      //  Stamp the current time
-      robotOdometry.header.stamp = currentTime;
 
-      //  Set the frames
-      robotOdometry.header.frame_id = "map";
-      robotOdometry.child_frame_id = "moving_platform";
+      geometryStamp.header.stamp = currentTime;
+      geometryStamp.header.frame_id = "map";
+      geometryStamp.child_frame_id = "moving_platform";
+      geometryStamp.transform.translation.x = robotPosture.pose.position.x ;
+      geometryStamp.transform.translation.y = robotPosture.pose.position.y ;
+      geometryStamp.transform.translation.z = robotPosture.pose.position.z ;
 
-      //  Set the position
-      robotOdometry.pose.pose = odomPosture.pose;
+      geometryStamp.transform.rotation = robotPosture.pose.orientation;
 
-      //  Publish the computed odometry
-      Odometry.publish( robotOdometry ) ;
+      br.sendTransform( geometryStamp );
+
+
+
+
+
+    //  Declare the message
+    nav_msgs::Odometry robotOdometry;
+
+    //  Stamp the current time
+    robotOdometry.header.stamp = currentTime;
+
+    //  Set the frames
+    robotOdometry.header.frame_id = "map";
+    robotOdometry.child_frame_id = "moving_platform";
+
+    //  Set the position
+    robotOdometry.pose.pose = odomPosture.pose;
+
+    //  Publish the computed odometry
+    Odometry.publish( robotOdometry ) ;
+
 
 
       //  Wait for next iteration
