@@ -62,11 +62,11 @@ int main (int argc, char** argv)
   	nh_glob.param("y_spacing", ySpacing, 0.2) ;
   	nh_glob.param("line_thickness", lineThickness, 0.005) ;
 
-  
-
-
-	
-
+  	//  Ground generator parameters
+  	int xLines, yLines;				// number of lines
+  	nh_glob.param("x_lines", xLines, 4) ;
+  	nh_glob.param("y_lines", yLines, 4) ;
+  	
     
     // Declare your node's subscriptions and service clients
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
@@ -75,6 +75,7 @@ int main (int argc, char** argv)
 	ros::Publisher TilesDisplay = nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1);
   
 
+	TileGeneration(tilesHLine, tilesVLine);
 
     ros::Rate rate(150);
     while (ros::ok()){
