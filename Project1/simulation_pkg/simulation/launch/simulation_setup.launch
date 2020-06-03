@@ -40,7 +40,7 @@
   <group ns="simulation">
 
     <!-- The node to save all the needed data -->
-    <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen">
+    <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen" required="true">
     </node>
 
     <!-- The robot_2_0 -->
@@ -56,7 +56,7 @@
     </node>
 
     <!-- The sensor -->
-    <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen">
+    <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen" required="true">
       <param name="x1_pos" value="$(arg sensor_right_x)"  />
       <param name="y1_pos" value="$(arg sensor_right_y)"  />
       <param name="x2_pos" value="$(arg sensor_left_x)"   />

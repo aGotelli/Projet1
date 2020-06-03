@@ -168,7 +168,7 @@ public:
 
 
  // Get the current sensor status
- inline const bool GetState(){ return state; }
+ inline const bool GetState() const { return state; }
 
  // Access the sensor position in homogeneus coordinates
  inline const Eigen::Vector3d& Coord() const { return HCoord; }
@@ -177,13 +177,11 @@ public:
  // Function to update the transformation matrix
  void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
 
-// Function to check the status of the sensors
+ // Function to check the status of the sensors
  void CheckStatus() const;
 
 
-// Function to get the sensor position in the absolute frame
- const utility::Point2D AbsolutePosition() const;
-
+ // Function to get the sensor position in the absolute frame
  inline const utility::Pose2D AbsolutePosition() const;
 
  inline const World ItsWorld() const {return world;}
@@ -281,6 +279,8 @@ public:
 
   void AddSensor(const Sensor& newSensor );
 
+  inline const std::vector<Sensor>& All() const {return sensors; }
+
 private:
   std::vector<Sensor> sensors;
 };
@@ -298,7 +298,7 @@ void RobotSensors::AddSensor(const Sensor& newSensor)
       else{
           //  If the two instances are not the same, the simualtion results
           //  are inconsistent. The node is shutted down while trowing an error.
-          ROS_FATAL_STREAM("Two different istances of the world detected. The node" << ros::this_node::getName() << "is shutted down");
+          ROS_ERROR_STREAM("Two different istances of the world detected. The node" << ros::this_node::getName() << "is shutted down");
           ros::shutdown();
       }
   }
