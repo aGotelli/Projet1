@@ -18,7 +18,7 @@
  *
  * Description
             This file contains all the functions related to the simulation of the robot motion.
-          The aim is to get information regarding the robot position and velocity and regarding. 
+          The aim is to get information regarding the robot position and velocity and regarding.
 
             First the input is computed from the twist message, and the max speed
           of the wheels in ensured to both. Then with the knowledge of the input,
@@ -247,9 +247,18 @@ void Robot_2_0::PrepareMessages()
 
 
   //  Set the angle of the castor joint
-  beta.header.stamp = currentTime ;
-  beta.name.push_back("castor_joint") ;
-  beta.position.push_back(q.beta_3c) ;
+  actuations.name.clear() ;
+  actuations.position.clear() ;
+  actuations.header.stamp = ros::Time::now() ;
+  actuations.name.push_back("move_along_x") ;
+  actuations.position.push_back(q.x) ;
+  actuations.name.push_back("move_along_y") ;
+  actuations.position.push_back(q.y) ;
+  actuations.name.push_back("heading") ;
+  actuations.position.push_back(q.theta) ;
+  actuations.name.push_back("castor_joint") ;
+  actuations.position.push_back(q.beta_3c) ;
+
 
 }
 

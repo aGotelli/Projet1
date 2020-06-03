@@ -72,12 +72,12 @@ public:
   RobotBase()=default;    //  Initialize all memeber to their default value i.e.
                           //  what is inside the {}
 
-  void isMoving();
+  virtual void isMoving();
 
 protected:
 
   //  Virtual Callback
-  inline void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist) { twistReceived = (*twist) ;}
+  inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist) { twistReceived = (*twist) ;}
 
   virtual void ComputeInput() const=0;
 
@@ -104,7 +104,7 @@ protected:
 
 
   // jointstate for castor wheel
-  sensor_msgs::JointState beta;
+  sensor_msgs::JointState actuations;
 
   geometry_msgs::TransformStamped geometryStamp;
 
@@ -131,7 +131,7 @@ private:
 
   tf::TransformBroadcaster br;
 
-  ros::Publisher castorJoint { nh_glob.advertise<sensor_msgs::JointState>("/joint_command", 1) } ;
+  ros::Publisher jointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
 };
 
@@ -169,12 +169,12 @@ void RobotBase::isMoving()
 
       //  Elaborate the data for being published
       PrepareMessages() ;
-
+/*
       br.sendTransform(tf::StampedTransform(movingPlatformFrame,
                                                   ros::Time::now(),
                                                   "map", "moving_platform"));
 
-
+*/
       //  Update the marker position for visualization
       //utility::UpdateMarker( robotPosture, robotMarker ) ;
 
@@ -194,9 +194,9 @@ void RobotBase::isMoving()
       //RobotMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
-      //castorJoint.publish( beta );
+      jointsController.publish( actuations ) ;
 
-
+/*
 
 
       geometryStamp.header.stamp = currentTime;
@@ -230,8 +230,7 @@ void RobotBase::isMoving()
     //  Publish the computed odometry
     Odometry.publish( robotOdometry ) ;
 
-
-
+*/
       //  Wait for next iteration
       robotFrameRate.sleep();
 

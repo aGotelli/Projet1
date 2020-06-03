@@ -28,7 +28,7 @@ to the moving platform frame                                                    
 
   <!-- joy node -->
   <node respawn="true" pkg="joy" type="joy_node" name="joy_node" >
-    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="dev" type="string" value="/dev/input/js1" />
   </node>
 
   <!-- The compute_twist adapter -->
@@ -54,7 +54,7 @@ to the moving platform frame                                                    
     </node>
   </group>
 
-  <param name="robot_description" textfile="$(find simulation)/urdf/robot_2_0.urdf" />
+  <param name="robot_description" textfile="$(find simulation_description)/urdf/robot_2_0.urdf" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
   </node>

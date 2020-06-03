@@ -7,6 +7,9 @@ Panels:
         - /Global Options1
         - /Status1
         - /Marker1
+        - /TF1
+        - /TF1/Frames1
+        - /RobotModel1
         - /Odometry1
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
@@ -60,7 +63,7 @@ Visualization Manager:
       Marker Topic: /visualization_marker
       Name: Marker
       Namespaces:
-        RobotPath: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -82,15 +85,17 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         joint_offset:
           Value: true
         left_wheel:
           Value: true
         map:
           Value: true
-        moving_platform:
-          Value: true
+        moving_x:
+          Value: false
+        moving_y:
+          Value: false
         right_wheel:
           Value: true
         track_gauge:
@@ -102,15 +107,15 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          moving_platform:
-            joint_offset:
-              {}
-            left_wheel:
-              {}
-            right_wheel:
-              {}
-            track_gauge:
-              {}
+          moving_x:
+            moving_y:
+              track_gauge:
+                joint_offset:
+                  {}
+                left_wheel:
+                  {}
+                right_wheel:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -138,7 +143,15 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        moving_platform:
+        map:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        moving_x:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        moving_y:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -220,7 +233,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.04545783996582
+      Distance: 5.4245195388793945
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -235,10 +248,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.2053974866867065
+      Pitch: 1.1903975009918213
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.808590888977051
+      Yaw: 4.403587341308594
     Saved: ~
 Window Geometry:
   Displays:

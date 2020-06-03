@@ -28,7 +28,7 @@
             This node has also a build in method to ensure the existency of the
           folder where to storage the files. If the folder does not exist then
           it is created in the path given. However if the path is not correct
-          the node is shutted down and simulation goes on WITHOUT SAVIN ANY FILE. 
+          the node is shutted down and simulation goes on WITHOUT SAVIN ANY FILE.
 
             This node is designed to be used in the same group of the simulation.
           In the case where the simulation is not in a group the node can handle
@@ -168,7 +168,7 @@ int main (int argc, char** argv)
   //  Check if the folder is actually a directory and it exist.
   //  In the case is does not than create a folder
   if( !boost::filesystem::is_directory(folderPath) ) {
-    ROS_ERROR_STREAM(ros::this_node::getName() << " The target folder does not exist ! A folder is created at " << origin.string() );
+    ROS_WARN_STREAM(ros::this_node::getName() << " The target folder does not exist ! A folder is created at " << origin.string() );
     boost::filesystem::create_directory(folderPath);
   } else {
     ROS_INFO_STREAM("found the path : " << folderPath ) ;

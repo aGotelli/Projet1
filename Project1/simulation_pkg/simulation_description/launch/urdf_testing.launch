@@ -1,0 +1,16 @@
+<launch>
+
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map moving_platform 100" />
+
+  <param name="robot_description" textfile="$(find simulation_description)/urdf/robot_2_0.urdf" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+  </node>
+
+  <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui">
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz"  >
+  </node>
+<!-- args="-d $(find simulation)/rviz/first_save.rviz" -->
+</launch>
