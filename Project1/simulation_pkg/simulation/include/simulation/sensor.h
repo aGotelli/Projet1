@@ -105,34 +105,48 @@
 // Definition of World class
 class World {
 public:
- World()=default;
+  World()=default;
 
- World(const double _xSpacing,
+  World(const double _xSpacing,
         const double _ySpacing) :
           xSpacing( _xSpacing ),
           ySpacing( _ySpacing ) { /*  lineWidth has default value  */
             ROS_INFO_STREAM("User-defined world only for line offset") ;
           }
 
- World(const double _xSpacing,
+  World(const double _xSpacing,
         const double _ySpacing,
-          const double _lineWidth) :
+          const double _lineThickness) :
             xSpacing( _xSpacing ),
             ySpacing( _ySpacing ),
-            lineWidth( _lineWidth ) {
+            lineThickness( _lineThickness ) {
               ROS_INFO_STREAM("Completely user-defined world") ;
             }
+
+ inline const bool operator==(const World& other) const
+ {
+  if(this->xSpacing != other.XSpacing() )
+   return false;
+
+  if(this->ySpacing != other.YSpacing() )
+   return false;
+
+  if(this->lineThickness != other.LineThickness() )
+   return false;
+
+  return true;
+}
 
  // Provided function to access private data
  inline const double& XSpacing() const {return xSpacing; }
  inline const double& YSpacing() const {return ySpacing; }
- inline const double& LineWidth() const {return lineWidth; }
+ inline const double& LineThickness() const {return lineThickness; }
 
 private:
 
  const double xSpacing { 1.0 };
  const double ySpacing { 1.0 };
- const double lineWidth { 0.005 };
+ const double lineThickness { 0.005 };
 
 };
 
@@ -166,8 +180,14 @@ public:
 // Function to check the status of the sensors
  void CheckStatus() const;
 
+
 // Function to get the sensor position in the absolute frame
  const utility::Point2D AbsolutePosition() const;
+
+ inline const utility::Pose2D AbsolutePosition() const;
+
+ inline const World ItsWorld() const {return world;}
+
 
 
 private:
@@ -187,7 +207,9 @@ private:
 };
 
 
+
 ///////////////////////////////////////////~ FUNCTIONS DECLARATION ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 
 void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 {
@@ -199,7 +221,6 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
                   0        ,          0        ,            1             ;
 
 }
-
 
 
 void Sensor::CheckStatus() const
@@ -237,7 +258,7 @@ void Sensor::CheckStatus() const
   const Eigen::VectorXd overLine = oHCoord.transpose()*worldLines;
 
   //  Update the sensor status using the knowledge of the computed distances.
-  if( overLine.cwiseAbs().minCoeff() <= world.LineWidth()/2 ) {
+  if( overLine.cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
       state = true;
   } else {
       state = false;
@@ -246,13 +267,44 @@ void Sensor::CheckStatus() const
 }
 
 
-const utility::Point2D Sensor::AbsolutePosition() const
+const utility::Pose2D Sensor::AbsolutePosition() const
 {
   const Eigen::Vector3d oHCoord = oTm*HCoord;
 
-  return utility::Point2D( oHCoord[0], oHCoord[1] ) ;
+  return utility::Pose2D( oHCoord[0], oHCoord[1] ) ;
 }
 
+
+class RobotSensors {
+public:
+  RobotSensors()=default;
+
+  void AddSensor(const Sensor& newSensor );
+
+private:
+  std::vector<Sensor> sensors;
+};
+
+
+void RobotSensors::AddSensor(const Sensor& newSensor)
+{
+  if( sensors.empty() ) {
+    //  Directly add the new member
+    sensors.push_back( newSensor );
+  } else {
+      //  Check that the two instances of the world are the same
+      if( sensors[0].ItsWorld() ==  newSensor.ItsWorld() )
+          sensors.push_back( newSensor );
+      else{
+          //  If the two instances are not the same, the simualtion results
+          //  are inconsistent. The node is shutted down while trowing an error.
+          ROS_FATAL_STREAM("Two different istances of the world detected. The node" << ros::this_node::getName() << "is shutted down");
+          ros::shutdown();
+      }
+  }
+
+
+}
 
 
 

@@ -44,13 +44,19 @@ int main (int argc, char** argv)
 	  // ROS Initialization
     ros::init(argc, argv, "robot_2_0");
 
+
     //  Required NodeHandles
     ros::NodeHandle nh_loc("~"), nh_glob;
 
-    //  Global world parameters
-    double xSpacing, ySpacing;                    // [m]
-    nh_glob.param("x_spacing", xSpacing, 0.2) ;
-    nh_glob.param("y_spacing", ySpacing, 0.2) ;
+
+    //  Get robot initial posture
+    double xInit, yInit, thetaInit;
+    nh_loc.param("x_init", xInit, 0.0);
+    nh_loc.param("y_init", yInit, 0.0);
+    nh_loc.param("theta_init", thetaInit, 0.0);
+
+    //  Transform theta in radians
+    thetaInit *= M_PI/180;
 
 
     //  Robot parameters
@@ -65,7 +71,8 @@ int main (int argc, char** argv)
     nh_loc.param("castor_arm", castorArmLength, 0.08) ;
     nh_loc.param("actuator_max_speed", wMax, (double)10.0) ;
 
-    Robot_2_0 robot(trackGauge, wheelRadius, jointOffSet, castorArmLength, wMax);
+    Robot_2_0 robot(utility::Pose2D(xInit, yInit, thetaInit),
+                    trackGauge, wheelRadius, jointOffSet, castorArmLength, wMax);
 
     robot.isMoving() ;
 

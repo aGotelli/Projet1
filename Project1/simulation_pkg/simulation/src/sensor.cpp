@@ -50,7 +50,7 @@ void RobotPostureReceived(const geometry_msgs::PoseStamped::ConstPtr& _robotPost
 
 
 //	Vector of sensors
-std::vector<Sensor> robotSensor;
+std::vector<Sensor> robotSensors;
 
 //	Positions of triggered sensors
 visualization_msgs::MarkerArray sensorsActivations;
@@ -61,32 +61,46 @@ simulation_messages::IRSensors SensorsStatus()
 	simulation_messages::IRSensors status;
 	sensorsActivations.markers.clear();
 
-		for(const auto& sens : robotSensor) {
+		for(const auto& sens : robotSensors) {
 			sens.UpdateTransform( robotPosture );
 			sens.CheckStatus();
 		}
 
 		//	check status of the sensor on the right
-		if( robotSensor[0].GetState() ) {
+		if( robotSensors[0].GetState() ) {
 			status.sens1 = true;
 
 			//	Add the new marker
-			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[0].AbsolutePosition(),
+			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensors[0].AbsolutePosition(),
 																																										utility::SENSOR::RIGHT ) );
 
 		}
 		//	check status of the sensor on the left
-		if( robotSensor[1].GetState() ) {
+		if( robotSensors[1].GetState() ) {
 			status.sens1 = true;
 
 			//	Add the new marker
-			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensor[1].AbsolutePosition(),
+			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensors[1].AbsolutePosition(),
 																																										utility::SENSOR::LEFT ) );
 		}
 
 		return status;
 
 }
+
+void EnsureSameWorld(std::vector<Sensor>& robotSensors)
+{
+	// const World reference = robotSensors[0].ItsWorld();
+	//
+	// for(const auto& sensor : robotSensors ) {
+	// 	if(sensor.ItsWorld() == reference) {
+	//
+	// 	}
+	// }
+	//
+
+}
+
 
 
 
@@ -101,9 +115,12 @@ int main (int argc, char** argv)
   ros::NodeHandle nh_loc("~"), nh_glob;
 
   //  Global world parameters
-  double xSpacing, ySpacing;                    // [m]
+  double xSpacing, ySpacing, lineThickness;					// [m]
   nh_glob.param("x_spacing", xSpacing, 0.2) ;
   nh_glob.param("y_spacing", ySpacing, 0.2) ;
+	nh_glob.param("line_thickness", lineThickness, 0.005) ;
+
+	const World world(xSpacing, ySpacing, lineThickness);
 
   // Sensor parameters
 	double x1, y1;
@@ -115,8 +132,10 @@ int main (int argc, char** argv)
 	nh_loc.param("y2_pos", y2, 0.2) ;		// First one on the left of the robot
 
 	// Inizialize the vector
-	robotSensor.push_back( Sensor( x1, y1 ));
-	robotSensor.push_back( Sensor( x2, y2 ));
+	robotSensors.push_back( Sensor( x1, y1, world ) ) ;
+	robotSensors.push_back( Sensor( x2, y2, world ) ) ;
+
+
 
 	//	Subscribe to the published robot position to obtain infromation about its pose
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);

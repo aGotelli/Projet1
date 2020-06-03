@@ -78,13 +78,14 @@ namespace utility
     double yaw {0.0};
   };
 
-  struct Point2D {
-    Point2D()=default;
+  struct Pose2D {
+    Pose2D()=default;
 
-    Point2D(const double _x, const double _y) : x(_x), y(_y) {}
+    Pose2D(const double _x, const double _y, const double _theta=0) : x(_x), y(_y), theta(_theta) {}
 
     double x { 0.0 } ;
     double y { 0.0 } ;
+    double theta { 0.0 } ;
   };
 
   enum SENSOR { RIGHT, LEFT };
@@ -101,10 +102,6 @@ namespace utility
   Quaternion ToQuaternion(const double& yaw, const double& pitch, const double& roll); // yaw (Z), pitch (Y), roll (X)
 
 
-  //  Function delagation allowing more user friendly interface
-  [[deprecated("use the templated one for more consistent code")]]
-  inline Quaternion ToQuaternion(const EulerAngles angles) {return ToQuaternion( angles.yaw, angles.pitch, angles.roll); }
-
   //  Converting specified Eulers angles to a Quaterion (generic)
   template<class QuaternionTemplated>
   typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch=0.0, const double roll=0.0);
@@ -114,9 +111,6 @@ namespace utility
   [[deprecated("use the templated one for more consistent code")]]
   EulerAngles ToEulerAngles(const Quaternion q);
 
-  //  Converting a quatersion to Euler Angles
-  [[deprecated("use the templated one for more consistent code")]]
-  inline EulerAngles ToEulerAngles(const geometry_msgs::Quaternion q) {return ToEulerAngles( Quaternion(q.w, q.x, q.y, q.z) ); }
 
   //  Converting a quatersion to Euler Angles
   template<class QuaternionTemplated>
@@ -142,9 +136,9 @@ namespace utility
                             visualization_msgs::Marker& generatedPath );
 
 
-  visualization_msgs::Marker PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor);
+  visualization_msgs::Marker PlaceActiveSensor(const Pose2D& point, const SENSOR& activeSensor);
 
-  visualization_msgs::Marker PlaceMarker(const Point2D& point, const COLOR& markerColor, const std::string side, const int index);
+  visualization_msgs::Marker PlaceMarker(const Pose2D& point, const COLOR& markerColor, const std::string side, const int index);
 
 
 
@@ -380,7 +374,7 @@ namespace utility
 
   int index_left = -1;
   int index_right = -1;
-  visualization_msgs::Marker PlaceActiveSensor(const Point2D& point, const SENSOR& activeSensor)
+  visualization_msgs::Marker PlaceActiveSensor(const Pose2D& point, const SENSOR& activeSensor)
   {
     COLOR markerColor;
 
@@ -402,7 +396,7 @@ namespace utility
 
 
 
-  visualization_msgs::Marker PlaceMarker(const Point2D& point, const COLOR& markerColor, const std::string side, const int index)
+  visualization_msgs::Marker PlaceMarker(const Pose2D& point, const COLOR& markerColor, const std::string side, const int index)
   {
     //  Instantiate the marker
     visualization_msgs::Marker sensorMarker;

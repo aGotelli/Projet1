@@ -74,7 +74,7 @@ int main (int argc, char** argv)
   ros::NodeHandle nh_glob;
 
   //  The node must be provided with two args
-  if( argc <  3) {
+  if( argc <  3 ) {
     ROS_ERROR_STREAM(ros::this_node::getName() << " Not enought input arguments! You must provide the folder path and the file names ");
   }
 

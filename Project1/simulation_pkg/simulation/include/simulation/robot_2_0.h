@@ -65,6 +65,19 @@ public:
             RobotBase() { /* All the rest is initialized as default */
               ROS_INFO_STREAM("User-defined initialization called..."); }
 
+  Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
+            const double _wheelRadius, const double _jointOffSet,
+            const double _castorArmLength, const double _wMax) :
+            q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
+            frontAxle(_frontAxle),
+            wheelRadius(_wheelRadius),
+            jointOffSet(_jointOffSet),
+            castorArmLength(_castorArmLength),
+            wMax(_wMax),
+            RobotBase() {/* All the rest is initialized as default */
+              ROS_INFO_STREAM("Fully user-defined initialization called...");     }
+
+
 
   // Function to set the velocieties as the input
   void ComputeInput() const override;
@@ -88,9 +101,14 @@ public:
 
 private:
 
-  struct Encoders {
+  class Encoders {
+  public:
     Encoders()=default;
 
+    inline const int ResolutionToRad() const {return resolution*M_PI/180; }
+    inline const int Resolution() const {return resolution; }
+
+  private:
     //  dots per wheel rotation
     const int resolution{180} ;
 
@@ -152,15 +170,21 @@ void Robot_2_0::PerformMotion() const
 void Robot_2_0::ComputeOdometry() const
 {
 
-  currentReading[0] =  std::floor( q.phi_1f*encoder.resolution*M_PI/180 );
-  currentReading[1] =  std::floor( q.phi_2f*encoder.resolution*M_PI/180 );
+  currentReading[0] = q.phi_1f ;
+  currentReading[1] = q.phi_2f ;
 
-  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*(currentReading - previusReading)/(encoder.resolution*M_PI/180) ;
+  Eigen::Vector2d elapsedDots  = (currentReading - previusReading)*encoder.ResolutionToRad() ;
+  elapsedDots[0] = std::floor( elapsedDots[0] );
+  elapsedDots[1] = std::floor( elapsedDots[1] );
+
+
+
+  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*elapsedDots/encoder.ResolutionToRad();
+
 
   q_odom = q_odom + S*d_input;
 
   previusReading = currentReading ;
-
 }
 
 
@@ -194,15 +218,6 @@ void Robot_2_0::EnsureMaxSpeed() const
 
   u = S.block<2,2>(4,0).inverse()*phi_dot ;
 }
-
-
-
-
-
-
-
-
-
 
 
 void Robot_2_0::PrepareMessages()

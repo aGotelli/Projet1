@@ -48,8 +48,11 @@ namespace robot_2_0 {
 
     //  Specific Constructor
     GeneralizedCoordinates(const double _x, const double _y, const double _theta,
-                            const double _phi_1f, const double _phi_2f,
-                            const double _phi_3c, const double _beta_3c);
+                            const double _beta_3c, const double _phi_1f,
+                            const double _phi_2f, const double _phi_3c);
+
+    //  Initial posture Constructor
+    GeneralizedCoordinates(const double _x, const double _y, const double _theta);
 
     ~GeneralizedCoordinates() {/* no new objects to delete */}
 
@@ -78,35 +81,43 @@ namespace robot_2_0 {
     //  Robot position and orientation
     double x{0.0}, y{0.0}, theta{0.0};
 
+    //  Angle of the castor joint
+    double beta_3c{0.0};
+
     //  Wheels angles of rotation
     double phi_1f{0.0}, phi_2f{0.0}, phi_3c{0.0};
 
-    //  Angle of the castor joint
-    double beta_3c{0.0};
 
   };
 
   //  Constructor for passing each member
   GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates& other) :
-                            GeneralizedCoordinates(other.x, other.y, other.theta, other.phi_1f,
-                                                      other.phi_2f, other.phi_3c, other.beta_3c) {}
+                            GeneralizedCoordinates(other.x, other.y, other.theta, other.beta_3c,
+                                                      other.phi_1f, other.phi_2f, other.phi_3c ) {}
 
   //  Specific Constructor
   GeneralizedCoordinates::GeneralizedCoordinates(const double _x, const double _y, const double _theta,
-                                                  const double _phi_1f, const double _phi_2f,
-                                                  const double _phi_3c, const double _beta_3c) :
-                                                  x(_x), y(_y), theta(_theta), phi_1f(_phi_1f),
-                                                  phi_2f(_phi_2f), beta_3c(_beta_3c) {}
+                                                  const double _beta_3c, const double _phi_1f,
+                                                  const double _phi_2f, const double _phi_3c ) :
+                                                  x(_x), y(_y), theta(_theta), beta_3c(_beta_3c),
+                                                  phi_1f(_phi_1f), phi_2f(_phi_2f), phi_3c(_phi_3c)  {}
+
+
+  //  Initial posture Constructor
+  GeneralizedCoordinates::GeneralizedCoordinates(const double _x, const double _y, const double _theta):
+                                                                            x(_x), y(_y), theta(_theta) {}
+
+
 
   //  Move Constructor
   GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates&& other) noexcept :
                     x( other.x ),
                     y( other.y ),
                     theta( other.theta ),
+                    beta_3c( other.beta_3c),
                     phi_1f( other.phi_1f ),
                     phi_2f( other.phi_2f),
-                    phi_3c( other.phi_3c),
-                    beta_3c( other.beta_3c) {}
+                    phi_3c( other.phi_3c)  {}
 
 
   //  Move Operator
