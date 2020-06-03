@@ -4,7 +4,7 @@
     <link name="moving_platform">
     </link>
 
-    <link name="track_gauge">
+    <link name="front_axle">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
@@ -40,15 +40,33 @@
       </visual>
     </link>
 
+      <link name="castor_cylinder">
+      <visual>
+        <origin xyz="-0.42 0 0.05" rpy="0 0 0" />
+        <geometry>
+          <cylinder length="0.02" radius="0.02"/>
+        </geometry>
+      </visual>
+    </link>
+
     <link name="castor_arm">
       <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="-0.52 0 0.05" rpy="0 0 0" />
         <geometry>
-          <box size="0.08 0.5  0.02"/>
+          <box size="0.16 0.02  0.02"/>
         </geometry>
         <material name="Cyan">
           <color rgba="0 1.0 1.0 1.0"/>
         </material>
+      </visual>
+    </link>
+
+   <link name="castor_wheel">
+      <visual>
+        <origin xyz="-0.60 0 0" rpy="1.57075 0 0" />
+        <geometry>
+          <cylinder length="0.1" radius="0.05"/>
+        </geometry>
       </visual>
     </link>
 
@@ -58,7 +76,7 @@
 
     <joint name="attach_to_tf" type="fixed">
       <parent link="moving_platform"/>
-      <child link="track_gauge"/>
+      <child link="front_axle"/>
       <origin xyz="0 0 0" rpy="0 0 0" />
     </joint>
 
@@ -83,13 +101,29 @@
       <origin rpy="0 0 0" xyz="-0.2 0 0"/>
     </joint>
 
-    <joint name="castor_joint" type="revolute">
+    <joint name="castor_cylinder_joint" type="revolute">
       <limit lower="-1.57" upper="1.57" effort="10" velocity="3"/>
       <parent link="joint_offset"/>
-      <child link="castor_arm"/>
-      <origin xyz="0 0 0" rpy="-0.04 0 0" />
+      <child link="castor_cylinder"/>
+      <origin xyz="0 0 0" rpy="-0.01 0 0" />
       <axis xyz="0 0 1" />
     </joint>
+
+   <joint name="joint_offset_castor" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="castor_cylinder"/>
+      <child link="castor_arm"/>
+      <origin rpy="0 0 0" xyz="-0.5 0 0"/>
+    </joint>
+  
+   <joint name="castor_wheel_joint" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="castor_arm"/>
+      <child link="castor_wheel"/>
+      <origin rpy="0 0 0" xyz="0 0.2 0"/>
+    </joint>
+
+
 
 
 
