@@ -94,22 +94,22 @@ simulation_messages::IRSensors SensorsStatus()
 int main (int argc, char** argv)
 {
 
-  // ROS Initialization
-  ros::init(argc, argv, "sensor");
+	// ROS Initialization
+	ros::init(argc, argv, "sensor");
 
-  //  Required NodeHandles
-  ros::NodeHandle nh_loc("~"), nh_glob;
+	//  Required NodeHandles
+	ros::NodeHandle nh_loc("~"), nh_glob;
 
-  //  Global world parameters
-  double xSpacing, ySpacing, lineThickness;					// [m]
-  nh_glob.param("x_spacing", xSpacing, 1.0) ;
-  nh_glob.param("y_spacing", ySpacing, 1.0) ;
+	//  Global world parameters
+	double xSpacing, ySpacing, lineThickness;					// [m]
+	nh_glob.param("x_spacing", xSpacing, 1.0) ;
+	nh_glob.param("y_spacing", ySpacing, 1.0) ;
 	nh_glob.param("line_thickness", lineThickness, 0.005) ;
 
 	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);
 
-  // Sensor parameters
+	// Sensor parameters
 	double x1, y1;
 	nh_loc.param("x1_pos", x1, 0.0) ;
 	nh_loc.param("y1_pos", y1, -0.1) ;	// First one on the right of the robot
@@ -135,17 +135,14 @@ int main (int argc, char** argv)
 
 	ros::Rate rate(150);
 
-  while (ros::ok()) {
-      ros::spinOnce();
+	while (ros::ok()) {
+	  ros::spinOnce();
 
 			IRSensors.publish( SensorsStatus() ) ;
 
 			if( sensorsActivations.markers.size() )
 				SensorsDisplay.publish( sensorsActivations );
 
-      rate.sleep();
-  }
-
-
-
+	  rate.sleep();
+	}
 }

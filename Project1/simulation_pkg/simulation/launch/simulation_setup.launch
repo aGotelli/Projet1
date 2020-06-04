@@ -48,7 +48,7 @@
 
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-      <param name="track_gauge"         value="$(arg a)"            />
+      <param name="front_axle"          value="$(arg a)"            />
       <param name="wheel_radius"        value="$(arg r)"            />
       <param name="joint_offset"        value="$(arg b)"            />
       <param name="castor_arm"          value="$(arg c)"            />

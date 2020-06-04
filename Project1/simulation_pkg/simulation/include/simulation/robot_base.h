@@ -62,7 +62,7 @@
 
  #include <simulation_messages/Encoders.h>
  #include <simulation_messages/IRSensors.h>
- #include <simulation_messages/SensorStatus.h>
+
 
 
 
@@ -119,14 +119,12 @@ private:
 
   //Publisher and subscriber definition
   ros::Subscriber commandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
-
-  ros::ServiceClient sensorsServer { nh_glob.serviceClient<simulation_messages::SensorStatus>("CheckSensorStatus") } ;
-
   ros::Publisher RobotMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;
 
   ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
   ros::Publisher IRSensors { nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1) } ;
+  
   ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 10) } ;
 
   tf::TransformBroadcaster br;
