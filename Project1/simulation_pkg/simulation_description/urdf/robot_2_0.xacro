@@ -8,11 +8,11 @@
   <xacro:property name="joint_offset" value="0.4"/>
   <xacro:property name="castor_arm" value="0.15"/>
 
-  <xacro:property name="sensor_right_x" value="0"/>
-  <xacro:property name="sensor_right_y" value="-0.1"/>
+  <xacro:property name="sensor_1_x" value="0"/>
+  <xacro:property name="sensor_1_y" value="-0.1"/>
 
-  <xacro:property name="sensor_left_x" value="0"/>
-  <xacro:property name="sensor_left_y" value="0.1"/>
+  <xacro:property name="sensor_2_x" value="0"/>
+  <xacro:property name="sensor_2_y" value="0.1"/>
 
   <xacro:property name="sensor_radius" value="0.02"/>
   <xacro:property name="sensor_height" value="0.05"/>
@@ -36,86 +36,106 @@
       </visual>
   </link>
 
-  <link name="left_wheel">
-      <visual>
-        <origin xyz="0 0 0" rpy="-1.57075 0 0" />
-        <geometry>
-          <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
-        </geometry>
-      </visual>
-    </link>
+  <!-- The frame of the wheel as indicated in the MOBRO course -->
+  <link name="fixed_wheel_1_frame">
+  </link>
 
-    <link name="right_wheel">
-      <visual>
-        <origin xyz="0 0 0" rpy="1.57075 0 0" />
-        <geometry>
-          <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
-        </geometry>
-      </visual>
-    </link>
+  <!-- Wheel in the negative side of the moving platform y axis -->
+  <link name="fixed_wheel_1">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57075 0 0" />
+      <geometry>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
 
-    <link name="joint_offset">
+  <!-- The frame of the wheel as indicated in the MOBRO course -->
+  <link name="fixed_wheel_2_frame">
+  </link>
+
+  <!-- Wheel in the positive side of the moving platform y axis -->
+  <link name="fixed_wheel_2">
+    <visual>
+      <origin xyz="0 0 0" rpy="-1.57075 0 0" />
+      <geometry>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- Beam from the moving platform frame origin to the castor joint -->
+  <link name="joint_offset">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${joint_offset} ${thickness}  ${thickness}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- The castor joint that is a revolute one -->
+  <link name="castor_cylinder">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${thickness}" radius="${wheel_thick}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- Part connecting the castor wheel to the revolute joint -->
+  <link name="castor_arm">
+    <visual>
+      <origin xyz="${-0.5*castor_arm} 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${castor_arm} ${thickness}  ${thickness}"/>
+      </geometry>
+      <material name="Cyan">
+        <color rgba="0 1.0 1.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- The frame of the wheel as indicated in the MOBRO course -->
+  <link name="castor_wheel_frame">
+  </link>
+
+  <!-- The robot castor wheel (wheel 3) -->
+  <link name="castor_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57075 0 0" />
+      <geometry>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- Definition of the sensor one -->
+  <link name="sensor_1">
+     <visual>
+       <origin xyz="0 0 0" rpy="0 0 0" />
+       <geometry>
+         <cylinder length="${sensor_height}" radius="${sensor_radius}"/>
+       </geometry>
+       <material name="Black">
+         <color rgba="0 0 0 1.0"/>
+       </material>
+     </visual>
+   </link>
+
+   <!-- Definition of the sensor one -->
+   <link name="sensor_2">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <box size="${joint_offset} ${thickness}  ${thickness}"/>
+          <cylinder length="${sensor_height}" radius="${sensor_radius}"/>
         </geometry>
-      </visual>
-    </link>
-
-      <link name="castor_cylinder">
-      <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <geometry>
-          <cylinder length="${thickness}" radius="${wheel_thick}"/>
-        </geometry>
-      </visual>
-    </link>
-
-    <link name="castor_arm">
-      <visual>
-        <origin xyz="${-0.5*castor_arm} 0 0" rpy="0 0 0" />
-        <geometry>
-          <box size="${castor_arm} ${thickness}  ${thickness}"/>
-        </geometry>
-        <material name="Cyan">
-          <color rgba="0 1.0 1.0 1.0"/>
+        <material name="Black">
+          <color rgba="0 0 0 1.0"/>
         </material>
       </visual>
     </link>
-
-   <link name="castor_wheel">
-      <visual>
-        <origin xyz="0 0 0" rpy="1.57075 0 0" />
-        <geometry>
-          <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
-        </geometry>
-      </visual>
-    </link>
-
-    <link name="sensor_right">
-       <visual>
-         <origin xyz="0 0 0" rpy="0 0 0" />
-         <geometry>
-           <cylinder length="${sensor_height}" radius="${sensor_radius}"/>
-         </geometry>
-         <material name="Black">
-           <color rgba="0 0 0 1.0"/>
-         </material>
-       </visual>
-     </link>
-
-     <link name="sensor_left">
-        <visual>
-          <origin xyz="0 0 0" rpy="0 0 0" />
-          <geometry>
-            <cylinder length="${sensor_height}" radius="${sensor_radius}"/>
-          </geometry>
-          <material name="Black">
-            <color rgba="0 0 0 1.0"/>
-          </material>
-        </visual>
-      </link>
 
 
 
@@ -123,87 +143,121 @@
 
   <!--                Joints                  -->
 
-  <joint name="move_along_x" type="prismatic">
-    <parent link="map"/>
-    <child link="x_movement"/>
-    <limit effort="1000.0" lower="-10" upper="10" velocity="0.5"/>
-    <axis xyz="1 0 0"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-  </joint>
+    <!-- To make it possible to move the robot from the Cpp -->
+    <joint name="move_along_x" type="prismatic">
+      <parent link="map"/>
+      <child link="x_movement"/>
+      <limit effort="1000.0" lower="-10" upper="10" velocity="0.5"/>
+      <axis xyz="1 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
 
-  <joint name="move_along_y" type="prismatic">
-    <parent link="x_movement"/>
-    <child link="y_movement"/>
-    <limit effort="1000.0" lower="-10" upper="10" velocity="0.5"/>
-    <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-  </joint>
+    <!-- To make it possible to move the robot from the Cpp -->
+    <joint name="move_along_y" type="prismatic">
+      <parent link="x_movement"/>
+      <child link="y_movement"/>
+      <limit effort="1000.0" lower="-10" upper="10" velocity="0.5"/>
+      <axis xyz="0 1 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
 
-  <joint name="heading" type="continuous">
-    <parent link="y_movement"/>
-    <child link="moving_platform"/>
-    <axis xyz="0 0 1"/>
-    <origin rpy="0 0 0" xyz="0 0 ${radius}"/>
-  </joint>
+    <!-- To make it possible to rotate the robot from the Cpp -->
+    <joint name="heading" type="continuous">
+      <parent link="y_movement"/>
+      <child link="moving_platform"/>
+      <axis xyz="0 0 1"/>
+      <origin rpy="0 0 0" xyz="0 0 ${radius}"/>
+    </joint>
 
-  <joint name="left_wheel_joint" type="continuous">
-    <axis rpy="0 0 0" xyz="0 1 0"/>
-    <parent link="moving_platform"/>
-    <child link="left_wheel"/>
-    <origin rpy="0 0 0" xyz="0 ${front_axle} 0"/>
-  </joint>
+    <!-- To make it possible to rotate the robot fixed wheel one from the cpp -->
+    <joint name="fixed_wheel_1_joint" type="continuous">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="fixed_wheel_1_frame"/>
+      <child link="fixed_wheel_1"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
 
-  <joint name="right_wheel_joint" type="continuous">
-    <axis rpy="0 0 0" xyz="0 1 0"/>
-    <parent link="moving_platform"/>
-    <child link="right_wheel"/>
-    <origin rpy="0 0 0" xyz="0 -${front_axle} 0"/>
-  </joint>
+    <!-- To make it possible to rotate the robot fixed wheel two from the cpp -->
+    <joint name="fixed_wheel_2_joint" type="continuous">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="fixed_wheel_2_frame"/>
+      <child link="fixed_wheel_2"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
 
-  <joint name="joint_offset_joint" type="fixed">
-    <axis rpy="0 0 0" xyz="0 1 0"/>
-    <parent link="moving_platform"/>
-    <child link="joint_offset"/>
-    <origin rpy="0 0 0" xyz="-${.5*joint_offset} 0 0"/>
-  </joint>
+    <!-- To make it possible to rotate the robot castor wheel from the cpp -->
+    <joint name="castor_wheel_joint" type="continuous">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="castor_wheel_frame"/>
+      <child link="castor_wheel"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
 
-  <joint name="castor_joint" type="revolute">
-    <limit lower="-1.57" upper="1.57" effort="10" velocity="3"/>
-    <parent link="joint_offset"/>
-    <child link="castor_cylinder"/>
-    <origin xyz="-${.5*joint_offset} 0 0" rpy="0 0 0" />
-    <axis xyz="0 0 1" />
-  </joint>
-
- <joint name="joint_offset_castor" type="fixed">
-    <axis rpy="0 0 0" xyz="0 1 0"/>
-    <parent link="castor_cylinder"/>
-    <child link="castor_arm"/>
-    <origin rpy="0 0 0" xyz="0 ${wheel_thick + .5*thickness} 0"/>
-  </joint>
-
- <joint name="castor_wheel_joint" type="continuous">
-    <axis rpy="0 0 0" xyz="0 1 0"/>
-    <parent link="castor_arm"/>
-    <child link="castor_wheel"/>
-    <origin rpy="0 0 0" xyz="-${castor_arm} -${wheel_thick + .5*thickness} 0"/>
-  </joint>
-
-  <joint name="fix_right_sensor" type="fixed">
-    <parent link="moving_platform"/>
-    <child link="sensor_right"/>
-    <origin rpy="0 0 0" xyz="${sensor_right_x} ${sensor_right_y} 0"/>
-  </joint>
-
-  <joint name="fix_left_sensor" type="fixed">
-    <parent link="moving_platform"/>
-    <child link="sensor_left"/>
-    <origin rpy="0 0 0" xyz="${sensor_left_x} ${sensor_left_y} 0"/>
-  </joint>
+    <!-- To make it possible to update the beta angle form the cpp -->
+    <joint name="castor_joint" type="revolute">
+      <limit lower="-1.57" upper="1.57" effort="10" velocity="3"/>
+      <parent link="joint_offset"/>
+      <child link="castor_cylinder"/>
+      <origin xyz="-${.5*joint_offset} 0 0" rpy="0 0 0" />
+      <axis xyz="0 0 1" />
+    </joint>
 
 
 
+    <!--                Joints   FIXED               -->
 
+
+    <!-- Attach the frame to the moving platform -->
+    <joint name="place_fixed_wheel_1_frame" type="fixed">
+      <parent link="moving_platform"/>
+      <child link="fixed_wheel_1_frame"/>
+      <origin rpy="0 0 0" xyz="0 -${front_axle} 0"/>
+    </joint>
+
+    <!-- Attach the frame to the moving platform -->
+    <joint name="place_fixed_wheel_2_frame" type="fixed">
+      <parent link="moving_platform"/>
+      <child link="fixed_wheel_2_frame"/>
+      <origin rpy="0 0 0" xyz="0 ${front_axle} 0"/>
+    </joint>
+
+    <!-- Attach the frame to the moving platform -->
+    <joint name="place_castor_wheel_frame" type="fixed">
+      <parent link="castor_arm"/>
+      <child link="castor_wheel_frame"/>
+      <origin rpy="0 0 3.14159" xyz="-${castor_arm} -${wheel_thick + .5*thickness} 0"/>
+    </joint>
+
+    <!-- Fix the beam connecting the moving platform with the castor joint -->
+    <joint name="moving_platform__to__joint_offset" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="moving_platform"/>
+      <child link="joint_offset"/>
+      <origin rpy="0 0 0" xyz="-${.5*joint_offset} 0 0"/>
+    </joint>
+
+
+    <!-- Connect the revolute joint to the arm of the castor wheel -->
+    <joint name="castor_cylinder__to__castor_arm" type="fixed">
+      <axis rpy="0 0 0" xyz="0 1 0"/>
+      <parent link="castor_cylinder"/>
+      <child link="castor_arm"/>
+      <origin rpy="0 0 0" xyz="0 ${wheel_thick + .5*thickness} 0"/>
+    </joint>
+
+    <!-- Attach the sensor one to the robot body -->
+    <joint name="moving_platform__to__sensor_1" type="fixed">
+      <parent link="moving_platform"/>
+      <child link="sensor_1"/>
+      <origin rpy="0 0 0" xyz="${sensor_1_x} ${sensor_1_y} 0"/>
+    </joint>
+
+    <!-- Attach the sensor two to the robot body -->
+    <joint name="moving_platform__to__sensor_2" type="fixed">
+      <parent link="moving_platform"/>
+      <child link="sensor_2"/>
+      <origin rpy="0 0 0" xyz="${sensor_2_x} ${sensor_2_y} 0"/>
+    </joint>
 
 
 </robot>
