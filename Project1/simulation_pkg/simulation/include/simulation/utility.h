@@ -338,13 +338,6 @@ namespace utility
     generatedPath.color.b = 1.0f;
     generatedPath.color.a = 1.0f;
 
-    //  Ensure generation with two points close to each other
-    geometry_msgs::Point p1, p2;
-    p2.x = -0.01;
-    p2.y = 0.0f;
-    generatedPath.points.push_back( p1 );
-    generatedPath.points.push_back( p2 );
-
   }
 
 

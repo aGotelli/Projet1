@@ -257,6 +257,12 @@ void Robot_2_0::PrepareMessages()
   actuations.position.push_back(q.theta) ;
   actuations.name.push_back("castor_joint") ;
   actuations.position.push_back(q.beta_3c) ;
+  actuations.name.push_back("right_wheel_joint") ;
+  actuations.position.push_back(q.phi_1f) ;
+  actuations.name.push_back("left_wheel_joint") ;
+  actuations.position.push_back(q.phi_2f) ;
+  actuations.name.push_back("castor_wheel_joint") ;
+  actuations.position.push_back(q.phi_3c) ;
 
 
 }

@@ -28,6 +28,9 @@
   <arg name="joystick_tag"  default="js0"   />
 
 
+  <arg name="record" default="true" />
+
+
   <!-- joy node -->
   <node respawn="true" pkg="joy" type="joy_node" name="joy_node" if="$(arg use_joystick)">
     <param name="dev" type="string" value="/dev/input/$(arg joystick_tag)" />
@@ -40,7 +43,7 @@
   <group ns="simulation">
 
     <!-- The node to save all the needed data -->
-    <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen" required="true">
+    <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen" required="true" if="$(arg record)">
     </node>
 
     <!-- The robot_2_0 -->

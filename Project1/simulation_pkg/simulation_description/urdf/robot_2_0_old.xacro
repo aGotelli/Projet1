@@ -88,7 +88,7 @@
       <visual>
         <origin xyz="0 0 0" rpy="1.57075 0 0" />
         <geometry>
-          <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+          <cylinder length="${wheel_thick}" radius="${radius}"/>
         </geometry>
       </visual>
     </link>
@@ -146,14 +146,14 @@
     <origin rpy="0 0 0" xyz="0 0 ${radius}"/>
   </joint>
 
-  <joint name="left_wheel_joint" type="continuous">
+  <joint name="left_wheel_joint" type="fixed">
     <axis rpy="0 0 0" xyz="0 1 0"/>
     <parent link="moving_platform"/>
     <child link="left_wheel"/>
     <origin rpy="0 0 0" xyz="0 ${front_axle} 0"/>
   </joint>
 
-  <joint name="right_wheel_joint" type="continuous">
+  <joint name="right_wheel_joint" type="fixed">
     <axis rpy="0 0 0" xyz="0 1 0"/>
     <parent link="moving_platform"/>
     <child link="right_wheel"/>
@@ -182,7 +182,7 @@
     <origin rpy="0 0 0" xyz="0 ${wheel_thick + .5*thickness} 0"/>
   </joint>
 
- <joint name="castor_wheel_joint" type="continuous">
+ <joint name="castor_wheel_joint" type="fixed">
     <axis rpy="0 0 0" xyz="0 1 0"/>
     <parent link="castor_arm"/>
     <child link="castor_wheel"/>

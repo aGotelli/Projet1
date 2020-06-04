@@ -68,6 +68,9 @@
   <arg name="joystick_tag"  value="js1"   />
 
 
+  <arg name="record" default="true" />
+
+
   <!-- Include the launch file which executes the simulations -->
   <include file="$(find simulation)/launch/simulation_setup.launch" pass_all_args="true">
   </include>
