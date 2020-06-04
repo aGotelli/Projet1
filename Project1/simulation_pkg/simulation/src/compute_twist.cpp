@@ -88,29 +88,29 @@ buttons: [1, 2, 3, 4, L1, R1, L2, R2, SELECT, START]
 int main (int argc, char** argv)
 {
 
-	//ROS Initialization
-    ros::init(argc, argv, "compute_twist");
+  //ROS Initialization
+  ros::init(argc, argv, "compute_twist");
 
-    ros::NodeHandle nh_glob;
+  ros::NodeHandle nh_glob;
 
-    
-    // Declare your node's subscriptions and service clients
-    ros::Subscriber joystickState = nh_glob.subscribe<sensor_msgs::Joy>("/joy", 1, JoystickStateUpdate) ;
+  
+  // Declare your node's subscriptions and service clients
+  ros::Subscriber joystickState = nh_glob.subscribe<sensor_msgs::Joy>("/joy", 1, JoystickStateUpdate) ;
 
-    // Declare you publishers and service servers
-    ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
+  // Declare you publishers and service servers
+  ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
 
 
-    ros::Rate rate(150);
-    while (ros::ok()){
-        ros::spinOnce();
+  ros::Rate rate(150);
+  while (ros::ok()){
+      ros::spinOnce();
 
-        // Not really much to do here..
-        if( !joystickIsReceived )
-          continue;
+      // Not really much to do here..
+      if( !joystickIsReceived )
+        continue;
 
-        robotControl.publish( twistToRobot ) ;
+      robotControl.publish( twistToRobot ) ;
 
-        rate.sleep();
-    }
+      rate.sleep();
+  }
 }
