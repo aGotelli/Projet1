@@ -102,21 +102,21 @@ int main (int argc, char** argv)
 
   //  Global world parameters
   double xSpacing, ySpacing, lineThickness;					// [m]
-  nh_glob.param("x_spacing", xSpacing, 0.2) ;
-  nh_glob.param("y_spacing", ySpacing, 0.2) ;
+  nh_glob.param("x_spacing", xSpacing, 1.0) ;
+  nh_glob.param("y_spacing", ySpacing, 1.0) ;
 	nh_glob.param("line_thickness", lineThickness, 0.005) ;
 
-	//	Create the world object 
+	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);
 
   // Sensor parameters
 	double x1, y1;
 	nh_loc.param("x1_pos", x1, 0.0) ;
-	nh_loc.param("y1_pos", y1, -0.2) ;	// First one on the right of the robot
+	nh_loc.param("y1_pos", y1, -0.1) ;	// First one on the right of the robot
 
 	double x2, y2;
 	nh_loc.param("x2_pos", x2, 0.0) ;
-	nh_loc.param("y2_pos", y2, 0.2) ;		// First one on the left of the robot
+	nh_loc.param("y2_pos", y2, 0.1) ;		// First one on the left of the robot
 
 	// Inizialize the vector
 	robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;

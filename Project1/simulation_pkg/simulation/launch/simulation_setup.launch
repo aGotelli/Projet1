@@ -11,15 +11,15 @@
   <arg name="y_init"      default="0.0" />
   <arg name="theta_init"  default="0.0" />
 
-  <arg name="x_spacing"       default="0.2"   />
-  <arg name="y_spacing"       default="0.2"   />
+  <arg name="x_spacing"       default="1.0"   />
+  <arg name="y_spacing"       default="1.0"   />
   <arg name="line_thickness"  default="0.005" />
 
   <arg name="sensor_right_x" default="0.0"  />
-  <arg name="sensor_right_y" default="-0.2" />
+  <arg name="sensor_right_y" default="-0.1" />
 
   <arg name="sensor_left_x" default="0.0" />
-  <arg name="sensor_left_y" default="0.2" />
+  <arg name="sensor_left_y" default="0.1" />
 
   <arg name="file_name"   default="you_forgot_to_put_a_name"  />
   <arg name="folder_name" default="recorded_data"             />
@@ -45,24 +45,25 @@
 
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-      <param name="track_gauge"         value="$(arg a)"          />
-      <param name="wheel_radius"        value="$(arg r)"          />
-      <param name="joint_offset"        value="$(arg b)"          />
-      <param name="castor_arm"          value="$(arg c)"          />
-      <param name="actuator_max_speed"  value="$(arg w_max)"      />
-      <param name="x_init"              value="$(arg x_init)"     />
-      <param name="y_init"              value="$(arg y_init)"     />
-      <param name="theta_init"          value="$(arg theta_init)" />
+      <param name="track_gauge"         value="$(arg a)"            />
+      <param name="wheel_radius"        value="$(arg r)"            />
+      <param name="joint_offset"        value="$(arg b)"            />
+      <param name="castor_arm"          value="$(arg c)"            />
+      <param name="actuator_max_speed"  value="$(arg w_max)"        />
+      <param name="x_init"              value="$(arg x_init)"       />
+      <param name="y_init"              value="$(arg y_init)"       />
+      <param name="theta_init"          value="$(arg theta_init)"   />
     </node>
 
     <!-- The sensor -->
     <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen" required="true">
-      <param name="x1_pos" value="$(arg sensor_right_x)"  />
-      <param name="y1_pos" value="$(arg sensor_right_y)"  />
-      <param name="x2_pos" value="$(arg sensor_left_x)"   />
-      <param name="y2_pos" value="$(arg sensor_left_y)"   />
-      <param name="x_spacing" value="$(arg x_spacing)"    />
-      <param name="y_spacing" value="$(arg y_spacing)"    />
+      <param name="x1_pos"          value="$(arg sensor_right_x)"   />
+      <param name="y1_pos"          value="$(arg sensor_right_y)"   />
+      <param name="x2_pos"          value="$(arg sensor_left_x)"    />
+      <param name="y2_pos"          value="$(arg sensor_left_y)"    />
+      <param name="x_spacing"       value="$(arg x_spacing)"        />
+      <param name="y_spacing"       value="$(arg y_spacing)"        />
+      <param name="line_thickness"  value="$(arg line_thickness)"   />
     </node>
 
     <!-- Launch Rviz -->
@@ -70,8 +71,10 @@
     </node>
 
   </group>
-
-  <param name="robot_description" textfile="$(find simulation)/urdf/robot_2_0.urdf" />
+<!--
+  <param name="robot_description" textfile="$(find simulation_description)/urdf/robot_2_0.urdf" />
+-->
+  <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
   </node>

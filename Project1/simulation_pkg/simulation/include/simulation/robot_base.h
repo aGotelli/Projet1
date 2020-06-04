@@ -191,7 +191,7 @@ void RobotBase::isMoving()
       //RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
-      //RobotMarker.publish( generatedPath ) ;
+      RobotMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
       jointsController.publish( actuations ) ;

@@ -49,7 +49,6 @@
 
 
 
-
 class Robot_2_0 : public RobotBase {
 public:
   Robot_2_0()=default;
@@ -126,7 +125,7 @@ private:
   const double frontAxle {0.2} ;              //  [m]
   const double wheelRadius {0.05 };           //  [m]
   const double jointOffSet {0.4 };            //  [m]
-  const double castorArmLength {0.08 };       //  [m]
+  const double castorArmLength {0.15 };       //  [m]
   const double wMax { 10 };                   //  [RAD/s]
 
   // Input vector

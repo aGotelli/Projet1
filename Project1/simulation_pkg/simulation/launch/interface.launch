@@ -23,8 +23,8 @@
   <arg name="w_max" value="10.0"  />    <!-- RAD/s  -->
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="5.0" />  <!-- meters -->
-  <arg name="y_init"      value="5.0" />  <!-- meters -->
+  <arg name="x_init"      value="1.0" />  <!-- meters -->
+  <arg name="y_init"      value="1.0" />  <!-- meters -->
   <arg name="theta_init"  value="45.0" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
@@ -46,10 +46,10 @@
 
   <!-- Position of the sensors in the robot frame [in meters]-->
   <arg name="sensor_right_x" value="0.0"  />
-  <arg name="sensor_right_y" value="-0.2" />
+  <arg name="sensor_right_y" value="-0.1" />
 
   <arg name="sensor_left_x" value="0.0" />
-  <arg name="sensor_left_y" value="0.2" />
+  <arg name="sensor_left_y" value="0.1" />
 
 
   <!-- Specify the file name and the folder where to save the files needed to
@@ -64,7 +64,7 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="false" />
+  <arg name="use_joystick"  value="true" />
   <arg name="joystick_tag"  value="js1"   />
 
 

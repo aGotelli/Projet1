@@ -122,6 +122,10 @@ public:
             lineThickness( _lineThickness ) {
               ROS_INFO_STREAM("Completely user-defined world") ;
             }
+  World(const World& other) : xSpacing(other.XSpacing()),
+                              ySpacing(other.YSpacing()),
+                              lineThickness(other.LineThickness()) {}
+
 
  inline const bool operator==(const World& other) const
  {
@@ -191,7 +195,7 @@ public:
 private:
 
   // Sensor position in homogeneus coordinates
-  const Eigen::Vector3d HCoord {0.05, 0.0, 1.0};
+  const Eigen::Vector3d HCoord {0.1, 0.0, 1.0};
 
   //  Sensor has its own istance of the world
   const World world;

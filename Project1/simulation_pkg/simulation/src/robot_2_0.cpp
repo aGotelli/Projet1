@@ -68,7 +68,7 @@ int main (int argc, char** argv)
     nh_loc.param("track_gauge", trackGauge, 0.2) ;
     nh_loc.param("wheel_radius", wheelRadius, 0.05) ;
     nh_loc.param("joint_offset", jointOffSet, 0.4) ;
-    nh_loc.param("castor_arm", castorArmLength, 0.08) ;
+    nh_loc.param("castor_arm", castorArmLength, 0.15) ;
     nh_loc.param("actuator_max_speed", wMax, (double)10.0) ;
 
     Robot_2_0 robot(utility::Pose2D(xInit, yInit, thetaInit),

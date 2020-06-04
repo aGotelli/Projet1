@@ -1,3 +1,0 @@
-robot_2_0: {actuator_max_speed: 10.0, castor_arm: 0.08, joint_offset: 0.4, theta_init: 45.0,
-  track_gauge: 0.2, wheel_radius: 0.05, x_init: 5.0, y_init: 5.0}
-sensor: {x1_pos: 0.0, x2_pos: 0.0, x_spacing: 1, y1_pos: -0.2, y2_pos: 0.2, y_spacing: 1}
