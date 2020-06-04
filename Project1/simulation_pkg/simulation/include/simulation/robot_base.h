@@ -92,9 +92,9 @@ protected:
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
   geometry_msgs::PoseStamped odomPosture;     //  No need of default initialization
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
-  tf::Transform movingPlatformFrame;
+  //tf::Transform movingPlatformFrame;
 
-  //visualization_msgs::Marker robotMarker;     //  No need of default initialization
+  visualization_msgs::Marker robotMarker;     //  No need of default initialization
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
 
   // Time handling
@@ -124,10 +124,10 @@ private:
   ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
   ros::Publisher IRSensors { nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1) } ;
-  
+
   ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 10) } ;
 
-  tf::TransformBroadcaster br;
+  //tf::TransformBroadcaster br;
 
   ros::Publisher jointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
@@ -139,7 +139,7 @@ private:
 void RobotBase::isMoving()
 {
 
-  //utility::InitMarker( robotMarker ) ;
+  utility::InitMarker( robotMarker ) ;
 
   utility::InitLineStrip( generatedPath ) ;
 
@@ -174,7 +174,7 @@ void RobotBase::isMoving()
 
 */
       //  Update the marker position for visualization
-      //utility::UpdateMarker( robotPosture, robotMarker ) ;
+      utility::UpdateMarker( odomPosture, robotMarker ) ;
 
       //  Update the line strip for visualization
       utility::UpdatePath( robotPosture, generatedPath ) ;
@@ -186,7 +186,7 @@ void RobotBase::isMoving()
       Encoders.publish( wheelsAngles );
 
       //  Publish the marker for visualization
-      //RobotMarker.publish( robotMarker ) ;
+      RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
       if( generatedPath.points.size() >= 2)
@@ -212,24 +212,24 @@ void RobotBase::isMoving()
 
 
 
-
-    //  Declare the message
-    nav_msgs::Odometry robotOdometry;
-
-    //  Stamp the current time
-    robotOdometry.header.stamp = currentTime;
-
-    //  Set the frames
-    robotOdometry.header.frame_id = "map";
-    robotOdometry.child_frame_id = "moving_platform";
-
-    //  Set the position
-    robotOdometry.pose.pose = odomPosture.pose;
-
-    //  Publish the computed odometry
-    Odometry.publish( robotOdometry ) ;
-
 */
+      //  Declare the message
+      nav_msgs::Odometry robotOdometry;
+
+      //  Stamp the current time
+      robotOdometry.header.stamp = currentTime;
+
+      //  Set the frames
+      robotOdometry.header.frame_id = "map";
+      robotOdometry.child_frame_id = "moving_platform";
+
+      //  Set the position
+      robotOdometry.pose.pose = odomPosture.pose;
+
+      //  Publish the computed odometry
+      Odometry.publish( robotOdometry ) ;
+
+
       //  Wait for next iteration
       robotFrameRate.sleep();
 
