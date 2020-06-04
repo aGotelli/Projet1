@@ -102,9 +102,9 @@ int main (int argc, char** argv)
 
 	//  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_glob.param("x_spacing", xSpacing, 1.0) ;
-	nh_glob.param("y_spacing", ySpacing, 1.0) ;
-	nh_glob.param("line_thickness", lineThickness, 0.005) ;
+	nh_loc.param("x_spacing", xSpacing, 1.0) ;
+	nh_loc.param("y_spacing", ySpacing, 1.0) ;
+	nh_loc.param("line_thickness", lineThickness, 0.005) ;
 
 	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);

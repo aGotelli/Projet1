@@ -29,14 +29,14 @@
           :                         ______|________________|_______   up
           :                               |                |
           :                               |                |
-          :                               |       S        |
+          :                               |       R        |
           :                               |                |
          -:-------------------> X   ______|________________|_______   down
           :                               |                |
                                         left             right
 
-            The sensor, assumed in the position S, has its own
-          coordinates (S.x, S.y). Flooring the result of the division of
+            The robot, assumed in the position R, has its own
+          coordinates (R.x, R.y). Flooring the result of the division of
           theese coordinates by the line offsets (xSpacing and ySpacing)
           and multipling it back with the offset will give the "left" and
           "down" coordinate represented in the design. By adding the offset
@@ -47,7 +47,7 @@
           that matters here. The aim is just to check in a "boolean way" and
           there is no need of determing which line is under the sensor.
 
-            Once the expression of the lines around the sensor are known:
+            Once the expression of the lines around the robot are known:
           "vertical" line x = left or x = right
           "horizontal" line y = down or y = up
           Their are expressed in homogeneus coordinates. A line in homogeneus
@@ -59,12 +59,12 @@
                                           | 1 |
 
             Once the line expression in homogeneus coordinates is computed the
-          distance from the sensor to these lines is the result of their dot
+          distance from the sensor to this line is the result of their dot
           product. In fact, the dot product between a point and a line is the
           length of the segment that is normal to the line and passes throught
           the point.
 
-            The expression of the lines around the sensor are concatenated into
+            The expression of the lines around the robot are concatenated into
           a matrix. As a result, it is possible to directly compute the
           distances from them and the point (that is the sensor).
           In other words, the result is a vector which each of its elements
@@ -111,7 +111,7 @@ public:
         const double _ySpacing) :
           xSpacing( _xSpacing ),
           ySpacing( _ySpacing ) { /*  lineWidth has default value  */
-            ROS_DEBUG_STREAM("User-defined world only for line offset") ;
+            ROS_INFO_STREAM("User-defined world only for line offset") ;
           }
 
   World(const double _xSpacing,
@@ -120,8 +120,7 @@ public:
             xSpacing( _xSpacing ),
             ySpacing( _ySpacing ),
             lineThickness( _lineThickness ) {
-              ROS_INFO_STREAM("Completely user-defined world. xSpacing : " <<
-              xSpacing << " ySpacing : " << ySpacing << " lineThickness : " << lineThickness) ;
+              ROS_INFO_STREAM("Completely user-defined world") ;
             }
   World(const World& other) : xSpacing(other.XSpacing()),
                               ySpacing(other.YSpacing()),
@@ -162,13 +161,13 @@ public:
  Sensor()=default;
 
  Sensor(const double _x, const double _y) : HCoord( Eigen::Vector3d(_x, _y, 1.0) ) {
-   ROS_DEBUG_STREAM("User-defined sensor only for position") ;
+   ROS_INFO_STREAM("User-defined sensor only for position") ;
  }
 
  Sensor(const double _x, const double _y, const World& _world) :
                                 HCoord( Eigen::Vector3d(_x, _y, 1.0) ),
                                 world(_world) {
-                                  ROS_DEBUG_STREAM("Completely user-defined sensor") ;
+                                  ROS_INFO_STREAM("Completely user-defined sensor") ;
                                 }
 
 
@@ -228,17 +227,17 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 
 void Sensor::CheckStatus() const
 {
+  //  Obtain the robot position from the homogeneus transform
+  const Eigen::Vector3d robotPose = oTm.col(2) ;
 
-  //  First, with the knowledge of the robot position obtain the sensor position
-  const auto sensorPosition = this->AbsolutePosition() ;
-
-  //  With the knowledge of the sensor position obtain the coordinates
+  //  First, with the knowledge of the robot position obtain the coordinates
   //  of the lines surrounding it
-  const double left = std::floor( sensorPosition.x/world.XSpacing() )*world.XSpacing();
-  const double down = std::floor( sensorPosition.y/world.YSpacing() )*world.YSpacing();
+  const int left = std::floor( robotPose[0]/world.XSpacing() )*world.XSpacing();
+  const int down = std::floor( robotPose[1]/world.YSpacing() )*world.YSpacing();
 
-  const double right = left + world.XSpacing() ;
-  const double up    = down + world.YSpacing() ;
+  const int right = left + world.XSpacing() ;
+  const int up    = down + world.YSpacing() ;
+
 
   //  For a "vertical" line x = a -> x - a = 0.
   //  that is in homogeneus coordinates 1*x + 0*y -a*c = 0

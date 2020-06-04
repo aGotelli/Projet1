@@ -56,7 +56,7 @@ public:
   Robot_2_0(const double _frontAxle, const double _wheelRadius,
             const double _jointOffSet, const double _castorArmLength,
             const double _wMax) :
-            frontAxle(_frontAxle),
+            trackGauge(2*_frontAxle),
             wheelRadius(_wheelRadius),
             jointOffSet(_jointOffSet),
             castorArmLength(_castorArmLength),
@@ -69,7 +69,7 @@ public:
             const double _castorArmLength, const double _wMax) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
-            frontAxle(_frontAxle),
+            trackGauge(2*_frontAxle),
             wheelRadius(_wheelRadius),
             jointOffSet(_jointOffSet),
             castorArmLength(_castorArmLength),
@@ -123,7 +123,7 @@ private:
   const Encoders encoder;
 
   // Robot parameters
-  const double frontAxle {0.2} ;              //  [m]
+  const double trackGauge {0.4} ;              //  [m]
   const double wheelRadius {0.05 };           //  [m]
   const double jointOffSet {0.4 };            //  [m]
   const double castorArmLength {0.15 };       //  [m]
@@ -169,6 +169,157 @@ void Robot_2_0::PerformMotion() const
 
 void Robot_2_0::ComputeOdometry() const
 {
+
+  /*
+  jointToCartesian = [ rwheel/2           rwheel/2          ;
+                       rwheel/trackGauge -rwheel/trackGauge ] ;
+
+
+   for i = 2 : length(tq)
+       dCart = jointToCartesian*[ qRight(i)-qRight(i-1) ; qLeft(i)-qLeft(i-1) ] ;
+       xOdo(i)     = xOdo(i-1)     + dCart(1)*cos(thetaOdo(i-1)) ;
+       yOdo(i)     = yOdo(i-1)     + dCart(1)*sin(thetaOdo(i-1)) ;
+       thetaOdo(i) = thetaOdo(i-1) + dCart(2)                    ;
+   end
+
+  */
+  Eigen::MatrixXd CartesianToJoint(2,2) ;
+  CartesianToJoint <<   1/wheelRadius ,   trackGauge/(2*wheelRadius) ,
+                        1/wheelRadius ,  -trackGauge/(2*wheelRadius) ;
+
+  const auto jointToCartesian = CartesianToJoint.inverse();
+
+
+  currentReading[0] = q.phi_1f ;
+  currentReading[1] = q.phi_2f ;
+
+  const Eigen::Vector2d rotation = currentReading - previusReading ;
+
+  const Eigen::Vector2d d_input = jointToCartesian*rotation ;
+
+  q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
+  q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
+  q_odom.theta = q_odom.theta + d_input[1] ;
+
+  previusReading = currentReading ;
+
+
+}
+
+
+
+void Robot_2_0::UpdateMatrix() const
+{
+
+  S <<            cos(q.theta)          ,                                    0                                ,
+                  sin(q.theta)          ,                                    0                                ,
+                      0                 ,                                    1                                ,
+        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
+                  1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                   ,
+                  1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                   ,
+          -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
+
+
+}
+
+
+
+
+void Robot_2_0::EnsureMaxSpeed() const
+{
+
+  Eigen::Vector2d phi_dot = S.block<2,2>(4,0)*u;
+
+
+  const double scaleFactor = Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff() > wMax ?
+                              Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff()/wMax : 1 ;
+
+  phi_dot /= scaleFactor;
+
+  u = S.block<2,2>(4,0).inverse()*phi_dot ;
+
+}
+
+
+void Robot_2_0::PrepareMessages()
+{
+  robotPosture.header.stamp = currentTime ;
+
+  robotPosture.pose.position.x = q.x ;
+  robotPosture.pose.position.y = q.y ;
+  robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
+
+
+
+  odomPosture.pose.position.x = q_odom.x ;
+  odomPosture.pose.position.y = q_odom.y ;
+  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
+
+
+
+
+  //  Set the wheels angles message
+  currentReading[0] = q.phi_1f ;
+  currentReading[1] = q.phi_2f ;
+  //ROS_INFO_STREAM("currentReading : " << currentReading*180/M_PI );
+  Eigen::Vector2d elapsedDots  = (currentReading*180/M_PI)*encoder.Resolution() ;
+
+  elapsedDots[0] = std::floor( elapsedDots[0] );
+  elapsedDots[1] = std::floor( elapsedDots[1] );
+  //ROS_INFO_STREAM("dots : " << elapsedDots );
+
+
+  const Eigen::Vector2d discrAgles = elapsedDots/encoder.Resolution() ;
+  wheelsAngles.phi_1f = discrAgles[0];
+  wheelsAngles.phi_2f = discrAgles[1];
+  //ROS_INFO_STREAM("algles : " << discrAgles );
+  // previusReading = currentReading ;
+
+  //  clear the joint state message
+  actuations.name.clear() ;
+  actuations.position.clear() ;
+
+  //  Set the joint state message new values
+  actuations.header.stamp = ros::Time::now() ;
+  actuations.name.push_back("move_along_x") ;
+  actuations.position.push_back(q.x) ;
+  actuations.name.push_back("move_along_y") ;
+  actuations.position.push_back(q.y) ;
+  actuations.name.push_back("heading") ;
+  actuations.position.push_back(q.theta) ;
+  actuations.name.push_back("castor_joint") ;
+  actuations.position.push_back(q.beta_3c) ;
+  actuations.name.push_back("fixed_wheel_1_joint") ;
+  actuations.position.push_back(q.phi_1f) ;
+  actuations.name.push_back("fixed_wheel_2_joint") ;
+  actuations.position.push_back(q.phi_2f) ;
+  actuations.name.push_back("castor_wheel_joint") ;
+  actuations.position.push_back(q.phi_3c) ;
+
+
+}
+
+
+
+
+
+
+
+#endif //ROBOT_2_0_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //   /*
 //   jointToCartesian = [ rwheel/2           rwheel/2          ;
 //                        rwheel/trackGauge -rwheel/trackGauge ] ;
@@ -220,109 +371,3 @@ void Robot_2_0::ComputeOdometry() const
 //   ROS_INFO_STREAM(" Current reading : "<< q_odom.phi_1f*180/M_PI << " and : " << q_odom.phi_2f*180/M_PI );
 //   ROS_INFO_STREAM(" Current position  : "<< q_odom.x << " and : " << q_odom.y << " th: " << q_odom.theta*180/M_PI );
 //   previusReading = currentReading ;
-
-
-}
-
-
-
-void Robot_2_0::UpdateMatrix() const
-{
-
-  S <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ,
-        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
-                  1/wheelRadius         ,                          frontAxle/wheelRadius                      ,
-                  1/wheelRadius         ,                         -frontAxle/wheelRadius                      ,
-          -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
-
-
-}
-
-
-
-
-void Robot_2_0::EnsureMaxSpeed() const
-{
-
-  Eigen::Vector2d phi_dot = S.block<2,2>(4,0)*u;
-
-
-  const double scaleFactor = Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff() > wMax ?
-                              Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff()/wMax : 1 ;
-
-  phi_dot /= scaleFactor;
-
-  u = S.block<2,2>(4,0).inverse()*phi_dot ;
-
-}
-
-
-void Robot_2_0::PrepareMessages()
-{
-  robotPosture.header.stamp = currentTime ;
-
-  robotPosture.pose.position.x = q.x ;
-  robotPosture.pose.position.y = q.y ;
-  robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
-
-
-
-  odomPosture.pose.position.x = q_odom.x ;
-  odomPosture.pose.position.y = q_odom.y ;
-  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
-
-
-  // movingPlatformFrame.setOrigin( tf::Vector3(q.x, q.y, wheelRadius));
-  // tf::Quaternion quaternion;
-  // quaternion.setRPY(0.0, 0.0, q.theta);
-  // movingPlatformFrame.setRotation( quaternion );
-
-
-  //  Set the wheels angles message
-  currentReading[0] = q.phi_1f ;
-  currentReading[1] = q.phi_2f ;
-  ROS_INFO_STREAM("currentReading : " << currentReading*180/M_PI );
-  Eigen::Vector2d elapsedDots  = (currentReading*180/M_PI)*encoder.Resolution() ;
-
-  elapsedDots[0] = std::floor( elapsedDots[0] );
-  elapsedDots[1] = std::floor( elapsedDots[1] );
-  ROS_INFO_STREAM("dots : " << elapsedDots );
-
-
-  const Eigen::Vector2d discrAgles = elapsedDots/encoder.Resolution() ;
-  wheelsAngles.phi_1f = discrAgles[0];
-  wheelsAngles.phi_2f = discrAgles[1];
-  ROS_INFO_STREAM("algles : " << discrAgles );
-  previusReading = currentReading ;
-
-  //  Set the angle of the castor joint
-  actuations.name.clear() ;
-  actuations.position.clear() ;
-  actuations.header.stamp = ros::Time::now() ;
-  actuations.name.push_back("move_along_x") ;
-  actuations.position.push_back(q.x) ;
-  actuations.name.push_back("move_along_y") ;
-  actuations.position.push_back(q.y) ;
-  actuations.name.push_back("heading") ;
-  actuations.position.push_back(q.theta) ;
-  actuations.name.push_back("castor_joint") ;
-  actuations.position.push_back(q.beta_3c) ;
-  actuations.name.push_back("fixed_wheel_1_joint") ;
-  actuations.position.push_back(q.phi_1f) ;
-  actuations.name.push_back("fixed_wheel_2_joint") ;
-  actuations.position.push_back(q.phi_2f) ;
-  actuations.name.push_back("castor_wheel_joint") ;
-  actuations.position.push_back(q.phi_3c) ;
-
-
-}
-
-
-
-
-
-
-
-#endif //ROBOT_2_0_H

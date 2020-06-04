@@ -139,7 +139,7 @@ private:
 void RobotBase::isMoving()
 {
 
-  utility::InitMarker( robotMarker ) ;
+  //utility::InitMarker( robotMarker ) ;
 
   utility::InitLineStrip( generatedPath ) ;
 
@@ -174,7 +174,7 @@ void RobotBase::isMoving()
 
 */
       //  Update the marker position for visualization
-      utility::UpdateMarker( odomPosture, robotMarker ) ;
+      //utility::UpdateMarker( odomPosture, robotMarker ) ;
 
       //  Update the line strip for visualization
       utility::UpdatePath( robotPosture, generatedPath ) ;
@@ -186,7 +186,7 @@ void RobotBase::isMoving()
       Encoders.publish( wheelsAngles );
 
       //  Publish the marker for visualization
-      RobotMarker.publish( robotMarker ) ;
+      //RobotMarker.publish( robotMarker ) ;
 
       //  Publish the line strip for visualization
       if( generatedPath.points.size() >= 2)
