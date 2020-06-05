@@ -75,6 +75,9 @@ int main (int argc, char** argv)
 
 	generator.InitWorld();
 
+	//	Wait two seconds before publishing
+	//ros::Duration(5.0).sleep();
+
 	bool onlyOnce = true;
   ros::Rate rate(50);
   while (ros::ok()){
