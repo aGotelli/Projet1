@@ -1,13 +1,37 @@
 <launch>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro" />
+
+
+
+  <arg name="a" default="0.2"   />
+  <arg name="b" default="0.4"   />
+
+  <arg name="r"     default="1"  />
+
+  <arg name="c" default="$(eval arg('r') + 0.05)"  />
+
+  <arg name="sensor_1_x" default="0.0"  />
+  <arg name="sensor_1_y" default="-0.1" />
+
+  <arg name="sensor_2_x" default="0.0" />
+  <arg name="sensor_2_y" default="0.1" />
+
+
+  <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro
+              a:=$(arg a)
+              b:=$(arg b)
+              c:=$(arg c)
+              r:=$(arg r)
+              sensor_1_x:=$(arg sensor_1_x)
+              sensor_1_y:=$(arg sensor_1_y)
+              sensor_2_x:=$(arg sensor_2_x)
+              sensor_2_x:=$(arg sensor_2_x) " />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
   </node>
 
-  <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui" >
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui">
   </node>
-
 
   <!-- Launch Rviz -->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">

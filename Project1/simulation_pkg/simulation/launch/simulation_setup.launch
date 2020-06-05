@@ -2,10 +2,11 @@
 
   <arg name="a" default="0.2"   />
   <arg name="b" default="0.4"   />
-  <arg name="c" default="0.08"  />
 
   <arg name="r"     default="0.05"  />
   <arg name="w_max" default="10.0"  />
+
+  <arg name="c"     default="$(eval arg('r') + 0.05)"  />
 
   <arg name="x_init"      default="0.0" />
   <arg name="y_init"      default="0.0" />
@@ -15,11 +16,11 @@
   <arg name="y_spacing"       default="1.0"   />
   <arg name="line_thickness"  default="0.005" />
 
-  <arg name="sensor_right_x" default="0.0"  />
-  <arg name="sensor_right_y" default="-0.1" />
+  <arg name="sensor_1_x" default="0.0"  />
+  <arg name="sensor_1_y" default="-0.1" />
 
-  <arg name="sensor_left_x" default="0.0" />
-  <arg name="sensor_left_y" default="0.1" />
+  <arg name="sensor_2_x" default="0.0" />
+  <arg name="sensor_2_y" default="0.1" />
 
   <arg name="file_name"   default="you_forgot_to_put_a_name"  />
   <arg name="folder_name" default="recorded_data"             />
@@ -60,24 +61,38 @@
 
     <!-- The sensor -->
     <node pkg="simulation" type="simulation_sensor" name="sensor" output="screen" required="true">
-      <param name="x1_pos"          value="$(arg sensor_right_x)"   />
-      <param name="y1_pos"          value="$(arg sensor_right_y)"   />
-      <param name="x2_pos"          value="$(arg sensor_left_x)"    />
-      <param name="y2_pos"          value="$(arg sensor_left_y)"    />
+      <param name="x1_pos"          value="$(arg sensor_1_x)"       />
+      <param name="y1_pos"          value="$(arg sensor_1_y)"       />
+      <param name="x2_pos"          value="$(arg sensor_2_x)"       />
+      <param name="y2_pos"          value="$(arg sensor_2_y)"       />
+      <param name="x_spacing"       value="$(arg x_spacing)"        />
+      <param name="y_spacing"       value="$(arg y_spacing)"        />
+      <param name="line_thickness"  value="$(arg line_thickness)"   />
+    </node>
+
+    <!-- The ground generator -->
+    <node pkg="simulation" type="simulation_ground_generator" name="ground_generator" >
       <param name="x_spacing"       value="$(arg x_spacing)"        />
       <param name="y_spacing"       value="$(arg y_spacing)"        />
       <param name="line_thickness"  value="$(arg line_thickness)"   />
     </node>
 
     <!-- Launch Rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz">
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz" respawn="true">
     </node>
 
   </group>
-<!--
-  <param name="robot_description" textfile="$(find simulation_description)/urdf/robot_2_0.urdf" />
--->
-  <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro" />
+
+  <!-- Add robot model with user defined parameters -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro
+              a:=$(arg a)
+              b:=$(arg b)
+              c:=$(arg c)
+              r:=$(arg r)
+              sensor_1_x:=$(arg sensor_1_x)
+              sensor_1_y:=$(arg sensor_1_y)
+              sensor_2_x:=$(arg sensor_2_x)
+              sensor_2_x:=$(arg sensor_2_x) " />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
   </node>

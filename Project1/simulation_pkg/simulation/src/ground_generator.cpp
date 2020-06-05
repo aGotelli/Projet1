@@ -64,12 +64,6 @@ int main (int argc, char** argv)
 
 	const World world(xSpacing, ySpacing, lineThickness);
 
-	//  Ground generator parameters
-	int xLines, yLines;				// number of lines
-	nh_glob.param("x_lines", xLines, 4) ;
-	nh_glob.param("y_lines", yLines, 4) ;
-
-
 	// Declare your node's subscriptions and service clients
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
 
@@ -81,17 +75,18 @@ int main (int argc, char** argv)
 
 	generator.InitWorld();
 
-	for(const auto& chunk : generator.Chunks() ) {
-		TilesDisplay.publish( chunk.tiles );
-	}
-
+	bool onlyOnce = true;
   ros::Rate rate(50);
   while (ros::ok()){
       ros::spinOnce();
 
-			for(const auto& chunk : generator.Chunks() ) {
-				TilesDisplay.publish( chunk.tiles );
+			if(onlyOnce) {
+				for(const auto& chunk : generator.Chunks() ) {
+					TilesDisplay.publish( chunk.tile );
+					TilesDisplay.publish( chunk.lines );
+				}
 			}
+
 
 
       rate.sleep();

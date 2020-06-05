@@ -1,21 +1,39 @@
 <?xml version="1.0"?>
 <robot name="robot_2_0" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:property name="thickness" value="0.02"/>
-  <xacro:property name="radius" value="0.05"/>
-  <xacro:property name="wheel_thick" value="0.02"/>
-  <xacro:property name="front_axle" value="0.2"/>
-  <xacro:property name="joint_offset" value="0.4"/>
-  <xacro:property name="castor_arm" value="0.15"/>
 
-  <xacro:property name="sensor_1_x" value="0"/>
-  <xacro:property name="sensor_1_y" value="-0.1"/>
+  <xacro:arg name="a" default="0.2"   />
+  <xacro:arg name="b" default="0.4"   />
+  <xacro:arg name="c" default="0.08"  />
 
-  <xacro:property name="sensor_2_x" value="0"/>
-  <xacro:property name="sensor_2_y" value="0.1"/>
+  <xacro:arg name="r"     default="0.05"  />
+
+  <xacro:arg name="sensor_1_x" default="0.0"  />
+  <xacro:arg name="sensor_1_y" default="-0.1" />
+
+  <xacro:arg name="sensor_2_x" default="0.0" />
+  <xacro:arg name="sensor_2_y" default="0.1" />
+
+  <xacro:property name="thickness"    value="0.02"/>
+  <xacro:property name="radius"       value="$(arg r)"/>
+  <xacro:property name="wheel_thick"  value="0.03"/>
+  <xacro:property name="front_axle"   value="$(arg a)"/>
+  <xacro:property name="joint_offset" value="$(arg b)"/>
+  <xacro:property name="castor_arm"   value="$(arg c)"/>
+
+  <xacro:property name="sensor_1_x" value="$(arg sensor_1_x)"/>
+  <xacro:property name="sensor_1_y" value="$(arg sensor_1_y)"/>
+
+  <xacro:property name="sensor_2_x" value="$(arg sensor_2_x)"/>
+  <xacro:property name="sensor_2_y" value="$(arg sensor_2_y)"/>
 
   <xacro:property name="sensor_radius" value="0.02"/>
   <xacro:property name="sensor_height" value="0.05"/>
+
+
+  <xacro:property name="scale"         default="$(arg r)"/>
+
+
 
   <link name="map">
   </link>
@@ -43,9 +61,9 @@
   <!-- Wheel in the negative side of the moving platform y axis -->
   <link name="fixed_wheel_1">
     <visual>
-      <origin xyz="0 0 0" rpy="1.57075 0 0" />
+      <origin xyz="0 ${.5*wheel_thick} 0" rpy="1.57075 0 0" />
       <geometry>
-        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="${0.001*scale/0.05} ${0.001*scale/0.05} 0.001"/>
       </geometry>
     </visual>
   </link>
@@ -57,9 +75,9 @@
   <!-- Wheel in the positive side of the moving platform y axis -->
   <link name="fixed_wheel_2">
     <visual>
-      <origin xyz="0 0 0" rpy="-1.57075 0 0" />
+      <origin xyz="0 -${.5*wheel_thick} 0" rpy="-1.57075 0 0" />
       <geometry>
-        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="${0.001*scale/0.05} ${0.001*scale/0.05} 0.001"/>
       </geometry>
     </visual>
   </link>
@@ -104,9 +122,9 @@
   <!-- The robot castor wheel (wheel 3) -->
   <link name="castor_wheel">
     <visual>
-      <origin xyz="0 0 0" rpy="1.57075 0 0" />
+      <origin xyz="0 -${.5*wheel_thick} 0" rpy="-1.57075 0 0" />
       <geometry>
-        <mesh filename="package://simulation_description/description/wheel.dae" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://simulation_description/description/wheel.dae" scale="${0.001*scale/0.05} ${0.001*scale/0.05} 0.001"/>
       </geometry>
     </visual>
   </link>
@@ -235,7 +253,6 @@
       <child link="joint_offset"/>
       <origin rpy="0 0 0" xyz="-${.5*joint_offset} 0 0"/>
     </joint>
-
 
     <!-- Connect the revolute joint to the arm of the castor wheel -->
     <joint name="castor_cylinder__to__castor_arm" type="fixed">

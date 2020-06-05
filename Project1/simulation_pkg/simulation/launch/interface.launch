@@ -13,14 +13,17 @@
   will change. Moreover, it does not make much sense to change the robot parts
   orientation (with respect to the moving platform frame)                    -->
 
-  <!-- Parameters of the robot overall geometry [in meters]-->
-  <arg name="a" value="0.2"   />
-  <arg name="b" value="0.4"   />
-  <arg name="c" value="0.08"  />
-
   <!-- Parameters of wheels and related actuators -->
   <arg name="r"     value="0.05"  />    <!-- meters -->
   <arg name="w_max" value="10.0"  />    <!-- RAD/s  -->
+
+  <!-- Parameters of the robot overall geometry [in meters].
+  The user is free to choose the values arbitrairly. However, the value of "c"
+  should be left as an evaluation, this will allow to compute its value
+  accordignly with the radius of the wheel.                                  -->
+  <arg name="a" value="0.2"   />
+  <arg name="b" value="0.4"   />
+  <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
   <arg name="x_init"      value="2" />  <!-- meters -->
@@ -44,12 +47,14 @@
   <arg name="line_thickness"  value="0.005" />
 
 
-  <!-- Position of the sensors in the robot frame [in meters]-->
-  <arg name="sensor_right_x" value="0.0"  />
-  <arg name="sensor_right_y" value="-0.1" />
+  <!-- Position of the sensors in the robot frame [in meters].
+  As for the wheels the sensor numeration follows the same logic.
+  In other words the sensor one is beside the wheel one ecc.                 -->
+  <arg name="sensor_1_x" value="0.0"  />
+  <arg name="sensor_1_y" value="-0.1" />
 
-  <arg name="sensor_left_x" value="0.0" />
-  <arg name="sensor_left_y" value="0.1" />
+  <arg name="sensor_2_x" value="0.0" />
+  <arg name="sensor_2_y" value="0.1" />
 
 
   <!-- Specify the file name and the folder where to save the files needed to
@@ -65,7 +70,7 @@
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
   <arg name="use_joystick"  value="true" />
-  <arg name="joystick_tag"  value="js1"   />
+  <arg name="joystick_tag"  value="js0"   />
 
 
   <arg name="record" value="false" />

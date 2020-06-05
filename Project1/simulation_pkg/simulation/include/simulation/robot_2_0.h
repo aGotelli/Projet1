@@ -164,6 +164,8 @@ void Robot_2_0::PerformMotion() const
 
   q = q + q_dot.Integrate(timeElapsed);
 
+  ROS_INFO_STREAM("phi_1f : " << q.phi_1f*180/M_PI << " phi_2f : " << q.phi_2f*180/M_PI << " phi_3c : " << q.phi_3c*180/M_PI);
+
 }
 
 
@@ -203,7 +205,6 @@ void Robot_2_0::ComputeOdometry() const
 
   previusReading = currentReading ;
 
-
 }
 
 
@@ -218,7 +219,6 @@ void Robot_2_0::UpdateMatrix() const
                   1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                   ,
                   1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                   ,
           -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
-
 
 }
 
@@ -250,12 +250,9 @@ void Robot_2_0::PrepareMessages()
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
 
-
   odomPosture.pose.position.x = q_odom.x ;
   odomPosture.pose.position.y = q_odom.y ;
   odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
-
-
 
 
   //  Set the wheels angles message

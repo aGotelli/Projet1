@@ -224,7 +224,7 @@ void RobotBase::isMoving()
       robotOdometry.child_frame_id = "moving_platform";
 
       //  Set the position
-      robotOdometry.pose.pose = odomPosture.pose;
+      robotOdometry.pose.pose = robotPosture.pose;
 
       //  Publish the computed odometry
       Odometry.publish( robotOdometry ) ;
