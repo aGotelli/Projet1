@@ -62,14 +62,17 @@ int main (int argc, char** argv)
     double jointOffSet;                           //  [m]
     double castorArmLength;                       //  [m]
     double wMax ;                                 //  [RAD/s]
+    double encodersResolution ;                   //  [dots/grad]
     nh_loc.param("front_axle", frontAxle, 0.2) ;
     nh_loc.param("wheel_radius", wheelRadius, 0.05) ;
     nh_loc.param("joint_offset", jointOffSet, 0.4) ;
     nh_loc.param("castor_arm", castorArmLength, 0.15) ;
     nh_loc.param("actuator_max_speed", wMax, (double)10.0) ;
+    nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
 
     Robot_2_0 robot(utility::Pose2D(xInit, yInit, thetaInit),
-                    frontAxle, wheelRadius, jointOffSet, castorArmLength, wMax);
+                    frontAxle, wheelRadius, jointOffSet,
+                    castorArmLength, wMax, encodersResolution );
 
     robot.isMoving() ;
 
