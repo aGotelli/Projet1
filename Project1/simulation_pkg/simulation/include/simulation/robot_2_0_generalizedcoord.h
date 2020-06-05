@@ -30,7 +30,7 @@
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:
-            * C.21, C.22, C.60, C.80, C.83, C.84, C.85
+            * C.21, C.22, C.60, C.66, C.80, C.83, C.84, C.85
             ° Con.1, Con.2
             ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
             ° R.20, R.21, R.23, R.30
