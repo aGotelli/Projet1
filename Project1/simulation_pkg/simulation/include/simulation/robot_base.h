@@ -32,6 +32,14 @@
           this memeber function executes all the others needed to make the
           simulation possible and accurate.
 
+            This class is mostly an interface. As for definition, it should
+          contain only virtual memeber function and no memeber elements. The
+          functions provided are all virtual, allowing some user to change them
+          accordingly with the robot type. The memeber function isMoving()
+          should not be modified, as it represent a coherent developing of the
+          computantion. However, if a use want to costumize it, there is this
+          possibility.
+
             The choice of have multiple member function was completely albitrary,
           as well as other assumptions in this code. However we were inspired by
           the Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -57,11 +65,9 @@
  #include <visualization_msgs/Marker.h>
  #include <geometry_msgs/PoseStamped.h>
  #include <nav_msgs/Odometry.h>
- #include <tf/transform_broadcaster.h>
  #include <sensor_msgs/JointState.h>
 
  #include <simulation_messages/Encoders.h>
- #include <simulation_messages/IRSensors.h>
 
 
 
@@ -79,22 +85,37 @@ protected:
   //  Virtual Callback
   inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist) { twistReceived = (*twist) ;}
 
+  //  Function to convert the received twist from the controller into the
+  //  input defined for the robot which is implemented
   virtual void ComputeInput() const=0;
 
+  //  This function contains all the computations related to the robot kinematic
   virtual void PerformMotion() const=0;
 
+  //  This function computed the encoders reading and create a posture from the
+  //  computed data, to make it possible to check the computations consistency.
   virtual void ComputeOdometry() const=0;
 
+  //  This function is meant to prepare the messages to be published. In other
+  //  words, in this function the data obtained in the cycle are copied into
+  //  the messages just before they are published.
   virtual void PrepareMessages()=0;
 
-  simulation_messages::Encoders wheelsAngles; //  No need of default initialization
-  simulation_messages::IRSensors status;      //  No need of default initialization
-  geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
-  geometry_msgs::PoseStamped odomPosture;     //  No need of default initialization
-  geometry_msgs::Twist twistReceived;         //  No need of default initialization
-  //tf::Transform movingPlatformFrame;
 
-  visualization_msgs::Marker robotMarker;     //  No need of default initialization
+  //  The dots readed by the encoders mounted on the fixed wheels.
+  simulation_messages::Encoders elapsedDots;  //  No need of default initialization
+
+  //  The full robot pusture obtained with the kinematic model.
+  geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
+
+  //  The full robot posture obtained from the odometry
+  geometry_msgs::PoseStamped odomPosture;     //  No need of default initialization
+
+  //  The twist received from the controller
+  geometry_msgs::Twist twistReceived;         //  No need of default initialization
+
+  //  A merker containing all the robot position, in order to display the path
+  //  that has been generated.
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
 
   // Time handling
@@ -103,33 +124,37 @@ protected:
   ros::Duration timeElapsed;
 
 
-  // jointstate for castor wheel
+  // jointstate for control the robot model posture and configuaration
   sensor_msgs::JointState actuations;
-
-  geometry_msgs::TransformStamped geometryStamp;
-
 
 
 private:
 
-  //Node definition
+  //Node handle
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
+  //  The frame rate of this node
   ros::Rate robotFrameRate {150};
 
-  //Publisher and subscriber definition
-  ros::Subscriber commandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
-  ros::Publisher RobotMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;
+  //                    Publisher and subscriber definition
 
+  //  Subscribe to the command received from the controller
+  ros::Subscriber CommandReceived { nh_glob.subscribe<geometry_msgs::Twist>("/TwistToRobot", 1, &RobotBase::TwistReceived, this) } ;
+
+  //  Publish the marker that has been generated
+  ros::Publisher ShowMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;
+
+  //  Publish the robot posture as message
   ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
-  ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
-  ros::Publisher IRSensors { nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1) } ;
 
+  //  Publish the encoders reading
+  ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
+
+  //  Publish the Odometry that has been computed
   ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 10) } ;
 
-  //tf::TransformBroadcaster br;
-
-  ros::Publisher jointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
+  //  Publish a joint state message to control the URDF model
+  ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
 };
 
@@ -139,14 +164,14 @@ private:
 void RobotBase::isMoving()
 {
 
-  //utility::InitMarker( robotMarker ) ;
-
+  //  Initialize the line of the path before proceeding
   utility::InitLineStrip( generatedPath ) ;
 
+  //  Initialize the time
   prevTime = ros::Time::now() ;
 
   while (ros::ok()){
-
+      //  Obtain the published messages
       ros::spinOnce();
 
       //  First account the time elapsed in between two loops
@@ -167,14 +192,6 @@ void RobotBase::isMoving()
 
       //  Elaborate the data for being published
       PrepareMessages() ;
-/*
-      br.sendTransform(tf::StampedTransform(movingPlatformFrame,
-                                                  ros::Time::now(),
-                                                  "map", "moving_platform"));
-
-*/
-      //  Update the marker position for visualization
-      //utility::UpdateMarker( odomPosture, robotMarker ) ;
 
       //  Update the line strip for visualization
       utility::UpdatePath( robotPosture, generatedPath ) ;
@@ -183,36 +200,15 @@ void RobotBase::isMoving()
       Robot.publish( robotPosture );
 
       //  Publish current wheels orientations
-      Encoders.publish( wheelsAngles );
-
-      //  Publish the marker for visualization
-      //RobotMarker.publish( robotMarker ) ;
+      Encoders.publish( elapsedDots );
 
       //  Publish the line strip for visualization
       if( generatedPath.points.size() >= 2)
-        RobotMarker.publish( generatedPath ) ;
+        ShowMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
-      jointsController.publish( actuations ) ;
+      JointsController.publish( actuations ) ;
 
-/*
-
-
-      geometryStamp.header.stamp = currentTime;
-      geometryStamp.header.frame_id = "map";
-      geometryStamp.child_frame_id = "moving_platform";
-      geometryStamp.transform.translation.x = robotPosture.pose.position.x ;
-      geometryStamp.transform.translation.y = robotPosture.pose.position.y ;
-      geometryStamp.transform.translation.z = robotPosture.pose.position.z ;
-
-      geometryStamp.transform.rotation = robotPosture.pose.orientation;
-
-      br.sendTransform( geometryStamp );
-
-
-
-
-*/
       //  Declare the message
       nav_msgs::Odometry robotOdometry;
 
@@ -224,11 +220,10 @@ void RobotBase::isMoving()
       robotOdometry.child_frame_id = "moving_platform";
 
       //  Set the position
-      robotOdometry.pose.pose = robotPosture.pose;
+      robotOdometry.pose.pose = odomPosture.pose;
 
       //  Publish the computed odometry
       Odometry.publish( robotOdometry ) ;
-
 
       //  Wait for next iteration
       robotFrameRate.sleep();

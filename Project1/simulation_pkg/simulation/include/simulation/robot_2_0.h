@@ -5,8 +5,8 @@
  * \file robot 2_0 file
  * \brief contains the model of the robot
  * \author Bianca & Andrea
- * \version 0.2
- * \date 01/06/2020
+ * \version 0.3
+ * \date 05/06/2020
  *
  * \param[in]
  *
@@ -17,19 +17,26 @@
  *    °
  *
  * Description
-            This file contains all the functions related to the simulation of the robot motion.
-          The aim is to get information regarding the robot position and velocity and regarding.
+            This file contains all the functions related to the simulation of the
+          robot motion. The aim is to get information regarding the robot position
+          and velocity and regarding.
 
             First the input is computed from the twist message, and the max speed
           of the wheels in ensured to both. Then with the knowledge of the input,
           the matrix which represents the kinematic model is updated and used to
           obain the derivative of the generalized robot coordinates.
 
-            Once the derivative of the robot generalized coordinates is computed
+            Once the derivative of the robot generalized coordinates is computed,
           it is necessary to perform and integration over the time elapsed from
           the last one (so it is more like to compute a displacement). Then the
           displacement is added to the current value so all the coordinates are
           updated.
+
+            Morover, in this file it is computed the odometry. Starting from the
+          current value of phi angles of the two fixed wheels, the elementary
+          rotation of the two wheel between two instant of times are computed
+          taking into account the wheel resolution. In this way, the discretized
+          input is obtained and,through it, the odometry coordinates are updated.
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -62,11 +69,11 @@ public:
             castorArmLength(_castorArmLength),
             wMax(_wMax),
             RobotBase() { /* All the rest is initialized as default */
-              ROS_INFO_STREAM("User-defined initialization called..."); }
+              ROS_DEBUG_STREAM("User-defined initialization called..."); }
 
   Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
             const double _wheelRadius, const double _jointOffSet,
-            const double _castorArmLength, const double _wMax) :
+            const double _castorArmLength, const double _wMax, const double _resolution) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             trackGauge(2*_frontAxle),
@@ -74,8 +81,9 @@ public:
             jointOffSet(_jointOffSet),
             castorArmLength(_castorArmLength),
             wMax(_wMax),
+            encoder( Encoders(_resolution) ),
             RobotBase() {/* All the rest is initialized as default */
-              ROS_INFO_STREAM("Fully user-defined initialization called...");     }
+              ROS_DEBUG_STREAM("Fully user-defined initialization called...");     }
 
 
 
@@ -85,7 +93,8 @@ public:
   // Function to compute the generalized coordinates
   void PerformMotion() const override;
 
-  // Function to publish the robot position and odometry
+  // Function to publish the robot position, the odometry, the joint state
+  // message and the dots of the fixed wheels
   void PrepareMessages() override;
 
   // Function to update the J matrix elements
@@ -105,12 +114,16 @@ private:
   public:
     Encoders()=default;
 
-    inline const int ResolutionToRad() const {return resolution*M_PI/180; }
-    inline const int Resolution() const {return resolution; }
+    Encoders(const double _resolution) : resolution(_resolution) {
+      ROS_INFO_STREAM("resolution : " << resolution );
+    }
+
+    inline const double ResolutionToRad() const {return resolution*M_PI/180; }
+    inline const double Resolution() const {return resolution; }
 
   private:
     //  the resolution of the encoder
-    const int resolution{2} ;   //  [dot/grad]
+    const double resolution{0.1} ;   //  [dot/grad]
 
   };
 
@@ -164,41 +177,29 @@ void Robot_2_0::PerformMotion() const
 
   q = q + q_dot.Integrate(timeElapsed);
 
-  ROS_INFO_STREAM("phi_1f : " << q.phi_1f*180/M_PI << " phi_2f : " << q.phi_2f*180/M_PI << " phi_3c : " << q.phi_3c*180/M_PI);
-
 }
 
 
 void Robot_2_0::ComputeOdometry() const
 {
 
-  /*
-  jointToCartesian = [ rwheel/2           rwheel/2          ;
-                       rwheel/trackGauge -rwheel/trackGauge ] ;
+  // Current value of phi_1f and phi_2f
+  currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f)*180/M_PI )*encoder.Resolution() ;
+  currentReading[0] = std::floor( currentReading[0] ) ;
+  currentReading[1] = std::floor( currentReading[1] ) ;
 
+  Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.Resolution() )*M_PI/180 ;
 
-   for i = 2 : length(tq)
-       dCart = jointToCartesian*[ qRight(i)-qRight(i-1) ; qLeft(i)-qLeft(i-1) ] ;
-       xOdo(i)     = xOdo(i-1)     + dCart(1)*cos(thetaOdo(i-1)) ;
-       yOdo(i)     = yOdo(i-1)     + dCart(1)*sin(thetaOdo(i-1)) ;
-       thetaOdo(i) = thetaOdo(i-1) + dCart(2)                    ;
-   end
+  if( isnan(rotation[0]))
+    rotation[0] = 0;
 
-  */
-  Eigen::MatrixXd CartesianToJoint(2,2) ;
-  CartesianToJoint <<   1/wheelRadius ,   trackGauge/(2*wheelRadius) ,
-                        1/wheelRadius ,  -trackGauge/(2*wheelRadius) ;
+  if( isnan(rotation[1]))
+    rotation[1] = 0;
 
-  const auto jointToCartesian = CartesianToJoint.inverse();
+  // Compute input discretized
+  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
 
-
-  currentReading[0] = q.phi_1f ;
-  currentReading[1] = q.phi_2f ;
-
-  const Eigen::Vector2d rotation = currentReading - previusReading ;
-
-  const Eigen::Vector2d d_input = jointToCartesian*rotation ;
-
+  // Compute odometry position
   q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
   q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
   q_odom.theta = q_odom.theta + d_input[1] ;
@@ -243,36 +244,28 @@ void Robot_2_0::EnsureMaxSpeed() const
 
 void Robot_2_0::PrepareMessages()
 {
+
+  // Time handling for robot posture
   robotPosture.header.stamp = currentTime ;
 
+  // Publish the current robot posture
   robotPosture.pose.position.x = q.x ;
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
 
+  // Publish the current odometry position
   odomPosture.pose.position.x = q_odom.x ;
   odomPosture.pose.position.y = q_odom.y ;
   odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
 
 
-  //  Set the wheels angles message
-  currentReading[0] = q.phi_1f ;
-  currentReading[1] = q.phi_2f ;
-  //ROS_INFO_STREAM("currentReading : " << currentReading*180/M_PI );
-  Eigen::Vector2d elapsedDots  = (currentReading*180/M_PI)*encoder.Resolution() ;
-
-  elapsedDots[0] = std::floor( elapsedDots[0] );
-  elapsedDots[1] = std::floor( elapsedDots[1] );
-  //ROS_INFO_STREAM("dots : " << elapsedDots );
+  //  Publish the current reading in dots
+  elapsedDots.phi_1f = currentReading[0] ;
+  elapsedDots.phi_2f = currentReading[1] ;
 
 
-  const Eigen::Vector2d discrAgles = elapsedDots/encoder.Resolution() ;
-  wheelsAngles.phi_1f = discrAgles[0];
-  wheelsAngles.phi_2f = discrAgles[1];
-  //ROS_INFO_STREAM("algles : " << discrAgles );
-  // previusReading = currentReading ;
-
-  //  clear the joint state message
+  //  Clear the joint state message
   actuations.name.clear() ;
   actuations.position.clear() ;
 
@@ -297,74 +290,4 @@ void Robot_2_0::PrepareMessages()
 }
 
 
-
-
-
-
-
 #endif //ROBOT_2_0_H
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//   /*
-//   jointToCartesian = [ rwheel/2           rwheel/2          ;
-//                        rwheel/trackGauge -rwheel/trackGauge ] ;
-//
-//
-//    for i = 2 : length(tq)
-//        dCart = jointToCartesian*[ qRight(i)-qRight(i-1) ; qLeft(i)-qLeft(i-1) ] ;
-//        xOdo(i)     = xOdo(i-1)     + dCart(1)*cos(thetaOdo(i-1)) ;
-//        yOdo(i)     = yOdo(i-1)     + dCart(1)*sin(thetaOdo(i-1)) ;
-//        thetaOdo(i) = thetaOdo(i-1) + dCart(2)                    ;
-//    end
-//
-//   */
-//   Eigen::MatrixXd temp(2,2) ;
-//   temp <<   1/wheelRadius ,   frontAxle/wheelRadius ,
-//             1/wheelRadius ,  -frontAxle/wheelRadius ;
-//
-//   currentReading[0] = q.phi_1f ;
-//   currentReading[1] = q.phi_2f ;
-//
-//   //ROS_INFO_STREAM(" Current rotation : "<< (currentReading - previusReading)*180/M_PI );
-//
-//   // Eigen::Vector2d elapsedDots  = (currentReading - previusReading)*encoder.ResolutionToRad() ;
-//   // elapsedDots[0] = std::floor( elapsedDots[0] );
-//   // elapsedDots[1] = std::floor( elapsedDots[1] );
-//
-//   // const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*elapsedDots/encoder.ResolutionToRad();
-//
-//   const Eigen::Vector2d rotation = currentReading - previusReading ;
-//
-//   const Eigen::Vector2d input = temp.inverse()*rotation ;
-//
-//   const Eigen::VectorXd result = S*input ;
-//
-//   ROS_INFO_STREAM("______________________________" ) ;
-//   q_odom = q_odom + result;
-// /*
-//   const Eigen::Vector2d rotation = currentReading - previusReading ;
-//
-//   Eigen::Vector2d d_input;
-//   d_input <<    wheelRadius*(rotation[0] + rotation[1])/2         ,
-//             wheelRadius*(rotation[0] + rotation[1])/(2*frontAxle) ;
-//
-//   q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-//   q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-//   q_odom.theta = q_odom.theta + d_input[1] ;
-//   */
-//   ROS_INFO_STREAM(" Current rotation : "<< q.phi_1f*180/M_PI << " and : " << q.phi_2f*180/M_PI );
-//   ROS_INFO_STREAM(" Current reading : "<< q_odom.phi_1f*180/M_PI << " and : " << q_odom.phi_2f*180/M_PI );
-//   ROS_INFO_STREAM(" Current position  : "<< q_odom.x << " and : " << q_odom.y << " th: " << q_odom.theta*180/M_PI );
-//   previusReading = currentReading ;

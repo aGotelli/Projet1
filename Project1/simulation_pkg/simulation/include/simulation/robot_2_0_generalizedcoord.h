@@ -19,7 +19,7 @@
  * Description
             This file cointains all the functions and methods implemented to define the kinematic
           of the robot. All the computations used the generalized coordinates as it is a powerfull
-          structure, perfectly suitable for type of calculations.  
+          structure, perfectly suitable for type of calculations.
 
 
           Several coiches have been made following the advices of the
@@ -158,15 +158,15 @@ namespace robot_2_0 {
     this->y       += result(1) ;
     this->theta   = utility::LimitAngle( this->theta    + result(2)  ) ;
     this->beta_3c = utility::LimitAngle( this->beta_3c  + result(3)  ) ;
-    this->phi_1f  = utility::LimitAngle( this->phi_1f   + result(4)  ) ;
-    this->phi_2f  = utility::LimitAngle( this->phi_2f   + result(5)  ) ;
-    this->phi_3c  = utility::LimitAngle( this->phi_3c   + result(6)  ) ;
+    this->phi_1f  += result(4) ;
+    this->phi_2f  += result(5) ;
+    this->phi_3c  += result(6) ;
 
     return (*this) ;
   }
 
 
-  
+
   GeneralizedCoordinates GeneralizedCoordinates::operator=(const GeneralizedCoordinates& equal)
   {
 
@@ -188,9 +188,9 @@ namespace robot_2_0 {
     this->y += addendum.y ;
     this->theta   = utility::LimitAngle( this->theta    + addendum.theta    ) ;
     this->beta_3c = utility::LimitAngle( this->beta_3c  + addendum.beta_3c  ) ;
-    this->phi_1f  = utility::LimitAngle( this->phi_1f   + addendum.phi_1f   ) ;
-    this->phi_2f  = utility::LimitAngle( this->phi_2f   + addendum.phi_2f   ) ;
-    this->phi_3c  = utility::LimitAngle( this->phi_3c   + addendum.phi_3c   ) ;
+    this->phi_1f  += addendum.phi_1f ;
+    this->phi_2f  += addendum.phi_2f ;
+    this->phi_3c  += addendum.phi_3c ;
 
     return (*this) ;
   }
