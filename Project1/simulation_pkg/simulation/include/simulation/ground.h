@@ -28,6 +28,7 @@
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:
+            * C.21, C.22, C.60, C.80, C.81
             ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
             ° R.20, R.21, R.23, R.30
 
@@ -38,7 +39,7 @@
 #include <ros/ros.h>
 
 #include "simulation/utility.h"
-#include "simulation/sensor.h"
+#include "simulation/world.h"
 
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -61,7 +62,15 @@ struct Ground {
           const utility::Pose2D& _center) : tile(_tile), lines(_lines), center(_center) {}
 
   //  Copy Constructor
-  Ground(const Ground& other) : tile(other.tile), lines(other.lines), center(other.center) {}
+  Ground(const Ground& other)=default;
+
+  Ground(const Ground&&)=delete;
+
+  ~Ground()=default;
+
+  Ground& operator=(const Ground&)=delete;
+
+  Ground& operator=(Ground&&)=delete;
 
   visualization_msgs::MarkerArray tile;
   visualization_msgs::MarkerArray lines;

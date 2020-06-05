@@ -66,7 +66,6 @@ int main (int argc, char** argv)
 	nh_loc.param("y_spacing", ySpacing, 1.0) ;
 	nh_loc.param("line_thickness", lineThickness, 0.005) ;
 
-	ROS_INFO_STREAM( "x_spacing : " << xSpacing << " y_spacing : " << ySpacing << " line_thickness : " << lineThickness ) ;
 
 	const World world(xSpacing, ySpacing, lineThickness);
 

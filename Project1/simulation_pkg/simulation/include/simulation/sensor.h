@@ -95,65 +95,12 @@
 #include <ros/ros.h>
 
 #include "simulation/utility.h"
+#include "simulation/world.h"
 
-// Include here the ".h" files corresponding to the topic type you use.
+
 #include <geometry_msgs/Pose.h>
 #include <eigen3/Eigen/Dense>
 
-
-
-// Definition of World class
-class World {
-public:
-  World()=default;
-
-  World(const double _xSpacing,
-        const double _ySpacing) :
-          xSpacing( _xSpacing ),
-          ySpacing( _ySpacing ) { /*  lineWidth has default value  */
-            ROS_DEBUG_STREAM("User-defined world only for line offset") ;
-          }
-
-  World(const double _xSpacing,
-        const double _ySpacing,
-          const double _lineThickness) :
-            xSpacing( _xSpacing ),
-            ySpacing( _ySpacing ),
-            lineThickness( _lineThickness ) {
-              ROS_INFO_STREAM("Completely user-defined world. xSpacing : " <<
-              xSpacing << " ySpacing : " << ySpacing << " lineThickness : " << lineThickness) ;
-            }
-  World(const World& other) : xSpacing(other.XSpacing()),
-                              ySpacing(other.YSpacing()),
-                              lineThickness(other.LineThickness()) {}
-
-
- inline const bool operator==(const World& other) const
- {
-  if(this->xSpacing != other.XSpacing() )
-   return false;
-
-  if(this->ySpacing != other.YSpacing() )
-   return false;
-
-  if(this->lineThickness != other.LineThickness() )
-   return false;
-
-  return true;
-}
-
- // Provided function to access private data
- inline const double& XSpacing() const {return xSpacing; }
- inline const double& YSpacing() const {return ySpacing; }
- inline const double& LineThickness() const {return lineThickness; }
-
-private:
-
- const double xSpacing { 1.0 };
- const double ySpacing { 1.0 };
- const double lineThickness { 0.005 };
-
-};
 
 
 //Definition of Sensor class

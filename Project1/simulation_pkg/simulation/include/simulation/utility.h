@@ -88,6 +88,7 @@ namespace utility
     double theta { 0.0 } ;
   };
 
+  
   enum SENSOR { RIGHT, LEFT };
 
   enum COLOR { RED, GREEN };
