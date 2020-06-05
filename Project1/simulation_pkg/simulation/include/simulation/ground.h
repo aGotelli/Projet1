@@ -1,6 +1,38 @@
 #ifndef GROUND_H
 #define GROUND_H
+/**
+ * \file ground header file
+ * \brief contains the functions used to provide the ground
+ * \author Bianca & Andrea
+ * \version 0.2
+ * \date 05/06/2020
+ *
+ * \param[in]
+ *
+ * Subscribes to: <BR>
+ *    °
+ *
+ * Publishes to: <BR>
+ *    °
+ *
+ * Description
+            This files contains the functions to generate e tiled floor. The floor is generated
+          using chunk of size 5x5 meters. They consist of a white parallelepiped of the chunk
+          size. Some lines are generated representing the separations line among the tiles.
 
+            To avoid memory leaks, the use of smart pointers is strongly recommended. They are
+          used in functions where we need to pass ownership of an object. (see guidelines)
+
+
+          Several choiches have been made following the advices of the
+          Guidelines: https://github.com/isocpp/CppCoreGuidelines
+
+          Related chapthers of the CppCoreGuidelines:
+            ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
+            ° R.20, R.21, R.23, R.30
+
+ *
+ */
 
 // ROS
 #include <ros/ros.h>
@@ -10,6 +42,7 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <memory>
 
 
 struct Size {
@@ -33,12 +66,13 @@ struct Ground {
   visualization_msgs::MarkerArray tile;
   visualization_msgs::MarkerArray lines;
   utility::Pose2D center;
+
 };
 
 
 int t_index = 0;
 const double TILE_THICKNESS = 0.01;
-visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const World& world)
+visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const Size& chunkSize)
 {
   visualization_msgs::Marker tile;
 
@@ -60,8 +94,8 @@ visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const Wor
   tile.pose.orientation.w = 1.0 ;
 
   // LINE_STRIP markers use only the x component of scale, for the line width
-  tile.scale.x = 5.0;
-  tile.scale.y = 5.0;
+  tile.scale.x = chunkSize.x;
+  tile.scale.y = chunkSize.y;
   tile.scale.z = TILE_THICKNESS ;
 
   tile.pose.position.x = position.x ;
@@ -139,7 +173,7 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
 
 
 
-Ground Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, const World& world )
+std::unique_ptr<Ground> Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, const World& world )
 {
   //  First allocate the memory for the array of markers comupting the numbers of
   //  tiles along x and y
@@ -149,7 +183,7 @@ Ground Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, co
   const int linesNumber = tilesNormalX + tilesNormalY + 2;
 
   visualization_msgs::MarkerArray tile;
-  tile.markers.push_back( PlaceTile( utility::Pose2D( chunkCenter.x, chunkCenter.y ), world ) );
+  tile.markers.push_back( PlaceTile( utility::Pose2D( chunkCenter.x, chunkCenter.y ), chunkSize ) );
 
   visualization_msgs::MarkerArray lines;
   lines.markers.reserve( linesNumber );
@@ -162,7 +196,7 @@ Ground Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, co
     lines.markers.push_back( PlaceLine( utility::Pose2D( 0.0, copysign( j*world.YSpacing(), chunkCenter.y)), chunkSize, TYPE::HORIZONTAL, world, chunkCenter) ) ;
   }
 
-  return Ground(tile, lines, chunkCenter);
+  return std::make_unique<Ground>(tile, lines, chunkCenter);
 }
 
 
@@ -176,9 +210,9 @@ public:
 
   void InitWorld();
 
-  void ChuckBelonging(const geometry_msgs::PoseStamped& robotPosture);
+  //void ChuckBelonging(const geometry_msgs::PoseStamped& robotPosture);
 
-  inline const std::vector<Ground>& Chunks() const {return chunks;}
+  inline const std::vector< std::unique_ptr<Ground> >& Chunks() const {return chunks;}
 
 
 
@@ -186,7 +220,7 @@ private:
 
   const World world;
 
-  std::vector<Ground> chunks ;
+  std::vector< std::unique_ptr<Ground> > chunks ;
 
   const Size chunkSize{ Size(5.0f, 5.0f) };
 };
@@ -205,9 +239,5 @@ void WorldGenerator::InitWorld()
 }
 
 
-void WorldGenerator::ChuckBelonging(const geometry_msgs::PoseStamped& robotPosture)
-{
-
-}
 
 #endif //GROUND_GENERATOR_H

@@ -1,24 +1,30 @@
 /**
- * \file compute twist
- * \brief Adapter component for translate the joint button state into a command
- * \author Bianca Lento & Andrea Gotelli
- * \version 0.1
- * \date 28/05/2020
+ * \file ground executable file
+ * \brief collects the parameters and generates a ground
+ * \author Bianca & Andrea
+ * \version 0.2
+ * \date 05/06/2020
  *
  * \param[in]
  *
  * Subscribes to: <BR>
- *    ° /joy
+ *    °
  *
  * Publishes to: <BR>
- *    ° /TwistToRobot
+ *    °
  *
  * Description
-          This node will take the status of the controller, i.e. the joystick,
-          and will output a feasible twist for the robot. As it is an adapeter
-          component, it will be as short as possible in terms of code length.
+            This file is meant to collect all the parameters of the world, to
+					generate a backgound for the simulation. In this way it makes the
+					whole simulation more user friendly.
 
-          In this first version, the Andrea's joystic is the only one implemented.
+          Several choiches have been made following the advices of the
+          Guidelines: https://github.com/isocpp/CppCoreGuidelines
+
+          Related chapthers of the CppCoreGuidelines:
+            ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
+
+
  *
  */
 
@@ -85,8 +91,8 @@ int main (int argc, char** argv)
 
 			if(onlyOnce) {
 				for(const auto& chunk : generator.Chunks() ) {
-					TilesDisplay.publish( chunk.tile );
-					TilesDisplay.publish( chunk.lines );
+					TilesDisplay.publish( chunk->tile );
+					TilesDisplay.publish( chunk->lines );
 				}
 			}
 
