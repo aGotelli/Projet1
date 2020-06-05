@@ -60,8 +60,6 @@ visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const Wor
   tile.pose.orientation.w = 1.0 ;
 
   // LINE_STRIP markers use only the x component of scale, for the line width
-  // tile.scale.x = world.XSpacing() - world.LineThickness();
-  // tile.scale.y = world.YSpacing() - world.LineThickness();
   tile.scale.x = 5.0;
   tile.scale.y = 5.0;
   tile.scale.z = TILE_THICKNESS ;
@@ -147,8 +145,9 @@ Ground Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, co
   //  tiles along x and y
   const int tilesNormalX = chunkSize.x/world.XSpacing() ;
   const int tilesNormalY = chunkSize.y/world.YSpacing() ;
-  const int tilesNumber = tilesNormalX*tilesNormalY;
-  const int linesNumber = tilesNumber + 2;
+
+  const int linesNumber = tilesNormalX + tilesNormalY + 2;
+
   visualization_msgs::MarkerArray tile;
   tile.markers.push_back( PlaceTile( utility::Pose2D( chunkCenter.x, chunkCenter.y ), world ) );
 
