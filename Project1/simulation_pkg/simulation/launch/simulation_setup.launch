@@ -3,8 +3,9 @@
   <arg name="a" default="0.2"   />
   <arg name="b" default="0.4"   />
 
-  <arg name="r"     default="0.05"  />
-  <arg name="w_max" default="10.0"  />
+  <arg name="r"                   default="0.05"  />
+  <arg name="w_max"               default="10.0"  />
+  <arg name="encoders_resolution" default="1.0"  />
 
   <arg name="c"     default="$(eval arg('r') + 0.05)"  />
 
@@ -41,6 +42,13 @@
   <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen" if="$(arg use_joystick)">
   </node>
 
+  <!-- The ground generator -->
+  <node pkg="simulation" type="simulation_ground_generator" name="ground_generator" >
+    <param name="x_spacing"       value="$(arg x_spacing)"        />
+    <param name="y_spacing"       value="$(arg y_spacing)"        />
+    <param name="line_thickness"  value="$(arg line_thickness)"   />
+  </node>
+
   <group ns="simulation">
 
     <!-- The node to save all the needed data -->
@@ -49,14 +57,15 @@
 
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-      <param name="front_axle"          value="$(arg a)"            />
-      <param name="wheel_radius"        value="$(arg r)"            />
-      <param name="joint_offset"        value="$(arg b)"            />
-      <param name="castor_arm"          value="$(arg c)"            />
-      <param name="actuator_max_speed"  value="$(arg w_max)"        />
-      <param name="x_init"              value="$(arg x_init)"       />
-      <param name="y_init"              value="$(arg y_init)"       />
-      <param name="theta_init"          value="$(arg theta_init)"   />
+      <param name="front_axle"          value="$(arg a)"                      />
+      <param name="wheel_radius"        value="$(arg r)"                      />
+      <param name="joint_offset"        value="$(arg b)"                      />
+      <param name="castor_arm"          value="$(arg c)"                      />
+      <param name="actuator_max_speed"  value="$(arg w_max)"                  />
+      <param name="x_init"              value="$(arg x_init)"                 />
+      <param name="y_init"              value="$(arg y_init)"                 />
+      <param name="theta_init"          value="$(arg theta_init)"             />
+      <param name="encoders_resolution" value="$(arg encoders_resolution)"    />
     </node>
 
     <!-- The sensor -->
@@ -70,18 +79,15 @@
       <param name="line_thickness"  value="$(arg line_thickness)"   />
     </node>
 
-    <!-- The ground generator -->
-    <node pkg="simulation" type="simulation_ground_generator" name="ground_generator" >
-      <param name="x_spacing"       value="$(arg x_spacing)"        />
-      <param name="y_spacing"       value="$(arg y_spacing)"        />
-      <param name="line_thickness"  value="$(arg line_thickness)"   />
-    </node>
-
-    <!-- Launch Rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz" respawn="true">
-    </node>
+    <!-- Launch Rviz
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/first_save.rviz" >
+    </node> -->
 
   </group>
+
+  <!-- Launch Rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find simulation)/rviz/config.rviz" >
+  </node>
 
   <!-- Add robot model with user defined parameters -->
   <param name="robot_description" command="$(find xacro)/xacro $(find simulation_description)/urdf/robot_2_0.xacro

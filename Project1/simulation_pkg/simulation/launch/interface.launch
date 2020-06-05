@@ -14,8 +14,9 @@
   orientation (with respect to the moving platform frame)                    -->
 
   <!-- Parameters of wheels and related actuators -->
-  <arg name="r"     value="0.05"  />    <!-- meters -->
-  <arg name="w_max" value="10.0"  />    <!-- RAD/s  -->
+  <arg name="r"                   value="0.05"  />    <!--  meters   -->
+  <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
+  <arg name="encoders_resolution" value="2.0"   />    <!-- dots/grad -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -73,7 +74,7 @@
   <arg name="joystick_tag"  value="js0"   />
 
 
-  <arg name="record" value="false" />
+  <arg name="record" value="true" />
 
 
   <!-- Include the launch file which executes the simulations -->
