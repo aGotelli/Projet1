@@ -2,7 +2,7 @@
 #define ROBOT_2_0_GENERALIZEDCOORD_H
 
 /**
- * \file robot_2_o generalized coordinates
+ * \file robot_2_0 generalized coordinates
  * \brief generalized coordinates of the robot
  * \author Bianca & Andrea
  * \version 0.2
@@ -19,15 +19,20 @@
  * Description
             This file cointains all the functions and methods implemented to define the kinematic
           of the robot. All the computations used the generalized coordinates as it is a powerfull
-          structure, perfectly suitable for type of calculations.
+          structure, perfectly suitable for type of calculations. In this way the robot file
+          can remail light and easy to read throught. All the "complexities" are here.
+
+            To avoid memory leaks, the use of smart pointers is strongly recommended. They are
+          used in functions where we need to pass ownership of an object. (see guidelines)
 
 
-          Several coiches have been made following the advices of the
+          Several choiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:
             ° Con.1, Con.2
             ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
+            ° R.20, R.21, R.23, R.30
 
  *
  */
@@ -35,6 +40,7 @@
 
 #include "simulation/robot_base.h"
 #include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
+#include <memory>
 
 
 namespace robot_2_0 {
@@ -75,7 +81,7 @@ namespace robot_2_0 {
     GeneralizedCoordinates operator+(const Eigen::VectorXd& result);
 
     //  Performing the computation of the dispacement
-    GeneralizedCoordinates Integrate(const ros::Duration& timeElapsed);
+    std::unique_ptr<GeneralizedCoordinates> Integrate(const ros::Duration& timeElapsed);
 
 
     //  Robot position and orientation
@@ -197,16 +203,16 @@ namespace robot_2_0 {
 
 
 
-  GeneralizedCoordinates GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
+  std::unique_ptr<GeneralizedCoordinates> GeneralizedCoordinates::Integrate(const ros::Duration& timeElapsed)
   {
 
-    return GeneralizedCoordinates(x       *timeElapsed.toSec() ,
-                                  y       *timeElapsed.toSec() ,
-                                  theta   *timeElapsed.toSec() ,
-                                  beta_3c *timeElapsed.toSec() ,
-                                  phi_1f  *timeElapsed.toSec() ,
-                                  phi_2f  *timeElapsed.toSec() ,
-                                  phi_3c  *timeElapsed.toSec() ) ;
+    return std::make_unique<GeneralizedCoordinates>(x       *timeElapsed.toSec() ,
+                                                    y       *timeElapsed.toSec() ,
+                                                    theta   *timeElapsed.toSec() ,
+                                                    beta_3c *timeElapsed.toSec() ,
+                                                    phi_1f  *timeElapsed.toSec() ,
+                                                    phi_2f  *timeElapsed.toSec() ,
+                                                    phi_3c  *timeElapsed.toSec() ) ;
   }
 
 

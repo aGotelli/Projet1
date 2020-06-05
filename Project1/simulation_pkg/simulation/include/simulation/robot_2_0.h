@@ -175,7 +175,7 @@ void Robot_2_0::PerformMotion() const
 
   q_dot = S*u;
 
-  q = q + q_dot.Integrate(timeElapsed);
+  q = q + (*q_dot.Integrate(timeElapsed)) ;
 
 }
 
