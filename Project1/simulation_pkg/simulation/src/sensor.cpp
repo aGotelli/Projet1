@@ -127,7 +127,7 @@ int main (int argc, char** argv)
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
 
 	//	Publishes the sensors status
-	ros::Publisher IRSensors = nh_glob.advertise<simulation_messages::IRSensors>("SensorStatus", 1);
+	ros::Publisher IRSensors = nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1);
 
 	//	Publishes marker to help understand
 	ros::Publisher SensorsDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
