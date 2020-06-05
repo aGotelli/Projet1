@@ -27,7 +27,7 @@
   <arg name="folder_name" default="recorded_data"             />
 
   <arg name="use_joystick"  default="false" />
-  <arg name="joystick_tag"  default="js0"   />
+  <arg name="joystick_tag"  default="js1"   />
 
 
   <arg name="record" default="true" />

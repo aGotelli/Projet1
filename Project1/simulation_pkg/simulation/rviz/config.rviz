@@ -168,6 +168,13 @@ Visualization Manager:
       Topic: /simulation/RobotOdometry
       Unreliable: false
       Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 1
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: <Fixed Frame>
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -196,7 +203,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.437875747680664
+      Distance: 14.024744987487793
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
