@@ -30,7 +30,7 @@
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:
-            * C.21, C.22, C.60, C.80, C.83, C.84, C.85
+            * C.21, C.22, C.60
             ° Con.1, Con.2
             ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
             ° R.20, R.21, R.23, R.30
@@ -55,7 +55,7 @@ namespace robot_2_0 {
     GeneralizedCoordinates()=default;
 
     //  Copy Constructor
-    GeneralizedCoordinates(GeneralizedCoordinates& other)=default;
+    GeneralizedCoordinates(GeneralizedCoordinates& other);
 
     //  Specific Constructor
     GeneralizedCoordinates(const double _x, const double _y, const double _theta,
@@ -65,10 +65,10 @@ namespace robot_2_0 {
     //  Initial posture Constructor
     GeneralizedCoordinates(const double _x, const double _y, const double _theta);
 
-    ~GeneralizedCoordinates()=default;
+    ~GeneralizedCoordinates() {/* no new objects to delete */}
 
     //  Move Constructor
-    GeneralizedCoordinates(GeneralizedCoordinates&& other)=default;
+    GeneralizedCoordinates(GeneralizedCoordinates&& other) noexcept;
 
     //  Move Operator
     GeneralizedCoordinates& operator=(GeneralizedCoordinates&& other) noexcept;
@@ -101,6 +101,10 @@ namespace robot_2_0 {
 
   };
 
+  //  Constructor for passing each member
+  GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates& other) :
+                            GeneralizedCoordinates(other.x, other.y, other.theta, other.beta_3c,
+                                                      other.phi_1f, other.phi_2f, other.phi_3c ) {}
 
   //  Specific Constructor
   GeneralizedCoordinates::GeneralizedCoordinates(const double _x, const double _y, const double _theta,
@@ -116,11 +120,19 @@ namespace robot_2_0 {
 
 
 
+  //  Move Constructor
+  GeneralizedCoordinates::GeneralizedCoordinates(GeneralizedCoordinates&& other) noexcept :
+                    x( other.x ),
+                    y( other.y ),
+                    theta( other.theta ),
+                    beta_3c( other.beta_3c),
+                    phi_1f( other.phi_1f ),
+                    phi_2f( other.phi_2f),
+                    phi_3c( other.phi_3c)  {}
+
 
   //  Move Operator
   GeneralizedCoordinates& GeneralizedCoordinates::operator=(GeneralizedCoordinates&& other) noexcept
-  //  Function that should not throw any exception. Using std::swap allows having smooth and safe
-  //  moving operation, enjoy the strong guarantee.
   {
     std::swap(x, other.x);
     std::swap(y, other.y);

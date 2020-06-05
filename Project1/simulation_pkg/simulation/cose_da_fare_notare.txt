@@ -1,17 +1,12 @@
 
 
-1) posizione delle ruore viaggia male (scatti)
-
-3) a volte salta qualche misura
-
-4) qualche indizio per fare il unit testing?
-5) dopo un pò rviz crasha
-
-
-
-
 
 A garcia
 
-1) We have two node handle in two positions
-2) A usage walkthrought. 
+1) A usage walkthrought.
+
+
+
+A Kermorgant
+
+1) Not sure when we should use std::swap or the default operator  
