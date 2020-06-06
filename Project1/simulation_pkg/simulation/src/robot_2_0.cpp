@@ -45,7 +45,7 @@ int main (int argc, char** argv)
     ros::init(argc, argv, "robot_2_0");
 
     // Required NodeHandles
-    ros::NodeHandle nh_loc("~"), nh_glob;
+    ros::NodeHandle nh_loc("~");
 
     //  Get robot initial posture
     double xInit, yInit, thetaInit;
