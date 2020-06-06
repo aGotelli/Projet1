@@ -188,13 +188,11 @@ void Robot_2_0::ComputeOdometry() const
   currentReading[0] = std::floor( currentReading[0] ) ;
   currentReading[1] = std::floor( currentReading[1] ) ;
 
+//  ROS_INFO_STREAM("currentReading : " << currentReading);
+
   Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.Resolution() )*M_PI/180 ;
 
-  if( isnan(rotation[0]))
-    rotation[0] = 0;
-
-  if( isnan(rotation[1]))
-    rotation[1] = 0;
+//  ROS_INFO_STREAM("rotation       : " << rotation*180/M_PI);
 
   // Compute input discretized
   const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
@@ -248,16 +246,24 @@ void Robot_2_0::PrepareMessages()
   // Time handling for robot posture
   robotPosture.header.stamp = currentTime ;
 
-  // Publish the current robot posture
+  // Update the current robot posture
   robotPosture.pose.position.x = q.x ;
   robotPosture.pose.position.y = q.y ;
   robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
 
-  // Publish the current odometry position
-  odomPosture.pose.position.x = q_odom.x ;
-  odomPosture.pose.position.y = q_odom.y ;
-  odomPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
+
+  //  Time handling for odometry posture
+  robotOdometry.header.stamp = currentTime;
+
+  //  Set the frames
+  robotOdometry.header.frame_id = "map";
+  robotOdometry.child_frame_id = "moving_platform";
+
+  //  Update the position
+  robotOdometry.pose.pose.position.x = q_odom.x ;
+  robotOdometry.pose.pose.position.y = q_odom.y ;
+  robotOdometry.pose.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q_odom.theta) ;
 
 
   //  Publish the current reading in dots

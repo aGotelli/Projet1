@@ -109,7 +109,7 @@ protected:
   geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
 
   //  The full robot posture obtained from the odometry
-  geometry_msgs::PoseStamped odomPosture;     //  No need of default initialization
+  nav_msgs::Odometry robotOdometry;           //  No need of default initialization
 
   //  The twist received from the controller
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
@@ -208,19 +208,6 @@ void RobotBase::isMoving()
 
       //  Publish the joint state
       JointsController.publish( actuations ) ;
-
-      //  Declare the message
-      nav_msgs::Odometry robotOdometry;
-
-      //  Stamp the current time
-      robotOdometry.header.stamp = currentTime;
-
-      //  Set the frames
-      robotOdometry.header.frame_id = "map";
-      robotOdometry.child_frame_id = "moving_platform";
-
-      //  Set the position
-      robotOdometry.pose.pose = odomPosture.pose;
 
       //  Publish the computed odometry
       Odometry.publish( robotOdometry ) ;
