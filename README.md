@@ -5,5 +5,5 @@ June 08, 2020
 
 Editors:
 
-* [Bianca Lento]
-* [Andrea Gotelli]
+* Bianca Lento
+* Andrea Gotelli
