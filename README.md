@@ -198,7 +198,8 @@ allows having a semantic and user friendly computation for the kinematic model.
 the robot configuration vector follows the same notations. Then, to compute the current values of the configuration
 vector the derivative is evaluated using the notion of the time elapsed in between two iterations.
 
-  For the use of (*...) this is because the returned element of the
+  For the use of (*...) this is because the returned element of the Integrate memeber function is a smart pointer.
+This last decision is dicussed in the file robot_2_0_generalizedcoord.h, the reader is encouraged to read it from there.
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
