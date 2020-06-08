@@ -437,3 +437,5 @@ or as xacro file in the simulation_descriptions folder. The model built is the s
 type (2, 0) with two fixed wheels and a castor one. As xacro is used, every characteristic of the robot is passed
 as a parameter, it can be changed by the user in the proper launch file and it can be seen in the simulation itself.
 Some of this characteristic, that can not be changed by the user, are expressed as function of other parameters.
+
+![Projet1](images/URDF_model.png)
