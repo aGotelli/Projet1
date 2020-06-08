@@ -43,8 +43,6 @@ std::map<char, std::vector<double>> motion
 // Map for speed keys
 std::map<char, std::vector<double>> speed
  {
-    {'u', {1.1, 1.1}},
-    {'i', {0.9, 0.9}},
     {'j', {1.1, 1}},
     {'k', {0.9, 1}},
     {'n', {1, 1.1}},
@@ -60,9 +58,9 @@ Moving around:
 a   s   d
 
 
-u/i : increase/decrease max speeds by 10%
 j/k : increase/decrease only linear speed by 10%
 n/m : increase/decrease only angular speed by 10%
+
 CTRL-C to quit
 )";
 
@@ -119,7 +117,6 @@ int main(int argc, char** argv)
 
   double v = 1; // Linear velocity (m/s)
   double omega = 1; // Angular velocity (rad/s)
-  double x, y, theta; // Forward/backward/neutral direction vars
 
   ros::Rate rate(150);
   while(ros::ok()){
@@ -130,32 +127,21 @@ int main(int argc, char** argv)
 
     ROS_INFO_STREAM(" typed : " << key ) ;
 
-    // If the key corresponds to a key in moveBindings
+    // If the key corresponds to a key in motion
     if ( motion.count(key) == 1 )
     {
-      // Grab the direction data
-      // x = motion[key][0];
-      // y = motion[key][1];
-      // theta = motion[key][2];
-
       v = motion[key][0];
       omega = motion[key][2];
 
     }
 
-    // Otherwise if it corresponds to a key in speedBindings
+    // Otherwise if it corresponds to a key in speed
     else if ( speed.count(key) == 1 )
     {
       // Grab the speed data
       v = v * speed[key][0];
       omega = omega * speed[key][1];
 
-    }
-
-    // Otherwise, stop the robot (CTRL C)
-    else if ( key == '\x03' )
-    {
-      break;
     }
 
 
@@ -168,6 +154,7 @@ int main(int argc, char** argv)
     robotControl.publish( twistToRobot );
     v = 0;
     omega = 0;
+    key = ' ';
 
     rate.sleep();
 
