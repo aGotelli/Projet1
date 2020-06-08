@@ -305,7 +305,7 @@ then run the command:
 
   Now each time a button of a lever is pressed, moved or released; in the terminal a message should appear.
 To implement the joystick in the package, the adapter component must be defined. An existing one is already
-in the package. (see [Compute Twist](#S-Compute))
+in the package. (see [Compute Twist](#S-Compute)).
 
   Concerning the key_node, there no need of any package or installation. However, the control of the robot
 is less accurate then when unsing a joystick.
