@@ -34,11 +34,11 @@ This file aim to explain how to move inside this project. It should be read befo
 that is related to a certain topic or concept. The following chapters will guide the user into everything
 there is to know before using them.
 
-* [In.struct: The structure of this project](#Ri-structure)
-* [In.sim: The simulation meta package](#Ri-simulation)
-* [In.estim: The estimator package](#Ri-estimator)
+* [The structure of this project](#Ri-structure)
+* [The simulation meta package](#Ri-simulation)
+* [The estimator package](#Ri-estimator)
 
-## <a name="Ri-structure"></a>In.struct: The structure of this project
+## <a name="Ri-structure"></a>The structure of this project
   The project is divided into two main part: the simulation and the estimator. For each of the two packages
 an interface is provided, and the user should only use this last one to change the parameters. On virtually,
 there is no need to change anything in the code to use this application. As a result, anyone with a basic
@@ -51,7 +51,7 @@ risk of having to find files around the project.
   The simulation package is the first to be discussed, with all its components. After the estimator will be
 presented.
 
-## <a name="Ri-simulation"></a>In.sim: The simulation meta package
+## <a name="Ri-simulation"></a>The simulation meta package
   When opening the simulation meta package, the reader can see three packages: simulation, simulation_messages
 and simulation_descriptions. Their description is provided below.
 
@@ -211,7 +211,7 @@ places a marker, red o green based on which sensor, to highlight this commutatio
 
   Moreover, it contains everything is needed to convert from quaternion to Euler angles and vice versa. In fact, the
 aim of this file is to group all the elements that do not belong to any "concept" but that are still important for the
-simulation in one
+simulation in one class.
 
 
 
