@@ -52,11 +52,13 @@ std::map<char, std::vector<double>> speed
 // Reminder message
 const char* msg = R"(
 Reading from the keyboard and Publishing to Twist!
----------------------------
+---------------------------------------------------
 Moving around:
     w
 a   s   d
 
+Stop the robot:
+    x
 
 j/k : increase/decrease only linear speed by 10%
 n/m : increase/decrease only angular speed by 10%
@@ -64,14 +66,8 @@ n/m : increase/decrease only angular speed by 10%
 CTRL-C to quit
 )";
 
-// Init variables
-// double v; // Linear velocity (m/s)
-// double omega; // Angular velocity (rad/s)
-// double x, y, theta; // Forward/backward/neutral direction vars
+//  The command key
 char key(' ');
-geometry_msgs::Twist twistToRobot;
-
-
 
 // For non-blocking keyboard inputs
 int getch(void)
@@ -112,20 +108,25 @@ int main(int argc, char** argv)
   // Declare you publishers and service servers
   ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1);
 
-
+  //  Show how to use the keyboard
   ROS_INFO( "%s", msg );
 
-  double v = 1; // Linear velocity (m/s)
-  double omega = 1; // Angular velocity (rad/s)
+  //  The control message
+  geometry_msgs::Twist twistToRobot;
 
-  ros::Rate rate(150);
+  double v = 1.0f; // Linear velocity (m/s)
+  double omega = 1.0f; // Angular velocity (rad/s)
+
+  double scale_v = 1.0f;
+  double scale_omega = 1.0f;
+
+  ros::Rate rate(50);
+
   while(ros::ok()){
     ros::spinOnce();
 
     // Get the pressed key
     key = getch();
-
-    ROS_INFO_STREAM(" typed : " << key ) ;
 
     // If the key corresponds to a key in motion
     if ( motion.count(key) == 1 )
@@ -139,24 +140,35 @@ int main(int argc, char** argv)
     else if ( speed.count(key) == 1 )
     {
       // Grab the speed data
-      v = v * speed[key][0];
-      omega = omega * speed[key][1];
+      scale_v *= speed[key][0];
+      scale_omega *= speed[key][1];
 
     }
-    
+
+    //  Limit the scale factor
+    if( scale_v > 3 ) {
+      scale_v = 3;
+    } else if ( scale_v < 0.001 ) {
+      scale_v = 0;
+    }
+
+    if( scale_omega > 3) {
+      scale_omega = 3;
+    } else if ( scale_omega < 0.001 ) {
+      scale_omega = 0;
+    }
+
     // Otherwise, stop the robot (CTRL C)
     else if ( key == '\x03' ) { break; }
 
 
 
     // Update the Twist message
-    twistToRobot.linear.x = v;
-    twistToRobot.angular.z = omega;
+    twistToRobot.linear.x = v*scale_v;
+    twistToRobot.angular.z = omega*scale_omega;
 
     // Publish it and resolve any remaining callbacks
     robotControl.publish( twistToRobot );
-    v = 0;
-    omega = 0;
 
 
     rate.sleep();
