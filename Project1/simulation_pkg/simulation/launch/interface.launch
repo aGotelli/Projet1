@@ -16,7 +16,7 @@
   <!-- Parameters of wheels and related actuators -->
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
-  <arg name="encoders_resolution" value="2"   />    <!-- dots/grad -->
+  <arg name="encoders_resolution" value="2"   />      <!-- dots/grad -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -45,7 +45,7 @@
   proportionated at the robot parameters.  [all the parameters are in meters]-->
   <arg name="x_spacing"       value="0.5"     />
   <arg name="y_spacing"       value="1.0"     />
-  <arg name="line_thickness"  value="0.005" />
+  <arg name="line_thickness"  value="0.005"   />
 
 
   <!-- Position of the sensors in the robot frame [in meters].
@@ -74,7 +74,7 @@
   <arg name="joystick_tag"  value="js1"   />
 
 
-  <arg name="record" value="false" />
+  <arg name="record" value="true" />
 
 
   <!-- Include the launch file which executes the simulations -->
