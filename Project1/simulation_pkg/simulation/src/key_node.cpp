@@ -1,3 +1,25 @@
+/**
+ * \file  key node
+ * \brief Adapter component for translate the keys state into a command
+ * \author Bianca Lento & Andrea Gotelli
+ * \version 0.1
+ * \date 07/06/2020
+ *
+ * \param[in]
+ *
+ * Subscribes to: <BR>
+ *   
+ *
+ * Publishes to: <BR>
+ *    ° /TwistToRobot
+ *
+ * Description
+          This node will take the status of the controller, i.e. the keyboard,
+          and will output a feasible twist for the robot. As it is an adapeter
+          component, it will be as short as possible in terms of code length.
+
+ */
+
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 
@@ -10,16 +32,6 @@
 // Map for movement keys
 std::map<char, std::vector<double>> motion
 {
-  // {'i', {1, 0, 0}},
-  // {'o', {1, 0, -1}},
-  // {'j', {0, 0, 1}},
-  // {'l', {0, 0, -1}},
-  // {'u', {1, 0, 1}},
-  // {',', {-1, 0, 0}},
-  // {'.', {-1, 0, 1}},
-  // {'m', {-1, 0, -1}},
-  // {'k', {0, 0, 0}},
-
   {'w', {1, 0, 0}},
   {'s', {-1, 0, 0}},
   {'a', {0, 0, 1}},
@@ -31,12 +43,12 @@ std::map<char, std::vector<double>> motion
 // Map for speed keys
 std::map<char, std::vector<double>> speed
  {
-//   {'q', {1.1, 1.1}},
-//   {'z', {0.9, 0.9}},
-//   {'w', {1.1, 1}},
-//   {'x', {0.9, 1}},
-//   {'e', {1, 1.1}},
-//   {'c', {1, 0.9}}
+    {'u', {1.1, 1.1}},
+    {'i', {0.9, 0.9}},
+    {'j', {1.1, 1}},
+    {'k', {0.9, 1}},
+    {'n', {1, 1.1}},
+    {'m', {1, 0.9}}
 };
 
 // Reminder message
@@ -44,14 +56,13 @@ const char* msg = R"(
 Reading from the keyboard and Publishing to Twist!
 ---------------------------
 Moving around:
-   u    i    o
-   j    k    l
-   m    ,    .
+    w
+a   s   d
 
 
-q/z : increase/decrease max speeds by 10%
-w/x : increase/decrease only linear speed by 10%
-e/c : increase/decrease only angular speed by 10%
+u/i : increase/decrease max speeds by 10%
+j/k : increase/decrease only linear speed by 10%
+n/m : increase/decrease only angular speed by 10%
 CTRL-C to quit
 )";
 

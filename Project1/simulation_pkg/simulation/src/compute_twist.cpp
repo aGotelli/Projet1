@@ -18,7 +18,7 @@
           and will output a feasible twist for the robot. As it is an adapeter
           component, it will be as short as possible in terms of code length.
 
-          In this first version, the Andrea's joystic is the only one implemented.
+          In this version, the Andrea's joystic is the only one implemented.
  *
  */
 
