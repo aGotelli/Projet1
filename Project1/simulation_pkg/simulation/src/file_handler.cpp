@@ -99,6 +99,15 @@ void AddSuffix(boost::filesystem::path& _fileName)
 
 }
 
+bool IsEqual(const boost::filesystem::directory_entry& folderFile,
+                                  const boost::filesystem::path& fileName)
+{
+  if( folderFile.path().filename().stem() == fileName )
+    return true;
+  else
+    return false;
+}
+
 
 
 bool FindFile(const boost::filesystem::path& folderPath,
@@ -106,18 +115,28 @@ bool FindFile(const boost::filesystem::path& folderPath,
 {
 
   //  Set iterator at the end of a file
-  const boost::filesystem::recursive_directory_iterator end;
+  const boost::filesystem::recursive_directory_iterator end;  //  By default it refers to the directory end;
 
+  //  Initialize the predicate to feed the find_if function
+  boost::function< bool (const boost::filesystem::directory_entry&)> Predicate(boost::bind(IsEqual, _1, fileName));
+
+/*
   //  Creation of the predicate to feed into std::find_if basically return true
   //  if the names are the same (without the extension)
   auto lambdaCorrespondence = [&fileName](const boost::filesystem::directory_entry& e) {
                               return e.path().filename().stem() == fileName;
                               };
 
+
+
   //  Find the position in the directory where the correspondance occour
   const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(folderPath),
                                 end, lambdaCorrespondence) ;
 
+*/
+
+ const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(folderPath),
+                              end, Predicate) ;
   //  Check the result
   if ( it != end ) {
     AddSuffix(fileName) ;
