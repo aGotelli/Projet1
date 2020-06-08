@@ -1,2 +1,9 @@
-# Projet1
-The repository containing all the files releted to the project number 1: a localization algorithm besed on a Kalman Filter
+# <a name="main"></a> Projet1
+
+June 08, 2020
+
+
+Editors:
+
+* [Bianca Lento]
+* [Andrea Gotelli]
