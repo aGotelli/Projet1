@@ -13,4 +13,4 @@ This file aim to explain how to move inside this project. It should be read befo
 
 
 
-[![Projet1](Version3.png)] 
+[![Projet1](joy_interface_setup.png)]
