@@ -166,8 +166,8 @@ The world is characterized by the distance between horizontal lines (xSpacing), 
 (ySpacing) and the line thickness.
 
   In order to show the world in rviz and so in the simulation, the ground generator is implemented with its header
-file. It generates a tiled floor, using chunk, represented by a white parallelepiped of size 5x5 meters. To highlight
-the separating line of each tiles, Some lines are generated
+file. It generates a tiled floor, using chunk, represented by a white parallelepiped of size 5x5 meters. Some lines
+are generated in order to highlight the separating lines of each tile.
 
 
 
