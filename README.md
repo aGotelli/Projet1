@@ -165,9 +165,13 @@ of interest.
 all the functions are declared as virtual and called in the isMoving() member function, that executes all of them
 in order to make the simulation possible and accurate. This class is mostly an interface, it provides the tools to interface
 the ROS architecture. To enforce this idea, it contains only pure virtual function, the only exceptions are the callback for
-the Twist message and the function IsMoving() that are virtual.
+the Twist message and the function isMoving() that are virtual.
 
 ##### See below
+
+        virtual void isMoving();
+
+      protected:
 
         //  Virtual Callback
         inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist);
@@ -189,11 +193,33 @@ the Twist message and the function IsMoving() that are virtual.
         virtual void PrepareMessages()=0;
 
 
+  Defining the member functions in this proposed way allows the following:
 
+  * The functions declared as pure virtual must have an override in every class that inherits from this
+    base class. In fact, they define the robot kinematic and characteristics, so every robot must define
+    them accordingly with its model.
+  * Having them declared in the base class allows creating a sequence in the function isMoving(). The
+    function is declared as virtual, so if an user think to change the calling order of the other member
+    function, it is just necessary to declare the customized override. However, there no many reasons to
+    change the proposed order.
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0_generalizedcoord.h
   The robot_2_0_generalizedcoord contains the definition of the generalized coordinates structure, a powerful structure
-used for all the computations related to the kinematic, and the related operators.
+used for all the computations related to the kinematic, and the related operators. Using the object GeneralizedCoordinates
+allows having a semantic and user friendly computation for the kinematic model.
+
+##### Example
+
+        void Robot_2_0::PerformMotion() const
+        {
+
+          q_dot = S*u;
+
+          q = q + (*q_dot.Integrate(timeElapsed)) ;
+
+        }
+
+
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
   The robot_2_0 contains the declaration of all the function related to the simulation of the robot motion. Firstly,
@@ -252,6 +278,21 @@ simulation in one class.
 
 # <a name="S-FileHandler"></a>FileHandler
 
+  The aim of this file is to save all the recorded data in the proper folder. Moreover, as the architecture is versatile
+and some parameters can be changed, all the characteristic of the robot, of the sensors and of the world are also saved,
+so in this way, all the details are always visible and available.
+
+  It is recommended to use a file name without spaces and that does not end with a number. Even if this node will work,
+the name of the file will be strongly modified.
+
+ This node has also a build in method to ensure the existence of the folder where to storage the files. If the folder does
+not exist then it is created in the path given. However if the path is not correct the node is shut down and simulation goes
+on WITHOUT SAVING ANY FILE.
+
+ This node is designed to be used in the same group of the simulation. The node can also handle the case where the simulation is
+not in a group. However the user is encouraged to use the namespaces i.e. the groups properly as it will lead to a clearer and
+more understandable architecture for the simulation. In fact, the group allows to put together components that work on the
+same task or concept.
 
 
 
