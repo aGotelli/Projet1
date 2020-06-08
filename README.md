@@ -85,7 +85,7 @@ in this project. Each executable of this package is designed in an source file +
 a certain choose has been made. For developing this project, we solved every doubt using the suggestions
 provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 
-## <a name="Ri-estimator"></a>In.estim: The estimator package
+## <a name="Ri-estimator"></a>The estimator package
 
 
 
@@ -198,7 +198,7 @@ allows having a semantic and user friendly computation for the kinematic model.
 the robot configuration vector follows the same notations. Then, to compute the current values of the configuration
 vector the derivative is evaluated using the notion of the time elapsed in between two iterations.
 
-  For the use of (*...) this is because the returned element of the 
+  For the use of (*...) this is because the returned element of the
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
