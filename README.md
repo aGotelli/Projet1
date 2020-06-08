@@ -1,4 +1,4 @@
-# <a name="main"></a> Projet1
+initialization# <a name="main"></a> Projet1
 
 June 08, 2020
 
@@ -42,7 +42,7 @@ there is to know before using them.
   The project is divided into two main part: the simulation and the estimator. For each of the two packages
 an interface is provided, and the user should only use this last one to change the parameters. On virtually,
 there is no need to change anything in the code to use this application. As a result, anyone with a basic
-knowledge of YAML file can use this package. (see [the Launch File](#S-Launch) ).
+knowledge of YAML file can use this package. (see [Launch File](#S-Launch) ).
 
   The project can be dived into three main parts: the simulation meta package, the estimator and data packages.
 This last packages exists to be used as storage unit for the file that are generated. In this way, there is no
@@ -75,7 +75,7 @@ build the messages first (so the include files will be generated) before buildin
 them, resulting in an uncomfortable compile time error.
 
 ### <a name="Ri-simulation"></a>The simulation_descriptions package
-  This package is meant to contain only the description of the robot. (see [the URDF](#S-URDF) ).
+  This package is meant to contain only the description of the robot. (see [URDF](#S-URDF) ).
 
 ### <a name="Ri-simulation"></a>The simulation package
   This package is the most important of the three. It contains all the functions and interfaces implemented
@@ -120,6 +120,30 @@ file, contains all the node and groups definitions. This last launch file should
 
 
 
+# <a name="S-Sensor"></a>Sensor
+  The sensors that are mounted in the robot are simulated with the use of the functions declared in the relative files.
+There are two files which allow to simulate the sensor behavior: the sensor.cpp and sensor.h which are discussed below.
+
+### <a name="Ri-sensor.cpp"></a>sensor.cpp
+  The sensor.cpp source file collects all the parameters of the robot sensors and the world; it crates an instance of it
+to store in every sensor class. (see [World](#S-World) ).
+
+  There are a few others basic operations done in this file. It subscribes to the robot position and it publishes the
+current sensors state. Additionally, it publishes some markers to allow the representation of the measurements. In the main loop, the sensor status are checked periodically, using the method describes in the
+header file.
+
+### <a name="Ri-sensor.h"></a>sensor.h
+  The header file for the sensors contains the definition of the class Sensor and RobotSensors. This last one is useful,
+as it provides a tool to ensure that, for any reason, the sensors have two different instances of the world. The Sensor
+class, provides all the functions needed to check the sensor status and obtain it absolute positions. As the procedure is
+carefully explained in the code, the reader is encouraged in reading it from there.
+
+
+
+
+
+
+
 
 # <a name="S-Robot(2,0)"></a>Robot(2,0)
 
@@ -153,7 +177,13 @@ wheel resolution. In this way, the discretized input is obtained and, through it
 
 
 # <a name="S-Interfaces"></a>Interfaces
-  The inter
+  The interface is meant to implement already existing facilities. Specifically, for the scope of the simulation, Rviz
+is used as graphic and user friendly interface. The user who runs the simulation can see the robot motion and sensors
+behaviors on the fly. Moreover, the path that has been generated remains visible, allowing the customization of closed
+loop trajectories.
+
+  The output of the simulation are a .bag and a .yaml files. The first one contains all the messages that have been
+published, the second one the parameters that has been used. In this way, it is possible to use the generated data.
 
 
 
@@ -172,7 +202,16 @@ are generated in order to highlight the separating lines of each tile.
 
 
 
+# <a name="S-Utility"></a>Utility
 
+  This file contains all the functions needed by other files that are not strictly related to them. It contains
+all the functions related to the markers: in particular, the ones to initialize and update them and also the ones
+used by the sensors to show when they become active. In fact, as a sensor crosses a line, its state changes and it
+places a marker, red o green based on which sensor, to highlight this commutation of state.
+
+  Moreover, it contains everything is needed to convert from quaternion to Euler angles and vice versa. In fact, the
+aim of this file is to group all the elements that do not belong to any "concept" but that are still important for the
+simulation in one
 
 
 
