@@ -128,12 +128,14 @@ As the simulation is divided in two parts, the robot kinematic and the interface
 separate these parts also in the package. In this way, the user needs only to pick the correct file accordingly to what
 of interest.
 
+![Projet1](images/robot_component.png)
+
 * [The robot_base.h](#Ri-Robot(2,0))
 * [The robot_2_0_generalizedcoord.h](#Ri-Robot(2,0))
 * [The robot_2_0.h](#Ri-Robot(2,0))
 
 
-![Projet1](images/robot_component.png)
+
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_base.h
   It contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
