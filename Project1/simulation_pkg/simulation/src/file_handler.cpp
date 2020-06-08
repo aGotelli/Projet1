@@ -14,28 +14,23 @@
  *    °
  *
  * Description
-            The aim of this file is to save all the recorded data in the proper folder.
-          Moreover, as the architecture is versatile and some parameters can be changes,
-          based on the specification of the project, all the informations regarding this,
-          are also saved. In this way, the details of the robot, of the world and of the
-          sensor are always visible and available.
+            The aim of this file is to save all the recorded data in the proper folder. Moreover, 
+          as the architecture is versatile and some parameters can be changed, based on the specification
+          of the project, all the informations regarding this, are also saved. In this way, the details 
+          of the robot, of the world and of the sensor are always visible and available.
 
-            This file has a build-in method to avoid to overwrite and existing file,
-          causing to loose some precius data. However, it is recommanded to use a
-          file name without spaces and that does not termine with a number. Even
-          if this node will work, the name of the file will be strongly modified.
+            This file has a build-in method to avoid to overwrite and existing file, causing to loose some
+          precious data. However, it is recommended to use a file name without spaces and that does not end 
+          with a number. Even if this node will work, the name of the file will be strongly modified.
 
-            This node has also a build in method to ensure the existency of the
-          folder where to storage the files. If the folder does not exist then
-          it is created in the path given. However if the path is not correct
-          the node is shutted down and simulation goes on WITHOUT SAVIN ANY FILE.
+            This node has also a build in method to ensure the existence of the folder where to storage the 
+          files. If the folder does not exist then it is created in the path given. However if the path is 
+          not correct the node is shut down and simulation goes on WITHOUT SAVING ANY FILE.
 
-            This node is designed to be used in the same group of the simulation.
-          In the case where the simulation is not in a group the node can handle
-          this case. However the user is encouraged to use the namespaces i.e.
-          the groups properly. This will lead to a more clear and undestandable
-          architecture for the simulation. In fact, the group allow grouping
-          together componets that work on the same task or concempt.
+            This node is designed to be used in the same group of the simulation. In the case where the simulation
+          is not in a group the node can handle this case. However the user is encouraged to use the namespaces i.e.
+          the groups properly. This will lead to a clearer and more understandable architecture for the simulation. 
+          In fact, the group allow grouping together components that work on the same task or concept.
 
  *
  */
