@@ -88,7 +88,7 @@ namespace utility
     double theta { 0.0 } ;
   };
 
-  
+
   enum SENSOR { RIGHT, LEFT };
 
   enum COLOR { RED, GREEN };
@@ -136,9 +136,10 @@ namespace utility
   void UpdatePath(const geometry_msgs::PoseStamped& robotPosture,
                             visualization_msgs::Marker& generatedPath );
 
-
+  //  Function that returns a marker for the active sensor
   visualization_msgs::Marker PlaceActiveSensor(const Pose2D& point, const SENSOR& activeSensor);
 
+  //  Function creating a marker accordingly with the active sensor 
   visualization_msgs::Marker PlaceMarker(const Pose2D& point, const COLOR& markerColor, const std::string side, const int index);
 
 

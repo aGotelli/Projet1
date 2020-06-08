@@ -39,7 +39,7 @@
   </node>
 
   <!-- The compute_twist adapter -->
-  <node respawn="true" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen" if="$(arg use_joystick)">
+  <node respawn="false" pkg="simulation" type="simulation_compute_twist" name="compute_twist" output="screen" if="$(arg use_joystick)">
   </node>
 
   <!-- The ground generator -->
