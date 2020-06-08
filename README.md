@@ -53,14 +53,6 @@ presented.
 
 ## <a name="Ri-simulation"></a>The simulation meta package
 
-  This package contains all the components needed in the simulation. The core of the simulation is described by
-the UML below.
-
-![Projet1](images/simulation_core.png)
-
-
-
-
   When opening the simulation meta package, the reader can see three packages: simulation, simulation_messages
 and simulation_descriptions. Their description is provided below.
 
@@ -94,10 +86,20 @@ in this project. Each executable of this package is designed in an source file +
 a certain choose has been made. For developing this project, we solved every doubt using the suggestions
 provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 
+  The package contains the core of the simulation, and the tools for build an user friendly interface.
+The core of the simulation is composed by the (2, 0) robot and its sensors. The following UML describes the
+high level architecture  
+
+  ![Projet1](images/simulation_core.png)
+
+For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Sensor](#S-Sensor)
+
+  The following UML shows the architecture for the intended interface.
 
 
+![Projet1](images/saving_and_display.png)
 
-
+  The components of this last UML are discussed in this document, see [Interfaces](#S-Interfaces).
 
 
 
@@ -318,7 +320,3 @@ Some of this characteristic, that can not be changed by the user, are expressed 
 
 
 ![Projet1](images/joy_interface_setup.png)
-
-
-
-![Projet1](images/saving_and_display.png)
