@@ -161,6 +161,11 @@ add_executable(${PROJECT_NAME}_compute_twist src/compute_twist.cpp)
 target_link_libraries(${PROJECT_NAME}_compute_twist	${catkin_LIBRARIES} )
 
 
+############################~ GROUND GENERATOR ~#####################################
+add_executable(${PROJECT_NAME}_key_node src/key_node.cpp)
+target_link_libraries(${PROJECT_NAME}_key_node	${catkin_LIBRARIES} )
+
+
 ############################~ ROBOT(2, 0) ~#####################################
 add_executable(${PROJECT_NAME}_robot_2_0 src/robot_2_0.cpp)
 target_link_libraries(${PROJECT_NAME}_robot_2_0	${catkin_LIBRARIES} )
