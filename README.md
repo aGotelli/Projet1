@@ -127,7 +127,7 @@ file, contains all the node and groups definitions. This last launch file should
 and an executable. As the simulation is divided is two parts, the robot kinematic and the interface with ROS
 environment, the idea is to separate these parts also in the package.
 
-![Projet1](images/robot_component.png)
+![Projet1](images/robot_component.jpg)
 
   The robot_base contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
 all the functions are declared as virtual and called in the isMoving() member function, that executes all of them
