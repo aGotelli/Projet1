@@ -21,6 +21,7 @@ This file aim to explain how to move inside this project. It should be read befo
 * [Utility](#S-Utility)
 * [File handler](#S-FileHandler)
 * [URDF](#S-URDF)
+* [Compute Twist](#S-Compute)
 
 
 
@@ -92,7 +93,7 @@ high level architecture
 
   ![Projet1](images/simulation_core.png)
 
-For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Sensor](#S-Sensor)
+For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Sensor](#S-Sensor) and [Interfaces](#S-Interfaces).
 
   The following UML shows the architecture for the intended interface.
 
@@ -240,6 +241,74 @@ loop trajectories.
 
   The output of the simulation are a .bag and a .yaml files. The first one contains all the messages that have been
 published, the second one the parameters that has been used. In this way, it is possible to use the generated data.
+The saving procedure is defined for ensuring a safe saving procedure for the generated files. ( see [File Handler](#S-FileHandler)).
+
+  For the inputs, the package provides two solutions: the possibility to use a jostick or the keyboard. The hardware
+can be selected in the appropriate launch file (see [Launch File](#S-Launch)). In the following, an UML showing the
+architecture for the joystick interface is provided.
+
+![Projet1](images/joy_interface_setup.png)
+
+  The following explains the steps to follow in order to implement a joystick to control the robot. First, connect the
+joystick to the computer and then check if it recognised by the computer.
+
+##### The command to run is:
+        ls /dev/input/
+
+##### The output should be something like:
+        event0   event11  event14  event17  event2   event5  event8  js1     mouse1
+
+  In this case, the joystick is recognised as js1
+
+  Now, check if the jstest package is installed, just typing it on the command line. In the case it is not installed, is
+just necessary to run these two lines:  
+
+        sudo apt-get update -y
+
+        sudo apt-get install -y jstest-gtk
+
+  With the correct package is possible to test the joystick status:
+
+        sudo jstest /dev/input/js1
+
+  The last command is necessary to make sure to have the controller working on Ubuntu. The buttons and axes status
+should change if the controller is used. The ROS package which handle the joystick has to be instaled:
+
+        sudo apt-get install ros-<distro>-joy
+
+  Writing the implemented ROS distribution instead of <distro>. Then, at this point, the permission to the joystick.
+##### Running the command:
+
+        ls -l /dev/input/js1
+
+  The output should be something like:
+
+        crw-rw-rw-+ 1 root input 13, 1 mai   16 19:55 /dev/input/js1
+
+  Here is important to notice the characters after crw-rw- it should be written rw; if not (it may be crw-rw-r--+ )
+then run the command:
+
+        sudo chmod a+rw /dev/input/js1
+
+  Then check again with the previus command. At this point is possible to run the ROS node and check the output.
+  First set the parameter:
+
+        rosparam set joy_node/dev "/dev/input/js1"
+
+  And then run the node:
+
+        rosrun joy joy_node
+
+  To check the output, a simple rostopic is sufficient:
+
+        rostopic echo joy
+
+  Now each time a button of a lever is pressed, moved or released; in the terminal a message should appear.
+To implement the joystick in the package, the adapter component must be defined. An existing one is already
+in the package. (see [Compute Twist](#S-Compute))
+
+  Concerning the key_node, there no need of any package or installation. However, the control of the robot
+is less accurate then when unsing a joystick.
 
 
 
@@ -290,7 +359,7 @@ aim of this file is to group all the elements that do not belong to any "concept
 simulation in one class.
 
 
-# <a name="S-FileHandler"></a>FileHandler
+# <a name="S-FileHandler"></a>File Handler
 
   The aim of this file is to save all the recorded data in the proper folder. Moreover, as the architecture is versatile
 and some parameters can be changed, all the characteristic of the robot, of the sensors and of the world are also saved,
@@ -317,6 +386,3 @@ or as xacro file in the simulation_descriptions folder. The model built is the s
 type (2, 0) with two fixed wheels and a castor one. As xacro is used, every characteristic of the robot is passed
 as a parameter, it can be changed by the user in the proper launch file and it can be seen in the simulation itself.
 Some of this characteristic, that can not be changed by the user, are expressed as function of other parameters.
-
-
-![Projet1](images/joy_interface_setup.png)
