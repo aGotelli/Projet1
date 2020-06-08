@@ -169,24 +169,24 @@ the Twist message and the function IsMoving() that are virtual.
 
 ##### See below
 
-//  Virtual Callback
-inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist);
+        //  Virtual Callback
+        inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist);
 
-//  Function to convert the received twist from the controller into the
-//  input defined for the robot which is implemented
-virtual void ComputeInput() const=0;
+        //  Function to convert the received twist from the controller into the
+        //  input defined for the robot which is implemented
+        virtual void ComputeInput() const=0;
 
-//  This function contains all the computations related to the robot kinematic
-virtual void PerformMotion() const=0;
+        //  This function contains all the computations related to the robot kinematic
+        virtual void PerformMotion() const=0;
 
-//  This function computed the encoders reading and create a posture from the
-//  computed data, to make it possible to check the computations consistency.
-virtual void ComputeOdometry() const=0;
+        //  This function computed the encoders reading and create a posture from the
+        //  computed data, to make it possible to check the computations consistency.
+        virtual void ComputeOdometry() const=0;
 
-//  This function is meant to prepare the messages to be published. In other
-//  words, in this function the data obtained in the cycle are copied into
-//  the messages just before they are published.
-virtual void PrepareMessages()=0;
+        //  This function is meant to prepare the messages to be published. In other
+        //  words, in this function the data obtained in the cycle are copied into
+        //  the messages just before they are published.
+        virtual void PrepareMessages()=0;
 
 
 
