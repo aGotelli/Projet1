@@ -336,16 +336,22 @@ carefully explained in the code, the reader is encouraged in reading it from the
 
 # <a name="S-World"></a>World
 
-  The aim of this header file is to separate the definition of the world from the other parts of the simulation as it
-is used in different files and is more useful to have it declared in a specific header file to include where needed.
+  The aim of this header file is to separate the definition of the world from the other parts of the simulation. In fact,
+as it is used in different files, it is more useful to have it declared in a specific header file to include where needed.
 The world is characterized by the distance between horizontal lines (xSpacing), the distance between vertical lines
 (ySpacing) and the line thickness.
 
-  In order to show the world in rviz and so in the simulation, the ground generator is implemented with its header
-file. It generates a tiled floor, using chunk, represented by a white parallelepiped of size 5x5 meters. Some lines
-are generated in order to highlight the separating lines of each tile.
+##### Members
+      private:
+
+       const double xSpacing { 1.0 };
+       const double ySpacing { 1.0 };
+       const double lineThickness { 0.005 };
 
 
+
+
+  
 
 # <a name="S-Utility"></a>Utility
 
