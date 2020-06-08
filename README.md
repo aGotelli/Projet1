@@ -120,31 +120,6 @@ file, contains all the node and groups definitions. This last launch file should
 
 
 
-# <a name="S-Sensor"></a>Sensor
-  The sensors that are mounted in the robot are simulated with the use of the functions declared in the relative files.
-There are two files which allow to simulate the sensor behavior: the sensor.cpp and sensor.h which are discussed below.
-
-### <a name="Ri-sensor.cpp"></a>sensor.cpp
-  The sensor.cpp source file collects all the parameters of the robot sensors and the world; it crates an instance of it
-to store in every sensor class. (see [World](#S-World) ).
-
-  There are a few others basic operations done in this file. It subscribes to the robot position and it publishes the
-current sensors state. Additionally, it publishes some markers to allow the representation of the measurements. In the main loop, the sensor status are checked periodically, using the method describes in the
-header file.
-
-### <a name="Ri-sensor.h"></a>sensor.h
-  The header file for the sensors contains the definition of the class Sensor and RobotSensors. This last one is useful,
-as it provides a tool to ensure that, for any reason, the sensors have two different instances of the world. The Sensor
-class, provides all the functions needed to check the sensor status and obtain it absolute positions. As the procedure is
-carefully explained in the code, the reader is encouraged in reading it from there.
-
-
-
-
-
-
-
-
 # <a name="S-Robot(2,0)"></a>Robot(2,0)
 
   The robot component is constituted by two header files: robot_2_0.h, robot_base.h and it also makes use of an third
@@ -219,6 +194,11 @@ allows having a semantic and user friendly computation for the kinematic model.
 
         }
 
+  The computation is very close to what is provided in the MOBRO course. In fact, the computation of the derivative of
+the robot configuration vector follows the same notations. Then, to compute the current values of the configuration
+vector the derivative is evaluated using the notion of the time elapsed in between two iterations.
+
+  For the use of (*...) this is because the returned element of the 
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
@@ -247,6 +227,26 @@ loop trajectories.
   The output of the simulation are a .bag and a .yaml files. The first one contains all the messages that have been
 published, the second one the parameters that has been used. In this way, it is possible to use the generated data.
 
+
+
+
+# <a name="S-Sensor"></a>Sensor
+  The sensors that are mounted in the robot are simulated with the use of the functions declared in the relative files.
+There are two files which allow to simulate the sensor behavior: the sensor.cpp and sensor.h which are discussed below.
+
+### <a name="Ri-sensor.cpp"></a>sensor.cpp
+  The sensor.cpp source file collects all the parameters of the robot sensors and the world; it crates an instance of it
+to store in every sensor class. (see [World](#S-World) ).
+
+  There are a few others basic operations done in this file. It subscribes to the robot position and it publishes the
+current sensors state. Additionally, it publishes some markers to allow the representation of the measurements. In the main loop, the sensor status are checked periodically, using the method describes in the
+header file.
+
+### <a name="Ri-sensor.h"></a>sensor.h
+  The header file for the sensors contains the definition of the class Sensor and RobotSensors. This last one is useful,
+as it provides a tool to ensure that, for any reason, the sensors have two different instances of the world. The Sensor
+class, provides all the functions needed to check the sensor status and obtain it absolute positions. As the procedure is
+carefully explained in the code, the reader is encouraged in reading it from there.
 
 
 
