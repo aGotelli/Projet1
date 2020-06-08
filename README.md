@@ -16,3 +16,5 @@ This file aim to explain how to move inside this project. It should be read befo
 [![Projet1](images/joy_interface_setup.png)]
 
 [![Projet1](images/simulation_core.png)]
+
+[![Projet1](images/saving_and_display.png)]
