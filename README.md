@@ -12,8 +12,8 @@ This file aim to explain how to move inside this project. It should be read befo
 
 ## <a name="SS-Index"></a>Index
 
-* [In: Introduction](#S-Introduction)
-* [L: Launch File](#-Launch)
+* [Introduction](#S-Introduction)
+* [Launch File](#-Launch)
 * [Robot(2,0)](#S-Robot(2,0))
 * [Interfaces](#S-Interfaces)
 * [Sensor](#S-Sensor)
@@ -147,25 +147,61 @@ carefully explained in the code, the reader is encouraged in reading it from the
 
 # <a name="S-Robot(2,0)"></a>Robot(2,0)
 
-  The robot component is constituted by three header files, robot_2_0, robot_base and robot_2_0_generalizedcoord,
-and an executable. As the simulation is divided is two parts, the robot kinematic and the interface with ROS
-environment, the idea is to separate these parts also in the package.
+  The robot component is constituted by two header files: robot_2_0.h, robot_base.h and it also makes use of an third
+one: robot_2_0_generalizedcoord.h. They are initialized with the parameters obtained in the executable: robot_2_0.cpp.
+As the simulation is divided in two parts, the robot kinematic and the interface with ROS environment, the idea is to
+separate these parts also in the package. In this way, the user needs only to pick the correct file accordingly to what
+of interest.
+
+* [The robot_base.h](#Ri-Robot(2,0))
+* [The robot_2_0_generalizedcoord.h](#Ri-Robot(2,0))
+* [The robot_2_0.h](#Ri-Robot(2,0))
+
 
 ![Projet1](images/robot_component.png)
 
-  The robot_base contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
+### <a name="Ri-Robot(2,0)"></a>The robot_base.h
+  It contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
 all the functions are declared as virtual and called in the isMoving() member function, that executes all of them
-in order to make the simulation possible and accurate. This class is mostly an interface and so, for definition, it
-should contain only virtual member function and no member elements.
+in order to make the simulation possible and accurate. This class is mostly an interface, it provides the tools to interface
+the ROS architecture. To enforce this idea, it contains only pure virtual function, the only exceptions are the callback for
+the Twist message and the function IsMoving() that are virtual.
 
+##### See below
+
+//  Virtual Callback
+inline virtual void TwistReceived(const geometry_msgs::Twist::ConstPtr& twist);
+
+//  Function to convert the received twist from the controller into the
+//  input defined for the robot which is implemented
+virtual void ComputeInput() const=0;
+
+//  This function contains all the computations related to the robot kinematic
+virtual void PerformMotion() const=0;
+
+//  This function computed the encoders reading and create a posture from the
+//  computed data, to make it possible to check the computations consistency.
+virtual void ComputeOdometry() const=0;
+
+//  This function is meant to prepare the messages to be published. In other
+//  words, in this function the data obtained in the cycle are copied into
+//  the messages just before they are published.
+virtual void PrepareMessages()=0;
+
+
+
+
+### <a name="Ri-Robot(2,0)"></a>The robot_2_0_generalizedcoord.h
   The robot_2_0_generalizedcoord contains the definition of the generalized coordinates structure, a powerful structure
 used for all the computations related to the kinematic, and the related operators.
 
+### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
   The robot_2_0 contains the declaration of all the function related to the simulation of the robot motion. Firstly,
 the input is computed from the Twist message and the max speed of the wheels in ensured to both. According to the
 obtained input, the matrix that represents the kinematic model ( S(q) ) is updated and used to get the derivative of
 the generalized coordinates of the robot. This computation allows to, after a integration over the time elapsed from
 the last one, update the generalized coordinates adding what obtained with the current value.
+
   Moreover, in this file it is computed the odometry. Starting from the current value of phi angles of the two fixed
 wheels, the elementary rotation of the two wheels between two instants of time are computed taking into account the
 wheel resolution. In this way, the discretized input is obtained and, through it, the odometry coordinates are updated.
@@ -212,6 +248,10 @@ places a marker, red o green based on which sensor, to highlight this commutatio
   Moreover, it contains everything is needed to convert from quaternion to Euler angles and vice versa. In fact, the
 aim of this file is to group all the elements that do not belong to any "concept" but that are still important for the
 simulation in one class.
+
+
+# <a name="S-FileHandler"></a>FileHandler
+
 
 
 
