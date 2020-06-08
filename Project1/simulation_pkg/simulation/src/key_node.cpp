@@ -10,26 +10,33 @@
 // Map for movement keys
 std::map<char, std::vector<double>> motion
 {
-  {'i', {1, 0, 0}},
-  {'o', {1, 0, -1}},
-  {'j', {0, 0, 1}},
-  {'l', {0, 0, -1}},
-  {'u', {1, 0, 1}},
-  {',', {-1, 0, 0}},
-  {'.', {-1, 0, 1}},
-  {'m', {-1, 0, -1}},
-  {'k', {0, 0, 0}},
+  // {'i', {1, 0, 0}},
+  // {'o', {1, 0, -1}},
+  // {'j', {0, 0, 1}},
+  // {'l', {0, 0, -1}},
+  // {'u', {1, 0, 1}},
+  // {',', {-1, 0, 0}},
+  // {'.', {-1, 0, 1}},
+  // {'m', {-1, 0, -1}},
+  // {'k', {0, 0, 0}},
+
+  {'w', {1, 0, 0}},
+  {'s', {-1, 0, 0}},
+  {'a', {0, 0, 1}},
+  {'d', {0, 0, -1}},
+
+
 };
 
 // Map for speed keys
 std::map<char, std::vector<double>> speed
-{
-  {'q', {1.1, 1.1}},
-  {'z', {0.9, 0.9}},
-  {'w', {1.1, 1}},
-  {'x', {0.9, 1}},
-  {'e', {1, 1.1}},
-  {'c', {1, 0.9}}
+ {
+//   {'q', {1.1, 1.1}},
+//   {'z', {0.9, 0.9}},
+//   {'w', {1.1, 1}},
+//   {'x', {0.9, 1}},
+//   {'e', {1, 1.1}},
+//   {'c', {1, 0.9}}
 };
 
 // Reminder message
@@ -49,9 +56,9 @@ CTRL-C to quit
 )";
 
 // Init variables
-double v; // Linear velocity (m/s)
-double omega; // Angular velocity (rad/s)
-double x, y, theta; // Forward/backward/neutral direction vars
+// double v; // Linear velocity (m/s)
+// double omega; // Angular velocity (rad/s)
+// double x, y, theta; // Forward/backward/neutral direction vars
 char key(' ');
 geometry_msgs::Twist twistToRobot;
 
@@ -94,10 +101,14 @@ int main(int argc, char** argv)
   ros::NodeHandle nh_glob;
 
   // Declare you publishers and service servers
-  ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistoToRobot", 1);
+  ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1);
 
 
   ROS_INFO( "%s", msg );
+
+  double v = 1; // Linear velocity (m/s)
+  double omega = 1; // Angular velocity (rad/s)
+  double x, y, theta; // Forward/backward/neutral direction vars
 
   ros::Rate rate(150);
   while(ros::ok()){
@@ -106,13 +117,18 @@ int main(int argc, char** argv)
     // Get the pressed key
     key = getch();
 
+    ROS_INFO_STREAM(" typed : " << key ) ;
+
     // If the key corresponds to a key in moveBindings
     if ( motion.count(key) == 1 )
     {
       // Grab the direction data
-      x = motion[key][0];
-      y = motion[key][1];
-      theta = motion[key][2];
+      // x = motion[key][0];
+      // y = motion[key][1];
+      // theta = motion[key][2];
+
+      v = motion[key][0];
+      omega = motion[key][2];
 
     }
 
@@ -122,8 +138,6 @@ int main(int argc, char** argv)
       // Grab the speed data
       v = v * speed[key][0];
       omega = omega * speed[key][1];
-
-      ROS_INFO_STREAM( "v: "<< v << "omega :  "<< omega );
 
     }
 
@@ -141,8 +155,10 @@ int main(int argc, char** argv)
 
     // Publish it and resolve any remaining callbacks
     robotControl.publish( twistToRobot );
+    v = 0;
+    omega = 0;
 
     rate.sleep();
-    
+
   }
 }
