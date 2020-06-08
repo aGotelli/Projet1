@@ -49,45 +49,15 @@ namespace utility
 
 ////////////////////////////////////////////////~ INDEX ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-  //  Wikipedia comes in help for solving the tedius angles conversions
-  struct Quaternion {
-  Quaternion()=default;
-
-  Quaternion(const double _w, const double _x,
-              const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
-
-    double w {1.0};
-    double x {0.0};
-    double y {0.0};
-    double z {0.0};
-  };
+  //  Forward declarations
+  struct Quaternion;
 
   template<class QuaternionTemplated>
-  struct item_return {
+  struct item_return;
 
-    typedef QuaternionTemplated type;
-  };
+  struct EulerAngles;
 
-
-  struct EulerAngles {
-    EulerAngles()=default;
-    EulerAngles(const double _yaw) : yaw(_yaw) {/* The rest are defaults */}
-
-    double roll {0.0};
-    double pitch {0.0};
-    double yaw {0.0};
-  };
-
-  struct Pose2D {
-    Pose2D()=default;
-
-    Pose2D(const double _x, const double _y, const double _theta=0) : x(_x), y(_y), theta(_theta) {}
-
-    double x { 0.0 } ;
-    double y { 0.0 } ;
-    double theta { 0.0 } ;
-  };
-
+  struct Pose2D;
 
   enum SENSOR { RIGHT, LEFT };
 
@@ -139,7 +109,7 @@ namespace utility
   //  Function that returns a marker for the active sensor
   visualization_msgs::Marker PlaceActiveSensor(const Pose2D& point, const SENSOR& activeSensor);
 
-  //  Function creating a marker accordingly with the active sensor 
+  //  Function creating a marker accordingly with the active sensor
   visualization_msgs::Marker PlaceMarker(const Pose2D& point, const COLOR& markerColor, const std::string side, const int index);
 
 
@@ -149,6 +119,44 @@ namespace utility
 
 ///////////////////////////////////////////~ DECLARATION ~\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+
+struct Quaternion {
+Quaternion()=default;
+
+Quaternion(const double _w, const double _x,
+            const double _y, const double _z) : w(_w), x(_x), y(_y), z(_z) {}
+
+  double w {1.0};
+  double x {0.0};
+  double y {0.0};
+  double z {0.0};
+};
+
+template<class QuaternionTemplated>
+struct item_return {
+
+  typedef QuaternionTemplated type;
+};
+
+
+struct EulerAngles {
+  EulerAngles()=default;
+  EulerAngles(const double _yaw) : yaw(_yaw) {/* The rest are defaults */}
+
+  double roll {0.0};
+  double pitch {0.0};
+  double yaw {0.0};
+};
+
+struct Pose2D {
+  Pose2D()=default;
+
+  Pose2D(const double _x, const double _y, const double _theta=0) : x(_x), y(_y), theta(_theta) {}
+
+  double x { 0.0 } ;
+  double y { 0.0 } ;
+  double theta { 0.0 } ;
+};
 
   template<class QuaternionTemplated>
   typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch, const double roll)
