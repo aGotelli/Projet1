@@ -52,6 +52,15 @@ risk of having to find files around the project.
 presented.
 
 ## <a name="Ri-simulation"></a>The simulation meta package
+
+  This package contains all the components needed in the simulation. The core of the simulation is described by
+the UML below.
+
+![Projet1](images/simulation_core.png)
+
+
+
+
   When opening the simulation meta package, the reader can see three packages: simulation, simulation_messages
 and simulation_descriptions. Their description is provided below.
 
@@ -85,7 +94,7 @@ in this project. Each executable of this package is designed in an source file +
 a certain choose has been made. For developing this project, we solved every doubt using the suggestions
 provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 
-## <a name="Ri-estimator"></a>The estimator package
+
 
 
 
@@ -310,6 +319,6 @@ Some of this characteristic, that can not be changed by the user, are expressed 
 
 ![Projet1](images/joy_interface_setup.png)
 
-![Projet1](images/simulation_core.png)
+
 
 ![Projet1](images/saving_and_display.png)
