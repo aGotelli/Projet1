@@ -8,7 +8,7 @@
  * \param[in]
  *
  * Subscribes to: <BR>
- *   
+ *
  *
  * Publishes to: <BR>
  *    ° /TwistToRobot
@@ -32,12 +32,12 @@
 // Map for movement keys
 std::map<char, std::vector<double>> motion
 {
-  {'w', {1, 0, 0}},
-  {'s', {-1, 0, 0}},
-  {'a', {0, 0, 1}},
-  {'d', {0, 0, -1}},
+  {'w', {1, 0}},
+  {'s', {-1, 0}},
+  {'a', {0, 1}},
+  {'d', {0, -1}},
 
-
+    {'x', {0, 0}}
 };
 
 // Map for speed keys
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
     if ( motion.count(key) == 1 )
     {
       v = motion[key][0];
-      omega = motion[key][2];
+      omega = motion[key][1];
 
     }
 
@@ -143,6 +143,9 @@ int main(int argc, char** argv)
       omega = omega * speed[key][1];
 
     }
+    
+    // Otherwise, stop the robot (CTRL C)
+    else if ( key == '\x03' ) { break; }
 
 
 
@@ -154,7 +157,7 @@ int main(int argc, char** argv)
     robotControl.publish( twistToRobot );
     v = 0;
     omega = 0;
-    key = ' ';
+
 
     rate.sleep();
 
