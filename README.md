@@ -410,7 +410,7 @@ places a marker, red o green based on which sensor, to highlight this commutatio
         //  Function creating a marker accordingly with the active sensor
         visualization_msgs::Marker PlaceMarker(const Pose2D& point, const COLOR& markerColor, const std::string side, const int index);
 
-  It contains everything is needed to convert from quaternion to Euler angles and vice versa. In others words, the
+  It also contains everything is needed to convert from quaternion to Euler angles and vice versa. In others words, the
 aim of this file is to group all the elements that do not belong to any "concept" but that are still important for the
 simulation.
 
@@ -418,20 +418,15 @@ simulation.
 # <a name="S-FileHandler"></a>File Handler
 
   The aim of this file is to save all the recorded data in the proper folder. Moreover, as the architecture is versatile
-and some parameters can be changed, all the characteristic of the robot, of the sensors and of the world are also saved,
-so in this way, all the details are always visible and available.
+and some parameters can be changed (see [Launch File](#S-Launch)), all the characteristic of the robot, of the sensors and
+of the world are also saved,so in this way, all the details are always visible and available.
 
-  It is recommended to use a file name without spaces and that does not end with a number. Even if this node will work,
-the name of the file will be strongly modified.
+ This node has also a build in method to ensure the existence of the folder where to storage the files. It also has other
+properties that are well explained in the begin of the file; the reader is encouraged to read them from there.
 
- This node has also a build in method to ensure the existence of the folder where to storage the files. If the folder does
-not exist then it is created in the path given. However if the path is not correct the node is shut down and simulation goes
-on WITHOUT SAVING ANY FILE.
 
- This node is designed to be used in the same group of the simulation. The node can also handle the case where the simulation is
-not in a group. However the user is encouraged to use the namespaces i.e. the groups properly as it will lead to a clearer and
-more understandable architecture for the simulation. In fact, the group allows to put together components that work on the
-same task or concept.
+
+
 
 
 
@@ -452,4 +447,9 @@ Some of this characteristic, that can not be changed by the user, are expressed 
 the following link:
 http://wiki.ros.org/catkin/Tutorials
 
-After downloading the zip file, the user can extract just what is inside the "Project1"
+  After downloading the zip file, the user can extract just what is inside the "Project1", the two folders "data" and "simulation_pkg"
+and copy them in the src folder of your catkin workspace. Then the user has to compile the packages running the command:
+
+        catkin build
+
+As the workspace packa
