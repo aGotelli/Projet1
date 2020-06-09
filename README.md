@@ -158,7 +158,7 @@ of interest.
 it provides the tools to interface the ROS architecture. To enforce this idea, it contains only pure virtual function,
 the only exceptions are the callback for the Twist message and the function isMoving() that are virtual. Is the member function
 isMoving() that calls all the other memeber functions. In this way,all the functions are executed in order to make the
-simulation possible and accurate. 
+simulation possible and accurate.
 
 ##### See below
 
@@ -190,15 +190,15 @@ simulation possible and accurate.
 
   * The functions declared as pure virtual must have an override in every class that inherits from this
     base class. In fact, they define the robot kinematic and characteristics, so every robot must define
-    them accordingly with its model.
+    their bodies accordingly with its model.
   * Having them declared in the base class allows creating a sequence in the function isMoving(). The
     function is declared as virtual, so if an user think to change the calling order of the other member
-    function, it is just necessary to declare the customized override. However, there no many reasons to
+    function, it is just necessary to declare the customized override. However, there are no many reasons to
     change the proposed order.
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0_generalizedcoord.h
-  The robot_2_0_generalizedcoord contains the definition of the generalized coordinates structure, a powerful structure
-used for all the computations related to the kinematic, and the related operators. Using the object GeneralizedCoordinates
+  The robot_2_0_generalizedcoord contains the definition of the generalized coordinates structure. It is
+used for all the kinematic computations and the related operators. Using the object GeneralizedCoordinates
 allows having a semantic and user friendly computation for the kinematic model.
 
 ##### Example
@@ -221,15 +221,16 @@ This last decision is dicussed in the file robot_2_0_generalizedcoord.h, the rea
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_2_0.h
-  The robot_2_0 contains the declaration of all the function related to the simulation of the robot motion. Firstly,
-the input is computed from the Twist message and the max speed of the wheels in ensured to both. According to the
+  The robot_2_0 contains the declaration of all the functions related to simulating the robot motion. Firstly,
+the input is computed from the Twist message and the max speed of the wheels in ensured to both. Accordingly to the
 obtained input, the matrix that represents the kinematic model ( S(q) ) is updated and used to get the derivative of
-the generalized coordinates of the robot. This computation allows to, after a integration over the time elapsed from
-the last one, update the generalized coordinates adding what obtained with the current value.
+the generalized coordinates of the robot. This computation allows to:
+  * Obtain the changes in the configuration vector from the last iteration
+  * Apply the changes to the current configuration vector
 
-  Moreover, in this file it is computed the odometry. Starting from the current value of phi angles of the two fixed
-wheels, the elementary rotation of the two wheels between two instants of time are computed taking into account the
-wheel resolution. In this way, the discretized input is obtained and, through it, the odometry coordinates are updated.
+  Moreover, in this file it is computed the odometry. Starting from the current value of the phi angles of the two fixed
+wheels, the elementary rotations between two iterations are computed taking into account the encoder resolution.
+In this way, the discretized input is obtained and, through it, the odometry coordinates are updated.
 
 
 
@@ -443,3 +444,8 @@ as a parameter, it can be changed by the user in the proper launch file and it c
 Some of this characteristic, that can not be changed by the user, are expressed as function of other parameters.
 
 ![Projet1](images/URDF_model.png)
+
+
+# <a name="S-How to Use"></a>How to Use
+
+  After downloading the zip file, the user can extract just what is inside the
