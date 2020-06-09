@@ -37,7 +37,7 @@ std::map<char, std::vector<double>> motion
   {'a', {0, 1}},
   {'d', {0, -1}},
 
-    {'x', {0, 0}}
+  {'x', {0, 0}}
 };
 
 // Map for speed keys
