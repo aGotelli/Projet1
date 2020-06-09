@@ -121,10 +121,10 @@ visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const Siz
 }
 
 
-enum TYPE{ HORIZONTAL, VERTICAL };
+
 int h_index = 0;
 int v_index = 0;
-visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Size& chunkSize, const TYPE& type, const World& world, const utility::Pose2D& chunkCenter)
+visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Size& chunkSize, const utility::LINETYPE& type, const World& world, const utility::Pose2D& chunkCenter)
 {
   visualization_msgs::Marker line;
 
@@ -132,13 +132,13 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
 	line.header.stamp = ros::Time::now();
   line.lifetime = ros::Duration();
 
-  if(type == TYPE::VERTICAL) {
+  if(type == utility::LINETYPE::VERTICAL) {
     line.ns = "vertical_line";
     line.id = v_index;
     v_index ++ ;
   }
 
-  if(type == TYPE::HORIZONTAL) {
+  if(type == utility::LINETYPE::HORIZONTAL) {
     line.ns = "horizontal_line";
     line.id = h_index;
     h_index ++ ;
@@ -162,12 +162,12 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
   p1.x = position.x;
   p1.y = position.y;
 
-  if(type == TYPE::VERTICAL) {
+  if(type == utility::LINETYPE::VERTICAL) {
     p2.x = position.x;
     p2.y = position.y + copysign( chunkSize.y, chunkCenter.y);
   }
 
-  if(type == TYPE::HORIZONTAL) {
+  if(type == utility::LINETYPE::HORIZONTAL) {
     p2.x = position.x + copysign( chunkSize.x, chunkCenter.x);
     p2.y = position.y;
   }
@@ -198,11 +198,11 @@ std::unique_ptr<Ground> Generation( const utility::Pose2D& chunkCenter, const Si
   lines.markers.reserve( linesNumber );
 
   for(int i= 0; i <= tilesNormalX; i ++) {  //  Creating the "vertical" lines
-    lines.markers.push_back( PlaceLine( utility::Pose2D( copysign( i*world.XSpacing(), chunkCenter.x), 0.0), chunkSize, TYPE::VERTICAL, world, chunkCenter) );
+    lines.markers.push_back( PlaceLine( utility::Pose2D( copysign( i*world.XSpacing(), chunkCenter.x), 0.0), chunkSize, utility::LINETYPE::VERTICAL, world, chunkCenter) );
   }
 
   for(int j= 0; j <= tilesNormalY; j ++) {  //  Creating the "horizontal" lines
-    lines.markers.push_back( PlaceLine( utility::Pose2D( 0.0, copysign( j*world.YSpacing(), chunkCenter.y)), chunkSize, TYPE::HORIZONTAL, world, chunkCenter) ) ;
+    lines.markers.push_back( PlaceLine( utility::Pose2D( 0.0, copysign( j*world.YSpacing(), chunkCenter.y)), chunkSize, utility::LINETYPE::HORIZONTAL, world, chunkCenter) ) ;
   }
 
   return std::make_unique<Ground>(tile, lines, chunkCenter);
