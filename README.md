@@ -443,7 +443,7 @@ However, some of this characteristic, that can not be changed by the user, are e
 
 
 
-# <a name="S-Compute Twist"></a>Compute Twist
+# <a name="S-Compute"></a>Compute Twist
 
   This executable is an adapter component that takes the status of the controller, in this case the joystick, and
 outputs a feasible twist for the robot. Depending on the type of joystick the implementation could change as it is
@@ -453,7 +453,7 @@ modified to implement the different joystick.
 
 
 
-# <a name="S-How to Use"></a>How to Use
+# <a name="S-HowTo"></a>How to Use
 
   The simulation is created as a catkin workspace, so if the user does not know how to create one please consult the tutorials
 on the following link:
