@@ -23,6 +23,7 @@ This file aim to explain how to move inside this project. It should be read befo
 * [URDF](#S-URDF)
 * [Compute Twist](#S-Compute)
 * [How to Use](#S-HowTo)
+* [Catkin Build](#S-Build)
 
 
 
@@ -448,7 +449,7 @@ However, some of this characteristic, that can not be changed by the user, are e
 outputs a feasible twist for the robot. Depending on the type of joystick the implementation could change as it is
 explained in the interface section (see [Interface](#S-Interface)). If another joystick has to be implemented,
 this component must be changed accordingly. The file is self explanatory and the code can be simply
-modified to implement the different joystick. 
+modified to implement the different joystick.
 
 
 
@@ -466,7 +467,7 @@ convenient and create a link in the catkin workspace.
         sudo ln -s /<the path to the folder>/Project1
 
 
-Then the user has to compile the packages running the command:
+Then the user has to compile the packages running the command (see [Catkin Build](#S-Build) ):
 
         catkin build
 
@@ -479,3 +480,34 @@ Note also that if the user is running from a different location, he has to speci
       source home/project/devel/setup.bash
 
 Remember that if this execution has to be done every time the package is modified.
+
+
+
+
+
+
+
+
+# <a name="S-Build"></a>Catkin Build
+It is suggested to use caktin build instead od the common catkin_make. To use this command it is necessary to
+install the catkin_tool_box. A procedure is provided below:
+
+##### Run the following commands
+        sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+        wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get install python-catkin-tools
+
+Now it could be possible to run the following commands:
+
+        cd ~/WorkSpaces/catkin_ws/        (this depends on the root configurations)
+        catkin build
+
+However some users may gave the following problem if they already have used catkin_make:
+
+        The build space at '/home/user/catkin_ws/build' was previously built by 'catkin_make'. Please remove the build space or pick a different build space.
+
+No big deal, just delete everything in the workspace (except for the src) and the run the commands:
+
+        cd ~/WorkSpaces/catkin_ws/
+        catkin build
