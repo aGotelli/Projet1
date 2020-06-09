@@ -15,8 +15,8 @@
  *
  * Description
             This file is meant to collect all the parameters of the world, to
-					generate a backgound for the simulation. In this way it makes the
-					whole simulation more user friendly.
+				generate a backgound for the simulation. In this way, it makes the
+				whole simulation more user friendly.
 
           Several choiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines

@@ -17,9 +17,9 @@
  *    °
  *
  * Description
-            This file contains all the needed functons to simulates the sensors.
-          the intended approach is geometrical. The sensor is expressed in
-          homogeneus coordinates in the robot frame. The knowledge about the
+            This file contains all the needed functons to simulate the sensors.
+          The intended approach is geometrical. The sensor is expressed in
+          homogeneous coordinates in the robot frame. The knowledge about the
           robot position is expressed in terms of the homogeneus transform from
           the reference frame (frame O indicated "o") to the moving platform
           frame (frame M indicated "m").
@@ -37,7 +37,7 @@
 
             The sensor, assumed in the position S, has its own
           coordinates (S.x, S.y). Flooring the result of the division of
-          theese coordinates by the line offsets (xSpacing and ySpacing)
+          these coordinates by the line offsets (xSpacing and ySpacing)
           and multipling it back with the offset will give the "left" and
           "down" coordinate represented in the design. By adding the offset
           to this position, the expressions of "up" and "right" are obtained.
@@ -50,7 +50,7 @@
             Once the expression of the lines around the sensor are known:
           "vertical" line x = left or x = right
           "horizontal" line y = down or y = up
-          Their are expressed in homogeneus coordinates. A line in homogeneus
+          They are expressed in homogeneus coordinates. A line in homogeneus
           coordinates has the expression: ax + by + c = 0. In a vector form it
           can be expressed as:
 
@@ -58,7 +58,7 @@
                                 [a  b   c]| y | = 0
                                           | 1 |
 
-            Once the line expression in homogeneus coordinates is computed the
+            Once the line expression in homogeneus coordinates is computed, the
           distance from the sensor to these lines is the result of their dot
           product. In fact, the dot product between a point and a line is the
           length of the segment that is normal to the line and passes throught
@@ -69,13 +69,13 @@
           distances from them and the point (that is the sensor).
           In other words, the result is a vector which each of its elements
           represents a distance from the related line. The sensor status
-          is changes accordingly with the values in this vector of distances.
+          is changed accordingly with the values in this vector of distances.
 
             However these last ones could be positive or negative. The insight for
           the measurement comes from the minumum of the absolute values of these
           distances. The Eigen::MatrixBase has some member function which help.
 
-            The memeber function cwiseAbs() reurns a vector containing
+            The memeber function cwiseAbs() returns a vector containing
           the absolute value of the object calling. The other member function
           minCoeff() returns the minimum among the coefficients of the object
           calling. The minimum will be zero only when the sensor is exactly
@@ -85,7 +85,7 @@
             Moreover, in a practical application, all the lines have a finite
           thickness. In order to be consistent, if the line has a thickness
           of 1 cm, then the status of the sensor should output a measurement
-          if its distance from the line is less then half the thickness
+          if its distance from the line is less then half the thickness.
  *
  */
 

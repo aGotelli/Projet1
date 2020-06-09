@@ -22,21 +22,21 @@
           and velocity and regarding.
 
             First the input is computed from the twist message, and the max speed
-          of the wheels in ensured to both. Then with the knowledge of the input,
+          of the wheels is ensured to both. Then with the knowledge of the input,
           the matrix which represents the kinematic model is updated and used to
-          obain the derivative of the generalized robot coordinates.
+          obtain the derivative of the generalized robot coordinates.
 
             Once the derivative of the robot generalized coordinates is computed,
-          it is necessary to perform and integration over the time elapsed from
+          it is necessary to perform an integration over the time elapsed from
           the last one (so it is more like to compute a displacement). Then the
           displacement is added to the current value so all the coordinates are
           updated.
 
             Morover, in this file it is computed the odometry. Starting from the
           current value of phi angles of the two fixed wheels, the elementary
-          rotation of the two wheel between two instant of times are computed
+          rotation of the two wheels between two instants of time are computed
           taking into account the wheel resolution. In this way, the discretized
-          input is obtained and,through it, the odometry coordinates are updated.
+          input is obtained and, through it, the odometry coordinates are updated.
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -61,24 +61,24 @@ public:
   Robot_2_0()=default;
 
   Robot_2_0(const double _frontAxle, const double _wheelRadius,
-            const double _jointOffSet, const double _castorArmLength,
+            const double _trailingOffSet, const double _castorArmLength,
             const double _wMax) :
             trackGauge(2*_frontAxle),
             wheelRadius(_wheelRadius),
-            jointOffSet(_jointOffSet),
+            trailingOffSet(_trailingOffSet),
             castorArmLength(_castorArmLength),
             wMax(_wMax),
             RobotBase() { /* All the rest is initialized as default */
               ROS_DEBUG_STREAM("User-defined initialization called..."); }
 
   Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
-            const double _wheelRadius, const double _jointOffSet,
+            const double _wheelRadius, const double _trailingOffSet,
             const double _castorArmLength, const double _wMax, const double _resolution) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             trackGauge(2*_frontAxle),
             wheelRadius(_wheelRadius),
-            jointOffSet(_jointOffSet),
+            trailingOffSet(_trailingOffSet),
             castorArmLength(_castorArmLength),
             wMax(_wMax),
             encoder( Encoders(_resolution) ),
@@ -136,9 +136,9 @@ private:
   const Encoders encoder;
 
   // Robot parameters
-  const double trackGauge {0.4} ;              //  [m]
+  const double trackGauge {0.4} ;             //  [m]
   const double wheelRadius {0.05 };           //  [m]
-  const double jointOffSet {0.4 };            //  [m]
+  const double trailingOffSet {0.4 };         //  [m]
   const double castorArmLength {0.15 };       //  [m]
   const double wMax { 10 };                   //  [RAD/s]
 
@@ -211,13 +211,13 @@ void Robot_2_0::ComputeOdometry() const
 void Robot_2_0::UpdateMatrix() const
 {
 
-  S <<            cos(q.theta)          ,                                    0                                ,
-                  sin(q.theta)          ,                                    0                                ,
-                      0                 ,                                    1                                ,
-        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + jointOffSet*cos(q.beta_3c))/castorArmLength  ,
-                  1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                   ,
-                  1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                   ,
-          -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*jointOffSet/wheelRadius                 ;
+  S <<            cos(q.theta)          ,                                    0                                   ,
+                  sin(q.theta)          ,                                    0                                   ,
+                      0                 ,                                    1                                   ,
+        -sin(q.beta_3c)/castorArmLength ,    -(castorArmLength + trailingOffSet*cos(q.beta_3c))/castorArmLength  ,
+                  1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                      ,
+                  1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                      ,
+          -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*trailingOffSet/wheelRadius                 ;
 
 }
 

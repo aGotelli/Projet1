@@ -29,19 +29,19 @@
           The reason is that they have to be declared accordingly with the robot
           kinematics but they should be a RobotBase members functions, in order
           to be called in the isMoving() member function. Without any surprise,
-          this memeber function executes all the others needed to make the
+          this member function executes all the others needed to make the
           simulation possible and accurate.
 
             This class is mostly an interface. As for definition, it should
-          contain only virtual memeber function and no memeber elements. The
+          contain only virtual member function and no member elements. The
           functions provided are all virtual, allowing some user to change them
           accordingly with the robot type. The memeber function isMoving()
-          should not be modified, as it represent a coherent developing of the
-          computantion. However, if a use want to costumize it, there is this
+          should not be modified, as it represents a coherent developing of the
+          computation. However, if a user wants to costumize it, there is this
           possibility.
 
-            The choice of have multiple member function was completely albitrary,
-          as well as other assumptions in this code. However we were inspired by
+            The choice of having multiple member function was completely arbitrary,
+          as well as other assumptions in this code. However, we were inspired by
           the Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
           Related chapthers of the CppCoreGuidelines:

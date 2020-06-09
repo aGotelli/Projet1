@@ -15,8 +15,8 @@
  *
  * Description
           This node will take the status of the controller, i.e. the joystick,
-          and will output a feasible twist for the robot. As it is an adapeter
-          component, it will be as short as possible in terms of code length.
+        and will output a feasible twist for the robot. As it is an adapter
+        component, it will be as short as possible in terms of code length.
 
           In this version, the Andrea's joystic is the only one implemented.
  *

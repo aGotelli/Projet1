@@ -6,7 +6,7 @@
  * \date 28/05/2020
  *
  * \param[in]
-    robot param : track_gauge, wheel_radius, joint_offset, castor_arm, actuator_max_speed
+    robot param : track_gauge, wheel_radius, trailing_offSet, castor_arm, actuator_max_speed
  *
  * Subscribes to: <BR>
  *    °
@@ -27,7 +27,9 @@
             they should be separated. This is done with the use of two header
             files. The class Robot_2_0 contains all the kinematic operations to
             obtain data from the simulation. Meanwhile the base class RobotBase
-            provides all the R.O.S. interfaces.
+            provides all the R.O.S. interfaces. Moreover, it also used another 
+            header file in which the structure of the generalized coordinates is 
+            defined. 
  *
  */
 
@@ -64,14 +66,14 @@ int main (int argc, char** argv)
     //  Robot parameters
     double frontAxle;                             // [m]
     double wheelRadius;                           // [m]
-    double jointOffSet;                           //  [m]
+    double trailingOffSet;                           //  [m]
     double castorArmLength;                       //  [m]
     double wMax ;                                 //  [RAD/s]
     double encodersResolution ;                   //  [dots/grad]
 
     nh_loc.param("front_axle", frontAxle, 0.2) ;
     nh_loc.param("wheel_radius", wheelRadius, 0.05) ;
-    nh_loc.param("joint_offset", jointOffSet, 0.4) ;
+    nh_loc.param("joint_offset", trailingOffSet, 0.4) ;
     nh_loc.param("castor_arm", castorArmLength, 0.15) ;
     nh_loc.param("actuator_max_speed", wMax, (double)10.0) ;
     nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
@@ -79,7 +81,7 @@ int main (int argc, char** argv)
     //  Check that the passed arguments are correct and meaningfull
     if( frontAxle < 0 ||
         wheelRadius < 0 ||
-        jointOffSet < 0 ||
+        trailingOffSet < 0 ||
         castorArmLength < 0 ||
         wMax < 0 ||
         encodersResolution < 0 ) {
@@ -90,7 +92,7 @@ int main (int argc, char** argv)
 
 
     Robot_2_0 robot(utility::Pose2D(xInit, yInit, thetaInit),
-                    frontAxle, wheelRadius, jointOffSet,
+                    frontAxle, wheelRadius, trailingOffSet,
                     castorArmLength, wMax, encodersResolution );
 
     robot.isMoving() ;

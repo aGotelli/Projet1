@@ -20,7 +20,7 @@
  *
  * Description
             	The aim of this file is to provide and interface to simulate the
-			sensor behaviur. The node simply subscribes to the robot position.
+			sensor behaviour. The node simply subscribes to the robot position.
 			With the knowledge of this position and the coordinates of the sensor
 			in the robot frame it simulates the sensors.
 

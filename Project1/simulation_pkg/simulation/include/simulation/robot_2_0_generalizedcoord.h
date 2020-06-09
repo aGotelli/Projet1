@@ -18,9 +18,9 @@
  *
  * Description
             This file cointains all the functions and methods implemented to define the kinematic
-          of the robot. All the computations used the generalized coordinates as it is a powerfull
+          of the robot. All the computations used the generalized coordinates as it is a powerful
           structure, perfectly suitable for type of calculations. In this way the robot file
-          can remail light and easy to read throught. All the "complexities" are here.
+          can remain light and easy to read throught. All the "complexities" are here.
 
             To avoid memory leaks, the use of smart pointers is strongly recommended. They are
           used in functions where we need to pass ownership of an object. (see guidelines)

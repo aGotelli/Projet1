@@ -29,7 +29,7 @@
         For this practical considerations, they are all here. The use of the namespace
         makes clear when thery are called around the code.
 
-        everything is first listed, like in an index in the form of a forward
+        Everything is first listed, like in an index in the form of a forward
         declaration, then all the elements are defined in the order they are presented.
  *
  */
