@@ -132,6 +132,9 @@ public:
  // Function to check the status of the sensors
  void CheckStatus() const;
 
+ // Return the type of line that the sensor is close to
+ const utility::Measurement LineType() const;
+
 
  // Function to get the sensor position in the absolute frame
  inline const utility::Pose2D AbsolutePosition() const;
@@ -141,6 +144,13 @@ public:
 
 
 private:
+
+  //  Obtain the equations of the lines around the sensor
+  const Eigen::MatrixXd EvaluateLinesAround() const;
+
+  //  Compute distances among the lines
+  const Eigen::VectorXd ComputeDistances() const;
+
 
   // Sensor position in homogeneus coordinates
   const Eigen::Vector3d HCoord {0.1, 0.0, 1.0};
@@ -172,10 +182,8 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 
 }
 
-
-void Sensor::CheckStatus() const
+const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
 {
-
   //  First, with the knowledge of the robot position obtain the sensor position
   const auto sensorPosition = this->AbsolutePosition() ;
 
@@ -201,20 +209,54 @@ void Sensor::CheckStatus() const
   Eigen::MatrixXd worldLines(3, 4);
   worldLines << leftLine, rightLine, bottomLine, upperLine ;
 
+  return worldLines;
+}
+
+const Eigen::VectorXd Sensor::ComputeDistances() const
+{
+  //  Obtain the lines around the sensor
+  const Eigen::MatrixXd worldLines = this->EvaluateLinesAround();
+
   //  Compute the sensor position w.r.t. the reference frame
   const Eigen::Vector3d oHCoord = oTm*HCoord;
 
   //  Compute the dot product column-wise.
   const Eigen::VectorXd overLine = oHCoord.transpose()*worldLines;
 
+  return overLine;
+}
+
+
+void Sensor::CheckStatus() const
+{
+
   //  Update the sensor status using the knowledge of the computed distances.
-  if( overLine.cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
+  if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
       state = true;
   } else {
       state = false;
   }
 
 }
+
+
+const utility::Measurement Sensor::LineType() const
+{
+  //  Obatin the vector contain the distances among the lines
+  const Eigen::VectorXd overLine = this->ComputeDistances();
+
+  if( overLine[0] == overLine.minCoeff() ||
+      overLine[1] == overLine.minCoeff()    ) { //  This means being the detected line
+        return utility::Measurement(this->AbsolutePosition(),
+                                    utility::LINETYPE::VERTICAL) ;
+
+      }
+
+  //  If not the line that has been detected is "horizontal"
+  return utility::Measurement(this->AbsolutePosition(),
+                              utility::LINETYPE::HORIZONTAL) ;
+}
+
 
 
 const utility::Pose2D Sensor::AbsolutePosition() const
