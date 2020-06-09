@@ -342,7 +342,7 @@ carefully explained in the code, the reader is encouraged in reading it from the
 # <a name="S-World"></a>World
 
   The aim of this header file is to separate the definition of the world from the other parts of the simulation. In fact,
-as it is used in different files, it is more useful to have it declared in a specific header file to include where needed.
+as it is used in different files, it is more convenient to have it declared in a specific header file to include where needed.
 The world is characterized by the distance between horizontal lines (xSpacing), the distance between vertical lines
 (ySpacing) and the line thickness.
 
@@ -448,4 +448,8 @@ Some of this characteristic, that can not be changed by the user, are expressed 
 
 # <a name="S-How to Use"></a>How to Use
 
-  After downloading the zip file, the user can extract just what is inside the
+  The simulation is created as a catkin workspace, so if the user does know how to create one please consult the tutorials on
+the following link:
+http://wiki.ros.org/catkin/Tutorials
+
+After downloading the zip file, the user can extract just what is inside the "Project1"
