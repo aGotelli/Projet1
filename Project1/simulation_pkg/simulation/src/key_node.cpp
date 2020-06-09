@@ -149,13 +149,13 @@ int main(int argc, char** argv)
     if( scale_v > 3 ) {
       scale_v = 3;
     } else if ( scale_v < 0.01 ) {
-      scale_v = 0.01;
+      scale_v = 0.1;
     }
 
     if( scale_omega > 3) {
       scale_omega = 3;
     } else if ( scale_omega < 0.01 ) {
-      scale_omega = 0.01;
+      scale_omega = 0.1;
     }
 
     // Otherwise, quit the simulation ( CTRL C )

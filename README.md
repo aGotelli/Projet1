@@ -22,6 +22,7 @@ This file aim to explain how to move inside this project. It should be read befo
 * [File handler](#S-FileHandler)
 * [URDF](#S-URDF)
 * [Compute Twist](#S-Compute)
+* [How to Use](#S-HowTo)
 
 
 
@@ -45,13 +46,11 @@ an interface is provided, and the user should only use this last one to change t
 there is no need to change anything in the code to use this application. As a result, anyone with a basic
 knowledge of YAML file can use this package. (see [Launch File](#S-Launch) ).
 
-  The project can be dived into three main parts: the simulation meta package, the estimator and data packages.
+  The project can be dived into three main parts: the simulation meta package and the estimator and data packages.
 This last packages exists to be used as storage unit for the file that are generated. In this way, there is no
 risk of having to find files around the project.
 
-  The simulation package is the first to be discussed, with all its components. After the estimator will be
-presented.
-
+  The simulation package is the first to be discussed, with all its components.
 ## <a name="Ri-simulation"></a>The simulation meta package
 
   When opening the simulation meta package, the reader can see three packages: simulation, simulation_messages
@@ -59,7 +58,7 @@ and simulation_descriptions. Their description is provided below.
 
 ### <a name="Ri-simulation"></a>The simulation_messages package
   This package contains the messages defined for this application. In fact, in this case the definition of
-the messages comes in handy for the IR sensors and encoders reading. The helps in having a more semantic
+the messages comes in handy for the IR sensors and encoders readings. They help in having a more semantic
 interface among the nodes and the reflects their implementation.
 
   For example, the message for the encoders reading contains simply two doubles, but their names are
@@ -69,10 +68,10 @@ wheel the two values refer.
   For what concerns the message for the IR sensors, it contains just a pair of booleans, directly referring
 to the relative sensor state. Here, again, it is immediate to understand the related sensor to each boolean.
 
-  The reason behind of this decouple is for preventing some nasty and non trivial to solve errors. In fact,
+  The reason behind of this decoupling is for preventing some nasty and non trivial to solve errors. In fact,
 defining the messages directly in the package where they are implemented it is not a safe approach. If they
 were defined there, once building the package in a new device (or after having deleted the devel, log and build
-folder of the catkin workspace), the build will fail. The reason is that there is no way to guarantee to
+folder of the catkin workspace), the build may fail. The reason is that there is no way to guarantee to
 build the messages first (so the include files will be generated) before building any executable which uses
 them, resulting in an uncomfortable compile time error.
 
@@ -84,7 +83,7 @@ them, resulting in an uncomfortable compile time error.
 in this project. Each executable of this package is designed in an source file + one or more header files.
 
   In the reading of the code, the reader may find some "strange" declarations or it may ask to himself why
-a certain choose has been made. For developing this project, we solved every doubt using the suggestions
+a certain choice has been made. For developing this project, we solved every doubt using the suggestions
 provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
 
   The package contains the core of the simulation, and the tools for build an user friendly interface.
@@ -106,7 +105,7 @@ For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Senso
 
 # <a name="S-Launch"></a>Launch File
   As previously stated, the launch file is the intended interface for this application. The reason is that,
-to change the simulation output and try different configurations the user should be forced to change the code and
+to change the simulation output and try different configurations the user should not be forced to change the code and
 build it. This is an error-prone approach and a user may not have sufficient skill for doing this procedure properly.
 On the other hand, having a launch file as interface, allows change safely the simulation parameters.
 
@@ -134,6 +133,9 @@ file, contains all the node and groups definitions. This last launch file should
 
 # <a name="S-Robot(2,0)"></a>Robot(2,0)
 
+The simulation implements the model of a (2, 0) robot as the one below. The figure contains all the parameters that
+have been used in the code and the URDF.
+
 ![Projet1](images/robot_2_0_model.png)
 
   The robot component is constituted by two header files: robot_2_0.h, robot_base.h and it also makes use of an third
@@ -142,7 +144,7 @@ As the simulation is divided in two parts, the robot kinematic and the interface
 separate these parts also in the package. In this way, the user needs only to pick the correct file accordingly to what
 of interest.
 
-![Projet1](images/robot_component.png)
+![Projet1](images/robot_classes.png)
 
 * [The robot_base.h](#Ri-Robot(2,0))
 * [The robot_2_0_generalizedcoord.h](#Ri-Robot(2,0))
@@ -152,11 +154,11 @@ of interest.
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_base.h
-  It contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
-all the functions are declared as virtual and called in the isMoving() member function, that executes all of them
-in order to make the simulation possible and accurate. This class is mostly an interface, it provides the tools to interface
-the ROS architecture. To enforce this idea, it contains only pure virtual function, the only exceptions are the callback for
-the Twist message and the function isMoving() that are virtual.
+  It contains all the ROS related functions, i.e. publisher, subscribers and operations. This class is mostly an interface,
+it provides the tools to interface the ROS architecture. To enforce this idea, it contains only pure virtual function,
+the only exceptions are the callback for the Twist message and the function isMoving() that are virtual. Is the member function
+isMoving() that calls all the other memeber functions. In this way,all the functions are executed in order to make the
+simulation possible and accurate. 
 
 ##### See below
 
