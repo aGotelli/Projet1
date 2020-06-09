@@ -432,13 +432,17 @@ properties that are well explained in the begin of the file; the reader is encou
 
 # <a name="S-URDF"></a>URDF
 
-  The robot model is build with an URDF, in particular it is implemented using xacro. It can be found as urdf per se
-or as xacro file in the simulation_descriptions folder. The model built is the standard configuration of the robot
-type (2, 0) with two fixed wheels and a castor one. As xacro is used, every characteristic of the robot is passed
-as a parameter, it can be changed by the user in the proper launch file and it can be seen in the simulation itself.
-Some of this characteristic, that can not be changed by the user, are expressed as function of other parameters.
+  The robot model is build with an URDF, in particular it is implemented using xacro. The model built is the standard
+configuration of the robot type (2, 0) with two fixed wheels and a castor one. As xacro is used, every characteristic
+of the robot changes accordingly to the user definition (see [Launch File](#S-Launch)). In this way, the model
+remain always coherent with the computations and data produced.
+However, some of this characteristic, that can not be changed by the user, are expressed as function of other parameters.
 
 ![Projet1](images/URDF_model.png)
+
+
+
+
 
 
 # <a name="S-How to Use"></a>How to Use
@@ -452,4 +456,11 @@ and copy them in the src folder of your catkin workspace. Then the user has to c
 
         catkin build
 
-As the workspace packa
+As the workspace packages changed, the user has to execute the command:
+
+      source devel/setup.bash
+
+Remember that if this execution has to be done every time the package is modified.
+Note also that if the user is running from a different location, he has to specify it in the command, as for example:
+
+      source home/project/devel/setup.bash
