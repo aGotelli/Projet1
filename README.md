@@ -137,7 +137,7 @@ file, contains all the node and groups definitions. This last launch file should
 The simulation implements the model of a (2, 0) robot as the one below. The figure contains all the parameters that
 have been used in the code and the URDF.
 
-![Projet1](images/robot_2_0_model.png)
+![Projet1](images/model_robot_2_0.png)
 
   The robot component is constituted by two header files: robot_2_0.h, robot_base.h and it also makes use of an third
 one: robot_2_0_generalizedcoord.h. They are initialized with the parameters obtained in the executable: robot_2_0.cpp.
