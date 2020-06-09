@@ -70,7 +70,7 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="true" />
+  <arg name="use_joystick"  value="false" />
   <arg name="joystick_tag"  value="js1"   />
 
 

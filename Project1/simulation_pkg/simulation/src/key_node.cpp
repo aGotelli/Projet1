@@ -32,11 +32,15 @@
 // Map for movement keys
 std::map<char, std::vector<double>> motion
 {
+  //  Configuration for the QWERTY
   {'w', {1, 0}},
   {'s', {-1, 0}},
   {'a', {0, 1}},
   {'d', {0, -1}},
-  {'x', {0, 0}}
+  {'x', {0, 0}},
+  //  Adding compatability with AZERTY
+  {'z', {1, 0}},
+  {'q', {0, 1}}
 
 };
 
