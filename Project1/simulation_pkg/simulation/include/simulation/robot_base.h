@@ -78,6 +78,8 @@ public:
   RobotBase()=default;    //  Initialize all memeber to their default value i.e.
                           //  what is inside the {}
 
+  virtual ~RobotBase()=default;
+
   virtual void isMoving();
 
 protected:
