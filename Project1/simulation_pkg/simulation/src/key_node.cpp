@@ -36,8 +36,8 @@ std::map<char, std::vector<double>> motion
   {'s', {-1, 0}},
   {'a', {0, 1}},
   {'d', {0, -1}},
+  {'x', {0, 0}}
 
-    {'x', {0, 0}}
 };
 
 // Map for speed keys
@@ -148,17 +148,17 @@ int main(int argc, char** argv)
     //  Limit the scale factor
     if( scale_v > 3 ) {
       scale_v = 3;
-    } else if ( scale_v < 0.001 ) {
-      scale_v = 0;
+    } else if ( scale_v < 0.01 ) {
+      scale_v = 0.01;
     }
 
     if( scale_omega > 3) {
       scale_omega = 3;
-    } else if ( scale_omega < 0.001 ) {
-      scale_omega = 0;
+    } else if ( scale_omega < 0.01 ) {
+      scale_omega = 0.01;
     }
 
-    // Otherwise, stop the robot (CTRL C)
+    // Otherwise, quit the simulation ( CTRL C )
     else if ( key == '\x03' ) { break; }
 
 
