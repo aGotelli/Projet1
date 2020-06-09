@@ -14,24 +14,52 @@
  *    °
  *
  * Description
-            The aim of this file is to save all the recorded data in the proper folder. Moreover, 
+            The aim of this file is to save all the recorded data in the proper folder. Moreover,
           as the architecture is versatile and some parameters can be changed, based on the specification
-          of the project, all the informations regarding this, are also saved. In this way, the details 
+          of the project, all the informations regarding this, are also saved. In this way, the details
           of the robot, of the world and of the sensor are always visible and available.
 
             This file has a build-in method to avoid to overwrite and existing file, causing to loose some
-          precious data. However, it is recommended to use a file name without spaces and that does not end 
+          precious data. However, it is recommended to use a file name without spaces and that does not end
           with a number. Even if this node will work, the name of the file will be strongly modified.
 
-            This node has also a build in method to ensure the existence of the folder where to storage the 
-          files. If the folder does not exist then it is created in the path given. However if the path is 
+            This node has also a build in method to ensure the existence of the folder where to storage the
+          files. If the folder does not exist then it is created in the path given. However if the path is
           not correct the node is shut down and simulation goes on WITHOUT SAVING ANY FILE.
 
             This node is designed to be used in the same group of the simulation. In the case where the simulation
           is not in a group the node can handle this case. However the user is encouraged to use the namespaces i.e.
-          the groups properly. This will lead to a clearer and more understandable architecture for the simulation. 
+          the groups properly. This will lead to a clearer and more understandable architecture for the simulation.
           In fact, the group allow grouping together components that work on the same task or concept.
 
+            To check that the file is not already present in the folder, the function std::find_if is used. However,
+          sometimes, it is not quite easy to understand how it works.
+
+            The function std::find_if takes three arguments: a beginning iterator, and ending iterator and a predicate.
+          The first parameter, the beginning iterator tells the functin where to start to search using the predicate.
+          On the other hand, the ending iterator tells where to stop. As said, the search corresponds to the use of a
+          predicate. The predicate is a function that outputs true or false depending on the inputs. In other words,
+          std::find_if simply start feeding the predicate with the elements founded from the beginning to the end. It
+          returns the iterator corresponding to the position of the element for which the predicate returns true, or the
+          end iterator if no element has been found.
+
+            In this case the predicate should find a file, with boost::filesystem it is possible to iterate in a folder
+          files like in the elements of a std::vector, by using the class recursive_directory_iterator.
+          In fact, the function std::find_if takes the beginning of the folder and iterates untill the end. The predicate
+          consists in a function :
+
+          bool IsEqual(const boost::filesystem::directory_entry& folderFile,
+                                            const boost::filesystem::path& fileName)
+
+            It takes two arguments, a directory_entry that basically is a file contained in the folder, and the fileName
+          which must be ensure of being unique. This function is not suitable for being a predicate, in fact a predicate
+          takes only the file founded iterating in the folder. For this reason, the predicate is made from this function,
+          but with the use of boost::bind. IN fact, the fileName does not change in the iteration.
+
+          boost::bind(IsEqual, _1, fileName)
+
+            It returns a pointer to a function that has the body of IsEqual but takes only one arguments. This is used
+          as predicate for the std::find_if function. 
  *
  */
 
@@ -105,7 +133,7 @@ bool IsEqual(const boost::filesystem::directory_entry& folderFile,
 
 
 
-bool FindFile(const boost::filesystem::path& folderPath,
+void FindFile(const boost::filesystem::path& folderPath,
               boost::filesystem::path& fileName)
 {
 
@@ -115,22 +143,8 @@ bool FindFile(const boost::filesystem::path& folderPath,
   //  Initialize the predicate to feed the find_if function
   boost::function< bool (const boost::filesystem::directory_entry&)> Predicate(boost::bind(IsEqual, _1, fileName));
 
-/*
-  //  Creation of the predicate to feed into std::find_if basically return true
-  //  if the names are the same (without the extension)
-  auto lambdaCorrespondence = [&fileName](const boost::filesystem::directory_entry& e) {
-                              return e.path().filename().stem() == fileName;
-                              };
 
-
-
-  //  Find the position in the directory where the correspondance occour
   const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(folderPath),
-                                end, lambdaCorrespondence) ;
-
-*/
-
- const auto it = std::find_if(boost::filesystem::recursive_directory_iterator(folderPath),
                               end, Predicate) ;
   //  Check the result
   if ( it != end ) {

@@ -386,9 +386,7 @@ struct Pose2D {
       index_right ++;
       markerColor = COLOR::RED ;
       return PlaceMarker(point, markerColor, "Right", index_right) ;
-    }
-
-    if( activeSensor == SENSOR::LEFT ) {
+    } else {  // In the other case the active sensor is the one on the left 
 
       index_left ++;
       markerColor = COLOR::GREEN ;
