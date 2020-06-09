@@ -442,17 +442,27 @@ However, some of this characteristic, that can not be changed by the user, are e
 
 
 
+# <a name="S-Compute Twist"></a>Compute Twist
+
+  This executable
 
 
 
 # <a name="S-How to Use"></a>How to Use
 
-  The simulation is created as a catkin workspace, so if the user does know how to create one please consult the tutorials on
-the following link:
+  The simulation is created as a catkin workspace, so if the user does not know how to create one please consult the tutorials
+on the following link:
 http://wiki.ros.org/catkin/Tutorials
 
-  After downloading the zip file, the user can extract just what is inside the "Project1", the two folders "data" and "simulation_pkg"
-and copy them in the src folder of your catkin workspace. Then the user has to compile the packages running the command:
+  After downloading the zip file, the user can extract just what is inside the "Project1", the two folders "data" and "simulation_pkg",
+and copy them in the src folder of your catkin workspace. Alternatively, the user can download the folder where it is more
+convenient and create a link in the catkin workspace.
+
+##### Once in the catkin_ws/src run:
+        sudo ln -s /<the path to the folder>/Project1
+
+
+Then the user has to compile the packages running the command:
 
         catkin build
 
@@ -460,7 +470,8 @@ As the workspace packages changed, the user has to execute the command:
 
       source devel/setup.bash
 
-Remember that if this execution has to be done every time the package is modified.
 Note also that if the user is running from a different location, he has to specify it in the command, as for example:
 
       source home/project/devel/setup.bash
+
+Remember that if this execution has to be done every time the package is modified.
