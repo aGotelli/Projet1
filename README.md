@@ -74,7 +74,8 @@ defining the messages directly in the package where they are implemented it is n
 were defined there, once building the package in a new device (or after having deleted the devel, log and build
 folder of the catkin workspace), the build may fail. The reason is that there is no way to guarantee to
 build the messages first (so the include files will be generated) before building any executable which uses
-them, resulting in an uncomfortable compile time error.
+them, resulting in an uncomfortable compile time error. However this guarantee is valid only when using catkin
+build command. (see [Catkin Build](#S-Build) )
 
 ### <a name="Ri-simulation"></a>The simulation_descriptions package
   This package is meant to contain only the description of the robot. (see [URDF](#S-URDF) ).
@@ -489,8 +490,12 @@ Remember that if this execution has to be done every time the package is modifie
 
 
 # <a name="S-Build"></a>Catkin Build
-It is suggested to use caktin build instead od the common catkin_make. To use this command it is necessary to
-install the catkin_tool_box. A procedure is provided below:
+It is suggested to use caktin build instead of the common catkin_make. The reason is that, as in the project
+there are some messages that are created in the simulation_messages package, only catkin build ensures that
+the packages defining messages are build first, and then the others. With catkin_make it it not possible to
+ensure that a package is build only after the one containing messages i.e. that the include files are been
+generated. This last issue will cause some annoying compile errors.
+To use this command it is necessary to install the catkin_tool_box. A procedure is provided below:
 
 ##### Run the following commands
         sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
