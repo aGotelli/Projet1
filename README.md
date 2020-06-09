@@ -134,6 +134,8 @@ file, contains all the node and groups definitions. This last launch file should
 
 # <a name="S-Robot(2,0)"></a>Robot(2,0)
 
+![Projet1](images/robot_2_0_model.png)
+
   The robot component is constituted by two header files: robot_2_0.h, robot_base.h and it also makes use of an third
 one: robot_2_0_generalizedcoord.h. They are initialized with the parameters obtained in the executable: robot_2_0.cpp.
 As the simulation is divided in two parts, the robot kinematic and the interface with ROS environment, the idea is to
