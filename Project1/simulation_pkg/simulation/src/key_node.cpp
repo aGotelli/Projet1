@@ -149,13 +149,13 @@ int main(int argc, char** argv)
     if( scale_v > 3 ) {
       scale_v = 3;
     } else if ( scale_v < 0.001 ) {
-      scale_v = 0;
+      scale_v = 0.1;
     }
 
     if( scale_omega > 3) {
       scale_omega = 3;
     } else if ( scale_omega < 0.001 ) {
-      scale_omega = 0;
+      scale_omega = 0.1;
     }
 
     // Otherwise, stop the robot (CTRL C)
