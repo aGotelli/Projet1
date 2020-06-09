@@ -18,7 +18,7 @@
   <xacro:property name="radius"       value="$(arg r)"/>
   <xacro:property name="wheel_thick"  value="0.03"/>
   <xacro:property name="front_axle"   value="$(arg a)"/>
-  <xacro:property name="joint_offset" value="$(arg b)"/>
+  <xacro:property name="trailing_offset" value="$(arg b)"/>
   <xacro:property name="castor_arm"   value="$(arg c)"/>
 
   <xacro:property name="sensor_1_x" value="$(arg sensor_1_x)"/>
@@ -83,11 +83,11 @@
   </link>
 
   <!-- Beam from the moving platform frame origin to the castor joint -->
-  <link name="joint_offset">
+  <link name="trailing_offset">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="${joint_offset} ${thickness}  ${thickness}"/>
+        <box size="${trailing_offset} ${thickness}  ${thickness}"/>
       </geometry>
     </visual>
   </link>
@@ -214,9 +214,9 @@
     <!-- To make it possible to update the beta angle form the cpp -->
     <joint name="castor_joint" type="revolute">
       <limit lower="-1.57" upper="1.57" effort="10" velocity="3"/>
-      <parent link="joint_offset"/>
+      <parent link="trailing_offset"/>
       <child link="castor_cylinder"/>
-      <origin xyz="-${.5*joint_offset} 0 0" rpy="0 0 0" />
+      <origin xyz="-${.5*trailing_offset} 0 0" rpy="0 0 0" />
       <axis xyz="0 0 1" />
     </joint>
 
@@ -247,11 +247,11 @@
     </joint>
 
     <!-- Fix the beam connecting the moving platform with the castor joint -->
-    <joint name="moving_platform__to__joint_offset" type="fixed">
+    <joint name="moving_platform__to__trailing_offset" type="fixed">
       <axis rpy="0 0 0" xyz="0 1 0"/>
       <parent link="moving_platform"/>
-      <child link="joint_offset"/>
-      <origin rpy="0 0 0" xyz="-${.5*joint_offset} 0 0"/>
+      <child link="trailing_offset"/>
+      <origin rpy="0 0 0" xyz="-${.5*trailing_offset} 0 0"/>
     </joint>
 
     <!-- Connect the revolute joint to the arm of the castor wheel -->
