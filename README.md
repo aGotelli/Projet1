@@ -313,7 +313,7 @@ To implement the joystick in the package, the adapter component must be defined.
 in the package. (see [Compute Twist](#S-Compute)).
 
   Concerning the key_node, there no need of any package or installation. However, the control of the robot
-is less accurate then when unsing a joystick.
+is less accurate then when using a joystick.
 
 
 
@@ -444,7 +444,11 @@ However, some of this characteristic, that can not be changed by the user, are e
 
 # <a name="S-Compute Twist"></a>Compute Twist
 
-  This executable
+  This executable is an adapter component that takes the status of the controller, in this case the joystick, and
+outputs a feasible twist for the robot. Depending on the type of joystick the implementation could change as it is
+explained in the interface section (see [Interface](#S-Interface)). If another joystick has to be implemented,
+this component must be changed accordingly. The file is self explanatory and the code can be simply
+modified to implement the different joystick. 
 
 
 
