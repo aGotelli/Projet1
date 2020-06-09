@@ -74,7 +74,7 @@
   <arg name="joystick_tag"  value="js1"   />
 
 
-  <arg name="record" value="true" />
+  <arg name="record" value="false" />
 
 
   <!-- Include the launch file which executes the simulations -->

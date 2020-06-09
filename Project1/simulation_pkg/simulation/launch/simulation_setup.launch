@@ -71,10 +71,10 @@
 
     <!-- The robot_2_0 -->
     <node pkg="simulation" type="simulation_robot_2_0" name="robot_2_0" output="screen">
-      <param name="front_axle"          value="$(arg a)"                      />
+      <param name="a"                   value="$(arg a)"                      />
       <param name="wheel_radius"        value="$(arg r)"                      />
-      <param name="trailing_offSet"     value="$(arg b)"                      />
-      <param name="castor_arm"          value="$(arg c)"                      />
+      <param name="b"                   value="$(arg b)"                      />
+      <param name="c"                   value="$(arg c)"                      />
       <param name="actuator_max_speed"  value="$(arg w_max)"                  />
       <param name="x_init"              value="$(arg x_init)"                 />
       <param name="y_init"              value="$(arg y_init)"                 />
