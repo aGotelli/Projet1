@@ -154,11 +154,11 @@ of interest.
 
 
 ### <a name="Ri-Robot(2,0)"></a>The robot_base.h
-  It contains all the ROS related functions, i.e. publisher, subscribers, operations. In this class,
-all the functions are declared as virtual and called in the isMoving() member function, that executes all of them
-in order to make the simulation possible and accurate. This class is mostly an interface, it provides the tools to interface
-the ROS architecture. To enforce this idea, it contains only pure virtual function, the only exceptions are the callback for
-the Twist message and the function isMoving() that are virtual.
+  It contains all the ROS related functions, i.e. publisher, subscribers and operations. This class is mostly an interface,
+it provides the tools to interface the ROS architecture. To enforce this idea, it contains only pure virtual function,
+the only exceptions are the callback for the Twist message and the function isMoving() that are virtual. Is the member function
+isMoving() that calls all the other memeber functions. In this way,all the functions are executed in order to make the
+simulation possible and accurate. 
 
 ##### See below
 
