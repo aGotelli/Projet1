@@ -57,12 +57,13 @@ std::map<char, std::vector<double>> speed
 const char* msg = R"(
 Reading from the keyboard and Publishing to Twist!
 ---------------------------------------------------
-Moving around:
-    w
-a   s   d
-
-Stop the robot:
-    x
+Moving around:      | Moving around (AZERTY)
+    w               |         z
+a   s   d           |     q   s   d
+                    |
+                    
+              Stop the robot:
+                    x
 
 j/k : increase/decrease only linear speed by 10%
 n/m : increase/decrease only angular speed by 10%
