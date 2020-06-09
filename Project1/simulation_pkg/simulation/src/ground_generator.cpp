@@ -42,9 +42,9 @@
 //	Position of the robot
 geometry_msgs::Pose robotPosture;
 
-void RobotPostureReceived(const geometry_msgs::PoseStamped::ConstPtr& _robotPosture)
+void RobotPostureReceived(const geometry_msgs::Pose::ConstPtr& _robotPosture)
 {
-	robotPosture = _robotPosture->pose;
+	robotPosture = (*_robotPosture);
 }
 
 //	Line marker
@@ -70,7 +70,7 @@ int main (int argc, char** argv)
 	const World world(xSpacing, ySpacing, lineThickness);
 
 	// Declare your node's subscriptions and service clients
-	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
+	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::Pose>("RobotPosture", 1, RobotPostureReceived);
 
     // Declare you publishers and service servers
 	ros::Publisher TilesDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);

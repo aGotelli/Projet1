@@ -33,7 +33,6 @@
 
 //ROS
 #include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 #include "simulation_messages/IRSensors.h"
 
@@ -43,9 +42,9 @@
 //	Position of the robot
 geometry_msgs::Pose robotPosture;
 
-void RobotPostureReceived(const geometry_msgs::PoseStamped::ConstPtr& _robotPosture)
+void RobotPostureReceived(const geometry_msgs::Pose::ConstPtr& _robotPosture)
 {
-	robotPosture = _robotPosture->pose;
+	robotPosture = (*_robotPosture);
 }
 
 
@@ -124,7 +123,7 @@ int main (int argc, char** argv)
 
 
 	//	Subscribe to the published robot position to obtain infromation about its pose
-	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::PoseStamped>("RobotPosture", 1, RobotPostureReceived);
+	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::Pose>("RobotPosture", 1, RobotPostureReceived);
 
 	//	Publishes the sensors status
 	ros::Publisher IRSensors = nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1);

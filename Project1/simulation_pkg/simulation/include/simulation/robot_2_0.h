@@ -243,13 +243,10 @@ void Robot_2_0::EnsureMaxSpeed() const
 void Robot_2_0::PrepareMessages()
 {
 
-  // Time handling for robot posture
-  robotPosture.header.stamp = currentTime ;
-
   // Update the current robot posture
-  robotPosture.pose.position.x = q.x ;
-  robotPosture.pose.position.y = q.y ;
-  robotPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
+  robotPosture.position.x = q.x ;
+  robotPosture.position.y = q.y ;
+  robotPosture.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
 
 

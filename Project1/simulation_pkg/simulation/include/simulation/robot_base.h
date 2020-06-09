@@ -63,7 +63,7 @@
 // Include here the ".h" files corresponding to the topic type you use.
  #include <geometry_msgs/Twist.h>
  #include <visualization_msgs/Marker.h>
- #include <geometry_msgs/PoseStamped.h>
+ #include <geometry_msgs/Pose.h>
  #include <nav_msgs/Odometry.h>
  #include <sensor_msgs/JointState.h>
 
@@ -108,7 +108,7 @@ protected:
   simulation_messages::Encoders elapsedDots;  //  No need of default initialization
 
   //  The full robot pusture obtained with the kinematic model.
-  geometry_msgs::PoseStamped robotPosture;    //  No need of default initialization
+  geometry_msgs::Pose robotPosture;    //  No need of default initialization
 
   //  The full robot posture obtained from the odometry
   nav_msgs::Odometry robotOdometry;           //  No need of default initialization
@@ -147,7 +147,7 @@ private:
   ros::Publisher ShowMarker { nh_glob.advertise<visualization_msgs::Marker>("/visualization_marker", 1) } ;
 
   //  Publish the robot posture as message
-  ros::Publisher Robot { nh_glob.advertise<geometry_msgs::PoseStamped>("RobotPosture", 1) } ;
+  ros::Publisher Robot { nh_glob.advertise<geometry_msgs::Pose>("RobotPosture", 1) } ;
 
   //  Publish the encoders reading
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
