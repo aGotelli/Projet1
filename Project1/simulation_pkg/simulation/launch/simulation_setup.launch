@@ -5,7 +5,7 @@
 
   <arg name="r"                   default="0.05"  />
   <arg name="w_max"               default="10.0"  />
-  <arg name="encoders_resolution" default="1.0"  />
+  <arg name="encoders_resolution" default="360"  />
 
   <arg name="c"     default="$(eval arg('r') + 0.05)"  />
 

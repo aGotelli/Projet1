@@ -118,12 +118,12 @@ private:
       ROS_INFO_STREAM("resolution : " << resolution );
     }
 
-    inline const double ResolutionToRad() const {return resolution*M_PI/180; }
+    inline const double ResolutionToRad() const {return resolution/(2*M_PI); }
     inline const double Resolution() const {return resolution; }
 
   private:
     //  the resolution of the encoder
-    const double resolution{0.1} ;   //  [dot/grad]
+    const double resolution{360} ;   //  [dots/revolution]
 
   };
 
@@ -184,15 +184,12 @@ void Robot_2_0::ComputeOdometry() const
 {
 
   // Current value of phi_1f and phi_2f
-  currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f)*180/M_PI )*encoder.Resolution() ;
+  currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
   currentReading[0] = std::floor( currentReading[0] ) ;
   currentReading[1] = std::floor( currentReading[1] ) ;
 
-//  ROS_INFO_STREAM("currentReading : " << currentReading);
-
-  Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.Resolution() )*M_PI/180 ;
-
-//  ROS_INFO_STREAM("rotation       : " << rotation*180/M_PI);
+  //  Define the wheels rotation in between two iterations
+  Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
 
   // Compute input discretized
   const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
@@ -202,6 +199,7 @@ void Robot_2_0::ComputeOdometry() const
   q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
   q_odom.theta = q_odom.theta + d_input[1] ;
 
+  // Update
   previusReading = currentReading ;
 
 }
@@ -226,15 +224,17 @@ void Robot_2_0::UpdateMatrix() const
 
 void Robot_2_0::EnsureMaxSpeed() const
 {
-
+  //  Take the block, in the matrix S, related to the motorization
   Eigen::Vector2d phi_dot = S.block<2,2>(4,0)*u;
 
-
+  //  Take the amount of saturation in wheels speed
   const double scaleFactor = Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff() > wMax ?
                               Eigen::Vector2d(phi_dot[0], phi_dot[1]).cwiseAbs().maxCoeff()/wMax : 1 ;
 
+  //  Scale the current velocity to be equal to the max (at the most)
   phi_dot /= scaleFactor;
 
+  //  Use the newly computed wheels speed to obtain a feasible input
   u = S.block<2,2>(4,0).inverse()*phi_dot ;
 
 }
@@ -267,8 +267,8 @@ void Robot_2_0::PrepareMessages()
 
 
   //  Publish the current reading in dots
-  elapsedDots.phi_1f = currentReading[0] ;
-  elapsedDots.phi_2f = currentReading[1] ;
+  elapsedDots.phi_1f = currentReading[0]/encoder.ResolutionToRad() ;
+  elapsedDots.phi_2f = currentReading[1]/encoder.ResolutionToRad() ;
 
 
   //  Clear the joint state message

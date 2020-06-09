@@ -16,7 +16,7 @@
   <!-- Parameters of wheels and related actuators -->
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
-  <arg name="encoders_resolution" value="2"   />      <!-- dots/grad -->
+  <arg name="encoders_resolution" value="360"   />    <!-- dots/wheel rotation -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -70,7 +70,7 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="false" />
+  <arg name="use_joystick"  value="true" />
   <arg name="joystick_tag"  value="js1"   />
 
 
