@@ -1,6 +1,26 @@
 #ifndef KALMAN_FILTER_H
 #define KALMAN_FILTER_H
 
+/**
+ * \file kalman filter
+ * \brief 
+ * \author Bianca Lento & Andrea Gotelli
+ * \version 0.1
+ * \date 9/06/2020
+ *
+ * \param[in]
+ *
+ * Subscribes to: <BR>
+ *    ° /
+ *
+ * Publishes to: <BR>
+ *    ° /
+ *
+ * Description
+         
+ *
+ */
+
 
 #include <cmath>
 #include <iostream>
