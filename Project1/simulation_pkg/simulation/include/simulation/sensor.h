@@ -86,6 +86,10 @@
           thickness. In order to be consistent, if the line has a thickness
           of 1 cm, then the status of the sensor should output a measurement
           if its distance from the line is less then half the thickness.
+
+            To avoid repetition of code, the class Sensor contains memeber
+          function that will be useful when dealing with the estimator. The reason
+          to have included them here is for avoiding repetition of code. 
  *
  */
 
@@ -133,7 +137,7 @@ public:
  void CheckStatus() const;
 
  // Return the type of line that the sensor is close to
- const std::unique_ptr<utility::Measurement> LineType() const;
+ const std::unique_ptr<utility::Measurement> getMeasurement() const;
 
 
  // Function to get the sensor position in the absolute frame
@@ -240,7 +244,7 @@ void Sensor::CheckStatus() const
 }
 
 
-const std::unique_ptr<utility::Measurement> Sensor::LineType() const
+const std::unique_ptr<utility::Measurement> Sensor::getMeasurement() const
 {
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd overLine = this->ComputeDistances();
