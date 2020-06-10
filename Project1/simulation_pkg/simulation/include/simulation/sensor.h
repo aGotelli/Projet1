@@ -89,7 +89,7 @@
 
             To avoid repetition of code, the class Sensor contains memeber
           function that will be useful when dealing with the estimator. The reason
-          to have included them here is for avoiding repetition of code. 
+          to have included them here is for avoiding repetition of code.
  *
  */
 
@@ -104,6 +104,10 @@
 
 #include <geometry_msgs/Pose.h>
 #include <eigen3/Eigen/Dense>
+
+
+
+class Measurement;
 
 
 
@@ -137,11 +141,14 @@ public:
  void CheckStatus() const;
 
  // Return the type of line that the sensor is close to
- const std::unique_ptr<utility::Measurement> getMeasurement() const;
+ const Measurement getMeasurement() const;
 
 
  // Function to get the sensor position in the absolute frame
  inline const utility::Pose2D AbsolutePosition() const;
+
+ // Function to get the sensor position in the robot frame
+ inline const utility::Pose2D RelativePosition() const {return utility::Pose2D( HCoord[0], HCoord[1] ) ;}
 
  inline const World ItsWorld() const {return world;}
 
@@ -153,8 +160,10 @@ private:
   const Eigen::MatrixXd EvaluateLinesAround() const;
 
   //  Compute distances among the lines
-  const Eigen::VectorXd ComputeDistances() const;
+  inline const Eigen::VectorXd ComputeDistances() const {return this->ComputeDistances( this->EvaluateLinesAround() );}
 
+  //  Compute distances among the lines
+  const Eigen::VectorXd ComputeDistances(const Eigen::MatrixXd& worldLines ) const;
 
   // Sensor position in homogeneus coordinates
   const Eigen::Vector3d HCoord {0.1, 0.0, 1.0};
@@ -168,6 +177,20 @@ private:
   //  The measurement
   mutable bool state {false};
 
+};
+
+
+class Measurement {
+public:
+  Measurement(const double& _lineIndex,
+              const utility::LINETYPE& _lineType,
+              const Sensor* sensor               ) : lineIndex(_lineIndex),
+                                                      lineType(_lineType),
+                                                      activeSensor(sensor) {}
+
+  const double lineIndex;
+  const utility::LINETYPE lineType;
+  const Sensor* activeSensor;
 };
 
 
@@ -216,11 +239,9 @@ const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
   return worldLines;
 }
 
-const Eigen::VectorXd Sensor::ComputeDistances() const
-{
-  //  Obtain the lines around the sensor
-  const Eigen::MatrixXd worldLines = this->EvaluateLinesAround();
 
+const Eigen::VectorXd Sensor::ComputeDistances(const Eigen::MatrixXd& worldLines ) const
+{
   //  Compute the sensor position w.r.t. the reference frame
   const Eigen::Vector3d oHCoord = oTm*HCoord;
 
@@ -244,10 +265,47 @@ void Sensor::CheckStatus() const
 }
 
 
-const std::unique_ptr<utility::Measurement> Sensor::getMeasurement() const
+const Measurement Sensor::getMeasurement() const
 {
+
+  //  Obtain the lines around the sensor
+  const Eigen::MatrixXd worldLines = this->EvaluateLinesAround();
+
   //  Obatin the vector contain the distances among the lines
-  const Eigen::VectorXd overLine = this->ComputeDistances();
+  const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
+
+  //  Obatin the minimum
+  const double minimum = overLine.cwiseAbs().minCoeff();
+
+  if( std::abs( overLine[0] ) == minimum ) {  //  Left line detected
+    return Measurement(worldLines(0, 2),
+               utility::LINETYPE::VERTICAL,
+                (this)                     ) ;
+  }
+
+  if( std::abs( overLine[1] ) == minimum ) {  //  Right line detected
+    return Measurement(worldLines(1, 2),
+              utility::LINETYPE::VERTICAL,
+               (this)                      ) ;
+  }
+
+  if( std::abs( overLine[2] ) == minimum ) {  //  Bottom line detected
+    return Measurement(worldLines(2, 2),
+              utility::LINETYPE::HORIZONTAL,
+               (this)                      ) ;
+  }
+
+  if( std::abs( overLine[3] ) == minimum ) {  //  Upper line detected
+    return Measurement(worldLines(3, 2),
+              utility::LINETYPE::HORIZONTAL,
+               (this)                      ) ;
+  }
+
+/*
+
+  auto lambdaCorrespondence = [&minimum](const boost::filesystem::directory_entry& e) {
+                              return e.path().filename().stem() == fileName;
+                              };
 
   if( overLine[0] == overLine.minCoeff() ||
       overLine[1] == overLine.minCoeff()    ) { //  This means being the detected line
@@ -259,6 +317,8 @@ const std::unique_ptr<utility::Measurement> Sensor::getMeasurement() const
   //  If not the line that has been detected is "horizontal"
   return std::make_unique<utility::Measurement>(this->AbsolutePosition(),
                                                 utility::LINETYPE::HORIZONTAL) ;
+
+                                                */
 }
 
 
