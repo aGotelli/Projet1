@@ -76,7 +76,7 @@ simulation_messages::IRSensors SensorsStatus()
 		}
 		//	check status of the sensor on the left
 		if( robotSensors.All()[1].GetState() ) {
-			status.sens1 = true;
+			status.sens2 = true;
 
 			//	Add the new marker
 			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensors.All()[1].AbsolutePosition(),

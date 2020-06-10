@@ -137,6 +137,8 @@ public:
  // Function to update the transformation matrix
  void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
 
+ void UpdateTransform(const Eigen::Vector3d& X) const;
+
  // Function to check the status of the sensors
  void CheckStatus() const;
 
@@ -206,6 +208,15 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
   oTm <<  cos( eulers.yaw ), -sin( eulers.yaw ), robotPosture.position.x  ,
           sin( eulers.yaw ),  cos( eulers.yaw ), robotPosture.position.y  ,
                   0        ,          0        ,            1             ;
+
+}
+
+void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
+{
+
+  oTm <<  cos( X(2) ), -sin( X(2) ), X(0)  ,
+          sin( X(2) ),  cos( X(2) ), X(1)  ,
+               0     ,       0     ,  1    ;
 
 }
 
@@ -301,24 +312,7 @@ const Measurement Sensor::getMeasurement() const
                (this)                      ) ;
   }
 
-/*
 
-  auto lambdaCorrespondence = [&minimum](const boost::filesystem::directory_entry& e) {
-                              return e.path().filename().stem() == fileName;
-                              };
-
-  if( overLine[0] == overLine.minCoeff() ||
-      overLine[1] == overLine.minCoeff()    ) { //  This means being the detected line
-        return std::make_unique<utility::Measurement>(this->AbsolutePosition(),
-                                                      utility::LINETYPE::VERTICAL) ;
-
-      }
-
-  //  If not the line that has been detected is "horizontal"
-  return std::make_unique<utility::Measurement>(this->AbsolutePosition(),
-                                                utility::LINETYPE::HORIZONTAL) ;
-
-                                                */
 }
 
 
@@ -331,6 +325,8 @@ const utility::Pose2D Sensor::AbsolutePosition() const
 }
 
 
+
+
 class RobotSensors {
 public:
   RobotSensors()=default;
@@ -338,6 +334,10 @@ public:
   void AddSensor(const Sensor& newSensor );
 
   inline const std::vector<Sensor>& All() const {return sensors; }
+
+  inline const Sensor& sens1() const {return sensors[0]; }
+
+  inline const Sensor& sens2() const {return sensors[1]; }
 
 private:
   std::vector<Sensor> sensors;
