@@ -7,10 +7,16 @@ project(estimator)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+
 find_package(catkin REQUIRED COMPONENTS
+	simulation
   roscpp
   simulation_messages
+
 )
+
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -188,6 +194,7 @@ target_link_libraries(${PROJECT_NAME}_estimator	${catkin_LIBRARIES} )
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
 # )
+
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
