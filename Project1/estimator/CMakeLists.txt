@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 	simulation
   roscpp
   simulation_messages
-
+	std_msgs
 )
 
 
