@@ -22,6 +22,7 @@
 
 // ROS
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 
 // Include here the ".h" files corresponding to the topic type you use.
 #include <math.h>
@@ -29,26 +30,12 @@
 #include "estimator/kalman_filter.h"
 #include "simulation/utility.h"
 #include "simulation/sensor.h"
+#include "simulation/world.h"
 #include "simulation_messages/Encoders.h"
 #include "simulation_messages/IRSensors.h"
 
 
 
-
-
-double sigmaX     = 8;
-double sigmaY     = 8;
-double sigmaTheta = 3*M_PI/180 ;
-
-const Eigen::Matrix3d Pinit()
-{
-  Eigen::Matrix3d P;
-  P <<  sigmaX,     0,        0       ,
-          0,      sigmaY,     0       ,
-          0,        0,    sigmaTheta  ;
-
-  return P;
-}
 
 
 // Callback function for encoder reading
@@ -59,62 +46,29 @@ void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
   currentReading[1] = encoders->phi_2f ;
 }
 
+
 // Callback function for sensor reading
-Sensor sensor1, sensor2;
+RobotSensors robotSensors;
 std::vector<Measurement> measurements;
 void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state,
-                      const geometry_msgs::Pose& robotPosture )
+                      const Eigen::Vector3d& X )
 {
 
   //  Received sensrs status
   if( state->sens1 ) {
-    sensor1.UpdateTransform( robotPosture );
-    measurements.push_back( sensor1.getMeasurement() );
+    robotSensors.sens1().UpdateTransform( X );
+    measurements.push_back( robotSensors.sens1().getMeasurement() );
+    ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
   }
 
   if( state->sens2 ) {
-    sensor2.UpdateTransform( robotPosture );
-    measurements.push_back( sensor2.getMeasurement() );
+    robotSensors.sens2().UpdateTransform( X );
+    measurements.push_back( robotSensors.sens2().getMeasurement() );
+    ROS_INFO_STREAM("measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
   }
 
 }
 
-// Update of matrix A and B
-Eigen::Matrix3d A(3, 3);
-Eigen::MatrixXd B(3, 2);
-void UpdateMatrix(const Eigen::Vector3d& X, const Eigen::Vector2d input)
-{
-
-  A << 1, 0, -input(0)*cos(X(2)),
-       0, 1,  input(0)*sin(X(2)),
-       0, 0,           1        ;
-
-  B << cos(X(2)), 0,
-       sin(X(2)), 0,
-          0     , 1;
-
-}
-
-// Compute and update vector state
-void EvolutionModel(Eigen::Vector3d& X, const Eigen::Vector2d input)
-{
-  X(0) = X(0) + input(0)*cos(X(2));
-  X(1) = X(1) + input(0)*sin(X(2));
-  X(2) = X(2) + input(1);
-}
-
-// Compute mahalanobis distance
-double sigmaMeasurement = 5.6;
-double Qgamma = std::pow(sigmaMeasurement, 2);
-double ComputeMahalanobis(double innov, Eigen::MatrixXd& C, Eigen::Matrix3d& P)
-{
-  double dMaha;
-
-  dMaha = std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma );
-
-  return dMaha;
-
-}
 
 
 
@@ -124,44 +78,15 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh_glob, nh_loc("~");
 
+  double threshold;
+  nh_loc.param("threshold", threshold, 0.02);
 
-
-  //  Initialize intial pose
-//  const utility::Pose2D robotPosture(0.0, 0.0, 0.0);
-
-
-  // Declare your node's subscriptions and service clients
-  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("simulation/EncodersReading", 1, EncoderReading);
-  //ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, boost::bind(IrSensorsReading, _1, robotPosture));
-
-  // Declare you publishers and service servers
-  //ros::Publisher Mahalanobis = nh_glob.advertise<double>("/", 1);
-
-  //  How much we rely on the model
-  double sigmaTuning = 0.0f;
-  double rwheel = 0.05;
-  double trackGauge = 0.4;
-
-  // Definition of matrix
-  Eigen::Matrix2d jointToCartesian;
-  jointToCartesian <<       rwheel/2      ,      rwheel/2       ,
-                       rwheel/trackGauge  , -rwheel/trackGauge  ;
-
-  const Eigen::Matrix2d Qwheels = Eigen::MatrixBase<Eigen::Matrix2d>::Identity()*std::pow(sigmaTuning, 2);
-
-  const Eigen::Matrix2d Qbeta = jointToCartesian*Qwheels*jointToCartesian.transpose();
-
-  const Eigen::Matrix3d Qalpha = Eigen::MatrixXd::Zero(3, 3) ;
-
-
-
-
-  // Propagation error matrix
-  Eigen::Matrix3d P = Pinit();
 
   // Encoder reading
   Eigen::Vector2d previousReading(0.0f, 0.0f);
 
+
+  // Initial pose
   double xInit, yInit, thetaInit;
   nh_loc.param("x_init", xInit, 0.0);
   nh_loc.param("y_init", yInit, 0.0);
@@ -170,10 +95,56 @@ int main(int argc, char** argv)
   // State vector
   Eigen::Vector3d X(xInit, yInit, thetaInit*M_PI/180);
 
+  double wheelRadius, a;
+  nh_loc.param("wheelRadius", wheelRadius, 0.05);
+  nh_loc.param("a", a, 0.2);
+
+  double trackGauge = 2*a;
+
+  Eigen::Matrix2d jointToCartesian;
+  jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
+                       wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
 
+  // Filter parameters
+  KalmanFilter kalman(jointToCartesian);
 
-  ros::Rate estimatorRate(5);
+  Eigen::Matrix3d A;
+  Eigen::MatrixXd B(3,2);
+  Eigen::Matrix3d P = kalman.Pinit();
+
+  // Declare your node's subscriptions and service clients
+  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("simulation/EncodersReading", 1, EncoderReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, boost::bind(IrSensorsReading, _1, X ));
+
+  // Declare you publishers and service servers
+  ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
+
+
+  // Initialize sensors
+  double x1, y1;
+  nh_loc.param("x1_pos", x1, 0.0) ;
+  nh_loc.param("y1_pos", y1, -0.1) ;	// First one on the right of the robot
+
+  double x2, y2;
+  nh_loc.param("x2_pos", x2, 0.0) ;
+  nh_loc.param("y2_pos", y2, 0.1) ;		// Second one on the left of the robot
+
+  //  Global world parameters
+	double xSpacing, ySpacing, lineThickness;					// [m]
+	nh_loc.param("x_spacing", xSpacing, 1.0) ;
+	nh_loc.param("y_spacing", ySpacing, 1.0) ;
+	nh_loc.param("line_thickness", lineThickness, 0.005) ;
+
+	//	Create the world object
+	const World world(xSpacing, ySpacing, lineThickness);
+
+  // Inizialize the vector
+  robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
+  robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
+
+
+  ros::Rate estimatorRate(150);
 
   while( ros::ok() ) {
 
@@ -189,10 +160,10 @@ int main(int argc, char** argv)
     EvolutionModel(X, input);
 
     // Update matrix A and B
-    UpdateMatrix(X, input);
+    UpdateMatrix(X, input, A, B);
 
     // Update propagation error matrix
-    P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha;
+    kalman.Propagation(P, A, B);
 
     // Check for any measurements
     for(const auto& measurement : measurements ) {
@@ -205,33 +176,41 @@ int main(int argc, char** argv)
 
         C << 0, 1,  measurement.activeSensor->RelativePosition().x*cos(X(2)) - measurement.activeSensor->RelativePosition().y*sin(X(2)) ;
 
-        innov =  measurement.activeSensor->AbsolutePosition().y - measurement.lineIndex ;
+        const double Y = measurement.activeSensor->AbsolutePosition().y;
+        const double Yhat = measurement.lineIndex;
 
-        dMaha = ComputeMahalanobis( innov, C, P );
+
+        innov = Y - Yhat ;
+        ROS_INFO_STREAM( "innovation : " << innov );
+        dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       } else {
 
         C << 1, 0, - measurement.activeSensor->RelativePosition().x*sin(X(2)) - measurement.activeSensor->RelativePosition().y*cos(X(2)) ;
 
-        innov =  measurement.activeSensor->AbsolutePosition().x - measurement.lineIndex ;
+        const double Y =  measurement.activeSensor->AbsolutePosition().x;
+        const double Yhat = measurement.lineIndex ;
 
-        dMaha = ComputeMahalanobis( innov, C, P );
+        ROS_INFO_STREAM("Y :" << Y << " Yhat:" << Yhat);
+
+        innov =  Y - Yhat ;
+        //ROS_INFO_STREAM( "innovation : " << innov );
+        dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       }
-      double threshold = 0.02;
+
       if( dMaha <= threshold ) {
+
         //  Only if we referred to a good line, update
-        Eigen::MatrixXd K = P * C.transpose() /( (C*P*C.transpose()).value() + Qgamma) ;
-        //  estimation phase
-        X = X + K*innov ;
-        P = (Eigen::MatrixBase<Eigen::Matrix3d>::Identity() - K*C) * P ;
+        kalman.Estimation(P, X, C, innov) ;
 
       }
 
+      //  Publish result for the Mahalanobis distance
+      std_msgs::Float32 currentDist;
+      currentDist.data = dMaha;
+      Mahalanobis.publish( currentDist );
     }
-
-
-
 
     previousReading = currentReading ;
     measurements.clear();
