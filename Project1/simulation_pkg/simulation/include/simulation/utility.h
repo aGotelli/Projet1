@@ -35,7 +35,6 @@
  */
 
 #include <visualization_msgs/Marker.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
@@ -65,8 +64,6 @@ namespace utility
   enum COLOR { RED, GREEN };
 
   enum LINETYPE{ HORIZONTAL, VERTICAL };
-
-  class Measurement;
 
   //  Constrain an angle in the range [-M_PI, M_PI]
   inline const double LimitAngle( double a) ;
@@ -162,14 +159,7 @@ struct Pose2D {
   double theta { 0.0 } ;
 };
 
-class Measurement {
-public:
-  Measurement(const Pose2D& _position, const LINETYPE& _lineType ) : position(_position),
-                                                                  lineType(_lineType) {}
 
-  const Pose2D position;
-  const LINETYPE lineType;
-};
 
   template<class QuaternionTemplated>
   typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch, const double roll)
