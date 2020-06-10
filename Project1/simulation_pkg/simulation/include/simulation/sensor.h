@@ -133,7 +133,7 @@ public:
  void CheckStatus() const;
 
  // Return the type of line that the sensor is close to
- const utility::Measurement LineType() const;
+ const std::unique_ptr<utility::Measurement> LineType() const;
 
 
  // Function to get the sensor position in the absolute frame
@@ -240,21 +240,21 @@ void Sensor::CheckStatus() const
 }
 
 
-const utility::Measurement Sensor::LineType() const
+const std::unique_ptr<utility::Measurement> Sensor::LineType() const
 {
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd overLine = this->ComputeDistances();
 
   if( overLine[0] == overLine.minCoeff() ||
       overLine[1] == overLine.minCoeff()    ) { //  This means being the detected line
-        return utility::Measurement(this->AbsolutePosition(),
-                                    utility::LINETYPE::VERTICAL) ;
+        return std::make_unique<utility::Measurement>(this->AbsolutePosition(),
+                                                      utility::LINETYPE::VERTICAL) ;
 
       }
 
   //  If not the line that has been detected is "horizontal"
-  return utility::Measurement(this->AbsolutePosition(),
-                              utility::LINETYPE::HORIZONTAL) ;
+  return std::make_unique<utility::Measurement>(this->AbsolutePosition(),
+                                                utility::LINETYPE::HORIZONTAL) ;
 }
 
 

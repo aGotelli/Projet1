@@ -43,7 +43,7 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Pose.h>
-#include <memory>
+
 
 
 struct Size {
