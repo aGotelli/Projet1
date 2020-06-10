@@ -3,7 +3,7 @@
 
 /**
  * \file kalman filter
- * \brief 
+ * \brief
  * \author Bianca Lento & Andrea Gotelli
  * \version 0.1
  * \date 9/06/2020
@@ -17,7 +17,7 @@
  *    ° /
  *
  * Description
-         
+
  *
  */
 
@@ -29,18 +29,7 @@
 
 
 
-namespace utility
-{
-  struct Pose2D {
-    Pose2D()=default;
 
-    Pose2D(const double _x, const double _y, const double _theta=0) : x(_x), y(_y), theta(_theta) {}
-
-    double x { 0.0 } ;
-    double y { 0.0 } ;
-    double theta { 0.0 } ;
-  };
-}
 
 class Sensor;
 
