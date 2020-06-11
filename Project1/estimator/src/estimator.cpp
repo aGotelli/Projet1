@@ -38,8 +38,12 @@
 
 
 
+
+// Encoder reading
+Eigen::Vector2d previousReading(0.0f, 0.0f);
+Eigen::Vector2d currentReading(0.0f, 0.0f);
+
 // Callback function for encoder reading
-Eigen::Vector2d currentReading(0.0, 0.0);
 void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
 {
   currentReading[0] = encoders->phi_1f ;
@@ -50,21 +54,22 @@ void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
 // Callback function for sensor reading
 RobotSensors robotSensors;
 std::vector<Measurement> measurements;
-void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state,
-                      const Eigen::Vector3d& X )
+// State vector
+Eigen::Vector3d X;
+void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 {
 
   //  Received sensrs status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
     measurements.push_back( robotSensors.sens1().getMeasurement() );
-    ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
+
   }
 
   if( state->sens2 ) {
     robotSensors.sens2().UpdateTransform( X );
     measurements.push_back( robotSensors.sens2().getMeasurement() );
-    ROS_INFO_STREAM("measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
+
   }
 
 }
@@ -78,22 +83,25 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh_glob, nh_loc("~");
 
+  //  chi2inv(0.95,2) = 5.9915
+  //  chi2inv(0.95,1) = 3.8415
   double threshold;
-  nh_loc.param("threshold", threshold, 0.02);
+  nh_loc.param("threshold", threshold, 3.8415);
 
 
-  // Encoder reading
-  Eigen::Vector2d previousReading(0.0f, 0.0f);
+
 
 
   // Initial pose
   double xInit, yInit, thetaInit;
-  nh_loc.param("x_init", xInit, 0.0);
+  nh_loc.param("x_init", xInit, 0.25);
   nh_loc.param("y_init", yInit, 0.0);
   nh_loc.param("theta_init", thetaInit, 0.0);
 
   // State vector
-  Eigen::Vector3d X(xInit, yInit, thetaInit*M_PI/180);
+  X <<        xInit         ,
+              yInit         ,
+        thetaInit*M_PI/180  ;
 
   double wheelRadius, a;
   nh_loc.param("wheelRadius", wheelRadius, 0.05);
@@ -112,10 +120,12 @@ int main(int argc, char** argv)
   Eigen::Matrix3d A;
   Eigen::MatrixXd B(3,2);
   Eigen::Matrix3d P = kalman.Pinit();
+  ROS_INFO_STREAM("covariance matrix :" << P);
 
   // Declare your node's subscriptions and service clients
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("simulation/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, boost::bind(IrSensorsReading, _1, X ));
+  // ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, boost::bind(IrSensorsReading, _1, X ));
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, IrSensorsReading);
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
@@ -132,7 +142,7 @@ int main(int argc, char** argv)
 
   //  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_loc.param("x_spacing", xSpacing, 1.0) ;
+	nh_loc.param("x_spacing", xSpacing, 0.5) ;
 	nh_loc.param("y_spacing", ySpacing, 1.0) ;
 	nh_loc.param("line_thickness", lineThickness, 0.005) ;
 
@@ -157,16 +167,17 @@ int main(int argc, char** argv)
     Eigen::Vector2d input = jointToCartesian*rotation;
 
     // Compute evolution model
-    EvolutionModel(X, input);
+    EvolutionModel(X, input); //  SURE UNTILL HERE, EVOLUTION MODEL WORKS JUST FINE (BUT NO LIMITATION IN THETA)
+
 
     // Update matrix A and B
-    UpdateMatrix(X, input, A, B);
+    UpdateMatrix(X, input, A, B); //  SURE ABOUT THE UPDATE
 
     // Update propagation error matrix
-    kalman.Propagation(P, A, B);
+    kalman.Propagation(P, A, B);  //  PROPAGATIONS WORKS FINE (sigmatuning = 0.0)
 
     // Check for any measurements
-    for(const auto& measurement : measurements ) {
+    for(const auto& measurement : measurements ) {  //  SURE ABOUT THE MEASUREMENTS, THE FUNCTION RETURNS MEANINGFULL DATA
 
       double dMaha;
       Eigen::MatrixXd C(1, 3);
@@ -179,9 +190,12 @@ int main(int argc, char** argv)
         const double Y = measurement.activeSensor->AbsolutePosition().y;
         const double Yhat = measurement.lineIndex;
 
+        // ROS_INFO_STREAM("HORIZONTAL ");
+        // ROS_INFO_STREAM(" Y    = " << Y );
+        // ROS_INFO_STREAM(" Yhat = " << Yhat );
 
         innov = Y - Yhat ;
-        ROS_INFO_STREAM( "innovation : " << innov );
+
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       } else {
@@ -191,18 +205,22 @@ int main(int argc, char** argv)
         const double Y =  measurement.activeSensor->AbsolutePosition().x;
         const double Yhat = measurement.lineIndex ;
 
-        ROS_INFO_STREAM("Y :" << Y << " Yhat:" << Yhat);
+        // ROS_INFO_STREAM("VERTICAL ");
+        // ROS_INFO_STREAM(" Y    = " << Y );
+        // ROS_INFO_STREAM(" Yhat = " << Yhat );
 
         innov =  Y - Yhat ;
-        //ROS_INFO_STREAM( "innovation : " << innov );
+
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       }
-
+      ROS_INFO_STREAM("dMaha : " << dMaha);
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
+        ROS_INFO_STREAM("covariance matrix :" << P);
+
 
       }
 
