@@ -62,14 +62,16 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
   //  Received sensrs status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
-    measurements.push_back( robotSensors.sens1().getMeasurement() );
-
+    robotSensors.sens1().getMeasurement( measurements ) ;
+    // measurements.push_back( robotSensors.sens1().getMeasurement() );
+    //  ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
   }
 
   if( state->sens2 ) {
     robotSensors.sens2().UpdateTransform( X );
-    measurements.push_back( robotSensors.sens2().getMeasurement() );
-
+    robotSensors.sens2().getMeasurement( measurements );
+    // measurements.push_back( robotSensors.sens2().getMeasurement() );
+    //  ROS_INFO_STREAM( "measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
   }
 
 }
@@ -95,7 +97,7 @@ int main(int argc, char** argv)
   // Initial pose
   double xInit, yInit, thetaInit;
   nh_loc.param("x_init", xInit, 0.25);
-  nh_loc.param("y_init", yInit, 0.0);
+  nh_loc.param("y_init", yInit, 0.5);
   nh_loc.param("theta_init", thetaInit, 0.0);
 
   // State vector
@@ -175,6 +177,7 @@ int main(int argc, char** argv)
 
     // Update propagation error matrix
     kalman.Propagation(P, A, B);  //  PROPAGATIONS WORKS FINE (sigmatuning = 0.0)
+    // ROS_INFO_STREAM("covariance matrix :" << P);
 
     // Check for any measurements
     for(const auto& measurement : measurements ) {  //  SURE ABOUT THE MEASUREMENTS, THE FUNCTION RETURNS MEANINGFULL DATA
@@ -220,8 +223,6 @@ int main(int argc, char** argv)
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
         ROS_INFO_STREAM("covariance matrix :" << P);
-
-
       }
 
       //  Publish result for the Mahalanobis distance

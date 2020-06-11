@@ -143,7 +143,9 @@ public:
  void CheckStatus() const;
 
  // Return the type of line that the sensor is close to
+ [[deprecated("Use the function which takes the measurements vector, it allows measuring multiple lines when the sensor is over an intersection")]]
  const Measurement getMeasurement() const;
+ void getMeasurement(std::vector<Measurement>& measurements) const;
 
 
  // Function to get the sensor position in the absolute frame
@@ -284,7 +286,7 @@ const Measurement Sensor::getMeasurement() const
 
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
-  
+
   //  Obatin the minimum
   const double minimum = overLine.cwiseAbs().minCoeff();
 
@@ -316,6 +318,46 @@ const Measurement Sensor::getMeasurement() const
 
   }
 
+
+}
+
+
+
+void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
+{
+
+  //  Obtain the lines around the sensor
+  const Eigen::MatrixXd worldLines = this->EvaluateLinesAround();
+
+  //  Obatin the vector contain the distances among the lines
+  const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
+
+  //  Obatin the minimum
+  const double minimum = overLine.cwiseAbs().minCoeff();
+
+  if( std::abs( overLine[0] ) == minimum ) {  //  Left line detected
+    measurements.push_back( Measurement(-worldLines(2, 0),
+                                        utility::LINETYPE::VERTICAL, this ) );
+
+  }
+
+  if( std::abs( overLine[1] ) == minimum ) {  //  Right line detected
+    measurements.push_back( Measurement(-worldLines(2, 1),
+                                        utility::LINETYPE::VERTICAL, this ) );
+
+  }
+
+  if( std::abs( overLine[2] ) == minimum ) {  //  Bottom line detected
+    measurements.push_back( Measurement(-worldLines(2, 2),
+                                        utility::LINETYPE::HORIZONTAL, this ) );
+
+  }
+
+  if( std::abs( overLine[3] ) == minimum ) {  //  Upper line detected
+    measurements.push_back( Measurement(-worldLines(2, 3),
+                                        utility::LINETYPE::HORIZONTAL, this ) );
+
+  }
 
 }
 
