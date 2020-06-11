@@ -284,32 +284,36 @@ const Measurement Sensor::getMeasurement() const
 
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
-
+  
   //  Obatin the minimum
   const double minimum = overLine.cwiseAbs().minCoeff();
 
   if( std::abs( overLine[0] ) == minimum ) {  //  Left line detected
-    return Measurement(worldLines(0, 2),
+    return Measurement(-worldLines(2, 0),
                utility::LINETYPE::VERTICAL,
                 (this)                     ) ;
+
   }
 
   if( std::abs( overLine[1] ) == minimum ) {  //  Right line detected
-    return Measurement(worldLines(1, 2),
+    return Measurement(-worldLines(2, 1),
               utility::LINETYPE::VERTICAL,
                (this)                      ) ;
+
   }
 
   if( std::abs( overLine[2] ) == minimum ) {  //  Bottom line detected
-    return Measurement(worldLines(2, 2),
+    return Measurement(-worldLines(2, 2),
               utility::LINETYPE::HORIZONTAL,
                (this)                      ) ;
+
   }
 
   if( std::abs( overLine[3] ) == minimum ) {  //  Upper line detected
-    return Measurement(worldLines(3, 2),
+    return Measurement(-worldLines(2, 3),
               utility::LINETYPE::HORIZONTAL,
                (this)                      ) ;
+
   }
 
 
@@ -320,6 +324,7 @@ const Measurement Sensor::getMeasurement() const
 const utility::Pose2D Sensor::AbsolutePosition() const
 {
   const Eigen::Vector3d oHCoord = oTm*HCoord;
+  //ROS_INFO_STREAM("sensor is in : " << oHCoord );
 
   return utility::Pose2D( oHCoord[0], oHCoord[1] ) ;
 }
