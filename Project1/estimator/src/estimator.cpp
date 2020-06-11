@@ -156,11 +156,17 @@ int main(int argc, char** argv)
 	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);
 
+  // Encoder resolution
+  double encodersResolution;
+  nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
+
   // Inizialize the vector
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
-
+  // Initialize sigmaTuning and sigmaMeasurement
+  sigmaInit( sigmaTuning, encodersResolution, 1 );
+  sigmaInit( sigmaMeasurement, lineThickness, 0 );
 
   ros::Rate estimatorRate(150);
 
@@ -256,9 +262,9 @@ int main(int argc, char** argv)
       estimatedPosture.pose.position.x = X(0);
       estimatedPosture.pose.position.y = X(1);
       estimatedPosture.pose.orientation = utility::ToQuaternion(X(2));
-      estimatedPosture.covariance.push_back = sqrt(P(0,0));
-      estimatedPosture.covariance.push_back = sqrt(P(1,1));
-      estimatedPosture.covariance.push_back = sqrt(P(2,2));
+      estimatedPosture.covariance.data.push_back( sqrt(P(0,0)) );
+      estimatedPosture.covariance.data.push_back( sqrt(P(1,1)) );
+      estimatedPosture.covariance.data.push_back( sqrt(P(2,2)) );
       estPosture.publish( estimatedPosture );
 
 

@@ -49,8 +49,11 @@ public:
                                               // ROS_INFO_STREAM("Secondo : " << B*Qbeta*B.transpose() );
                                               P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ; }
 
-  //  Perfrom the estimation for the model
+  //  Perform the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
+
+  // Initialize sigmaTuning and sigmaMeasurement as variances 
+  void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit);
 
   //  Compute the Mahalanobis distance given the current covariace matrix
   inline double ComputeMahalanobis(double innov,
@@ -94,9 +97,9 @@ private:
 const Eigen::Matrix3d KalmanFilter::Pinit()
 {
   Eigen::Matrix3d P;
-  P <<  sigmaX,     0,        0       ,
-          0,      sigmaY,     0       ,
-          0,        0,    sigmaTheta  ;
+  P <<  sigmaX*sigmaX,       0,                   0       ,
+              0,      sigmaY*sigmaY,              0       ,
+              0,             0,    sigmaTheta*sigmaTheta  ;
 
   return P;
 }
@@ -140,7 +143,12 @@ void EvolutionModel(Eigen::Vector3d& X, const Eigen::Vector2d input)
 }
 
 
+void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit){
 
+  const double sigmaMeasurement = sqrt(pow(lineThickness + unit, 2)/12)
+
+  return sigmaMeasurement;
+}
 
 
 
