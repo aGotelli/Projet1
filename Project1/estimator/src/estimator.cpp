@@ -23,7 +23,7 @@
 // ROS
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
-#include <geometry_msgs/PoseWithCovariace.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 
 // Include here the ".h" files corresponding to the topic type you use.
 #include <math.h>
@@ -77,6 +77,7 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 
   }
 
+  //ROS_INFO_STREAM("How many measurements ? " << measurements.size() );
 }
 
 
@@ -93,15 +94,44 @@ int main(int argc, char** argv)
   double threshold;
   nh_loc.param("threshold", threshold, 3.8415);
 
+/*
 
+/ground_generator/line_thickness
+/ground_generator/x_spacing
+/ground_generator/y_spacing
+
+/simulation/robot_2_0/a
+/simulation/robot_2_0/actuator_max_speed
+/simulation/robot_2_0/b
+/simulation/robot_2_0/c
+/simulation/robot_2_0/encoders_resolution
+/simulation/robot_2_0/theta_init
+/simulation/robot_2_0/wheel_radius
+/simulation/robot_2_0/x_init
+/simulation/robot_2_0/y_init
+/simulation/sensor/line_thickness
+/simulation/sensor/x1_pos
+/simulation/sensor/x2_pos
+/simulation/sensor/x_spacing
+/simulation/sensor/y1_pos
+/simulation/sensor/y2_pos
+/simulation/sensor/y_spacing
+
+
+
+
+
+
+
+*/
 
 
 
   // Initial pose
   double xInit, yInit, thetaInit;
-  nh_loc.param("x_init", xInit, 0.25);
-  nh_loc.param("y_init", yInit, 0.0);
-  nh_loc.param("theta_init", thetaInit, 0.0);
+  nh_loc.param("/simulation/robot_2_0/x_init", xInit, 0.25);
+  nh_loc.param("/simulation/robot_2_0/y_init", yInit, 0.5);
+  nh_loc.param("/simulation/robot_2_0/theta_init", thetaInit, 0.0);
 
   // State vector
   X <<        xInit         ,
@@ -109,8 +139,8 @@ int main(int argc, char** argv)
         thetaInit*M_PI/180  ;
 
   double wheelRadius, a;
-  nh_loc.param("wheelRadius", wheelRadius, 0.05);
-  nh_loc.param("a", a, 0.2);
+  nh_loc.param("/simulation/robot_2_0/wheel_radius", wheelRadius, 0.05);
+  nh_loc.param("/simulation/robot_2_0/a", a, 0.2);
 
   double trackGauge = 2*a;
 
@@ -134,24 +164,24 @@ int main(int argc, char** argv)
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
-  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariace>("estimatedPosture", 1);
+  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("estimatedPosture", 1);
 
 
 
   // Initialize sensors
   double x1, y1;
-  nh_loc.param("x1_pos", x1, 0.0) ;
-  nh_loc.param("y1_pos", y1, -0.1) ;	// First one on the right of the robot
+  nh_loc.param("/simulation/sensor/x1_pos", x1, 0.0) ;
+  nh_loc.param("/simulation/sensor/y1_pos", y1, -0.1) ;	// First one on the right of the robot
 
   double x2, y2;
-  nh_loc.param("x2_pos", x2, 0.0) ;
-  nh_loc.param("y2_pos", y2, 0.1) ;		// Second one on the left of the robot
+  nh_loc.param("/simulation/sensor/x2_pos", x2, 0.0) ;
+  nh_loc.param("/simulation/sensor/y2_pos", y2, 0.1) ;		// Second one on the left of the robot
 
   //  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_loc.param("x_spacing", xSpacing, 0.5) ;
-	nh_loc.param("y_spacing", ySpacing, 1.0) ;
-	nh_loc.param("line_thickness", lineThickness, 0.005) ;
+	nh_loc.param("/simulation/sensor/x_spacing", xSpacing, 0.5) ;
+	nh_loc.param("/simulation/sensor/y_spacing", ySpacing, 1.0) ;
+	nh_loc.param("/simulation/sensor/line_thickness", lineThickness, 0.005) ;
 
 	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);
@@ -223,12 +253,12 @@ int main(int argc, char** argv)
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       }
-      ROS_INFO_STREAM("dMaha : " << dMaha);
+      // ROS_INFO_STREAM("dMaha : " << dMaha);
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
-        ROS_INFO_STREAM("covariance matrix :" << P);
+        // ROS_INFO_STREAM("covariance matrix :" << P);
 
 
       }
@@ -239,7 +269,7 @@ int main(int argc, char** argv)
       Mahalanobis.publish( currentDist );
 
       //  Publish estimated posture and standard deviations
-      /*
+/*
       geometry_msgs/Pose pose
         geometry_msgs/Point position
           float64 x
@@ -252,13 +282,14 @@ int main(int argc, char** argv)
           float64 w
       float64[36] covariance
 */
-      geometry_msgs::PoseWithCovariace estimatedPosture;
+      geometry_msgs::PoseWithCovariance estimatedPosture;
       estimatedPosture.pose.position.x = X(0);
       estimatedPosture.pose.position.y = X(1);
-      estimatedPosture.pose.orientation = utility::ToQuaternion(X(2));
-      estimatedPosture.covariance.push_back = sqrt(P(0,0));
-      estimatedPosture.covariance.push_back = sqrt(P(1,1));
-      estimatedPosture.covariance.push_back = sqrt(P(2,2));
+      estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>( X(2) );
+
+      // estimatedPosture.covariance.data[0] = sqrt(P(0,0));
+      // estimatedPosture.covariance[1].data = sqrt(P(1,1));
+      // estimatedPosture.covariance[2].data = sqrt(P(2,2));
       estPosture.publish( estimatedPosture );
 
 

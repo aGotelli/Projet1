@@ -56,7 +56,8 @@ public:
   inline double ComputeMahalanobis(double innov,
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
-                                    { ROS_INFO_STREAM("product : " << (C*P*C.transpose()).value() );
+                                    {
+                                      // ROS_INFO_STREAM("product : " << (C*P*C.transpose()).value() );
                                       return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ; }
 
 
