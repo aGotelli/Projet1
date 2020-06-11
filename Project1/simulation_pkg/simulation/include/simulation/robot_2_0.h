@@ -115,7 +115,7 @@ private:
     Encoders()=default;
 
     Encoders(const double _resolution) : resolution(_resolution) {
-      ROS_INFO_STREAM("resolution : " << resolution );
+      ROS_DEBUG_STREAM("resolution : " << resolution );
     }
 
     inline const double ResolutionToRad() const {return resolution/(2*M_PI); }
