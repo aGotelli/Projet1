@@ -69,7 +69,7 @@ int main (int argc, char** argv)
     double trailingOffSet;                           //  [m]
     double castorArmLength;                       //  [m]
     double wMax ;                                 //  [RAD/s]
-    double encodersResolution ;                   //  [dots/grad]
+    double encodersResolution ;                   //  [dots/wheel rotation]
 
     nh_loc.param("a", frontAxle, 0.2) ;
     nh_loc.param("wheel_radius", wheelRadius, 0.05) ;
