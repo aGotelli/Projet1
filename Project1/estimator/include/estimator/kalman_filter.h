@@ -41,7 +41,13 @@ public:
   inline const Eigen::Matrix3d Propagation( Eigen::Matrix3d& P,
                                             const Eigen::Matrix3d& A,
                                             const Eigen::MatrixXd& B )
-                                            {P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ; }
+                                            {
+                                              // ROS_INFO_STREAM("A       : " << A );
+                                              // ROS_INFO_STREAM("B       : " << B );
+                                              // ROS_INFO_STREAM("Qbeta   : " << Qbeta );
+                                              // ROS_INFO_STREAM("Primo   : " << A*P*A.transpose() );
+                                              // ROS_INFO_STREAM("Secondo : " << B*Qbeta*B.transpose() );
+                                              P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ; }
 
   //  Perfrom the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
@@ -50,12 +56,11 @@ public:
   inline double ComputeMahalanobis(double innov,
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
-                                    {return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ; }
+                                    { ROS_INFO_STREAM("product : " << (C*P*C.transpose()).value() );
+                                      return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ; }
 
 
 private:
-
-  const Eigen::Matrix2d JTCinit() ;
 
   //  Uncertainties on the robot initial posture
   const double sigmaX     { 8.0f };
@@ -96,13 +101,6 @@ const Eigen::Matrix3d KalmanFilter::Pinit()
   return P;
 }
 
-const Eigen::Matrix2d KalmanFilter::JTCinit()
-{
-  Eigen::Matrix2d temp;
-
-  return temp;
-}
-
 
 void KalmanFilter::Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov)
 {
@@ -122,6 +120,7 @@ void UpdateMatrix(const Eigen::Vector3d& X, const Eigen::Vector2d input, Eigen::
   A << 1, 0, -input(0)*cos(X(2)),
        0, 1,  input(0)*sin(X(2)),
        0, 0,           1        ;
+
 
   //  Fill B using definition
   B << cos(X(2)), 0,
