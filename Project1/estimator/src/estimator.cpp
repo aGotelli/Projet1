@@ -23,6 +23,7 @@
 // ROS
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include <geometry_msgs/PoseWithCovariace.h>
 
 // Include here the ".h" files corresponding to the topic type you use.
 #include <math.h>
@@ -65,6 +66,7 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
     robotSensors.sens1().getMeasurement( measurements ) ;
     // measurements.push_back( robotSensors.sens1().getMeasurement() );
     //  ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
+
   }
 
   if( state->sens2 ) {
@@ -72,6 +74,7 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
     robotSensors.sens2().getMeasurement( measurements );
     // measurements.push_back( robotSensors.sens2().getMeasurement() );
     //  ROS_INFO_STREAM( "measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
+
   }
 
 }
@@ -97,7 +100,7 @@ int main(int argc, char** argv)
   // Initial pose
   double xInit, yInit, thetaInit;
   nh_loc.param("x_init", xInit, 0.25);
-  nh_loc.param("y_init", yInit, 0.5);
+  nh_loc.param("y_init", yInit, 0.0);
   nh_loc.param("theta_init", thetaInit, 0.0);
 
   // State vector
@@ -131,6 +134,8 @@ int main(int argc, char** argv)
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
+  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariace>("estimatedPosture", 1);
+
 
 
   // Initialize sensors
@@ -156,6 +161,7 @@ int main(int argc, char** argv)
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
 
+
   ros::Rate estimatorRate(150);
 
   while( ros::ok() ) {
@@ -175,9 +181,9 @@ int main(int argc, char** argv)
     // Update matrix A and B
     UpdateMatrix(X, input, A, B); //  SURE ABOUT THE UPDATE
 
+
     // Update propagation error matrix
     kalman.Propagation(P, A, B);  //  PROPAGATIONS WORKS FINE (sigmatuning = 0.0)
-    // ROS_INFO_STREAM("covariance matrix :" << P);
 
     // Check for any measurements
     for(const auto& measurement : measurements ) {  //  SURE ABOUT THE MEASUREMENTS, THE FUNCTION RETURNS MEANINGFULL DATA
@@ -223,12 +229,39 @@ int main(int argc, char** argv)
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
         ROS_INFO_STREAM("covariance matrix :" << P);
+
+
       }
 
       //  Publish result for the Mahalanobis distance
       std_msgs::Float32 currentDist;
       currentDist.data = dMaha;
       Mahalanobis.publish( currentDist );
+
+      //  Publish estimated posture and standard deviations
+      /*
+      geometry_msgs/Pose pose
+        geometry_msgs/Point position
+          float64 x
+          float64 y
+          float64 z
+        geometry_msgs/Quaternion orientation
+          float64 x
+          float64 y
+          float64 z
+          float64 w
+      float64[36] covariance
+*/
+      geometry_msgs::PoseWithCovariace estimatedPosture;
+      estimatedPosture.pose.position.x = X(0);
+      estimatedPosture.pose.position.y = X(1);
+      estimatedPosture.pose.orientation = utility::ToQuaternion(X(2));
+      estimatedPosture.covariance.push_back = sqrt(P(0,0));
+      estimatedPosture.covariance.push_back = sqrt(P(1,1));
+      estimatedPosture.covariance.push_back = sqrt(P(2,2));
+      estPosture.publish( estimatedPosture );
+
+
     }
 
     previousReading = currentReading ;
