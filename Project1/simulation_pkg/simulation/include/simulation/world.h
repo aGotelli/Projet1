@@ -60,7 +60,7 @@ public:
             xSpacing( _xSpacing ),
             ySpacing( _ySpacing ),
             lineThickness( _lineThickness ) {
-              ROS_INFO_STREAM("Completely user-defined world. xSpacing : " <<
+              ROS_DEBUG_STREAM("Completely user-defined world. xSpacing : " <<
               xSpacing << " ySpacing : " << ySpacing << " lineThickness : " << lineThickness) ;
 
               if( xSpacing < 0 || ySpacing < 0 || lineThickness < 0) {
