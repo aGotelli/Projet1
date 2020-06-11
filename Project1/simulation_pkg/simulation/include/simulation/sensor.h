@@ -332,28 +332,29 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
 
-  //  Obatin the minimum
-  const double minimum = overLine.cwiseAbs().minCoeff();
-
-  if( std::abs( overLine[0] ) == minimum ) {  //  Left line detected
+  //  Check if the distance from the line on the left is less then the half of line thickness
+  if( std::abs( overLine[0] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Left line detected
     measurements.push_back( Measurement(-worldLines(2, 0),
                                         utility::LINETYPE::VERTICAL, this ) );
 
   }
 
-  if( std::abs( overLine[1] ) == minimum ) {  //  Right line detected
+  //  Check if the distance from the line on the right is less then the half of line thickness
+  if( std::abs( overLine[1] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Right line detected
     measurements.push_back( Measurement(-worldLines(2, 1),
                                         utility::LINETYPE::VERTICAL, this ) );
 
   }
 
-  if( std::abs( overLine[2] ) == minimum ) {  //  Bottom line detected
+  //  Check if the distance from the line under the sensor is less then the half of line thickness
+  if( std::abs( overLine[2] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Bottom line detected
     measurements.push_back( Measurement(-worldLines(2, 2),
                                         utility::LINETYPE::HORIZONTAL, this ) );
 
   }
 
-  if( std::abs( overLine[3] ) == minimum ) {  //  Upper line detected
+  //  Check if the distance from the line above the sensor is less then the half of line thickness
+  if( std::abs( overLine[3] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Upper line detected
     measurements.push_back( Measurement(-worldLines(2, 3),
                                         utility::LINETYPE::HORIZONTAL, this ) );
 
