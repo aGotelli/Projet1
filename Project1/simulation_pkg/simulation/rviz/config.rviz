@@ -96,11 +96,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        joint_offset:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         map:
           Alpha: 1
           Show Axes: false
@@ -116,6 +111,11 @@ Visualization Manager:
           Show Trail: false
           Value: true
         sensor_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        trailing_offset:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -165,7 +165,7 @@ Visualization Manager:
         Shaft Length: 0.10000000149011612
         Shaft Radius: 0.019999999552965164
         Value: Arrow
-      Topic: /simulation/RobotOdometry
+      Topic: /RobotOdometry
       Unreliable: false
       Value: true
     - Class: rviz/Axes
@@ -203,7 +203,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.024744987487793
+      Distance: 5.731571197509766
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
