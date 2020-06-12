@@ -68,6 +68,7 @@
 
     <!-- The node to save all the needed data -->
     <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg folder_name)  $(arg file_name)" output="screen" required="true" if="$(arg record)">
+      <param name="topics_to_save" value=" RobotPosture EncodersReading IRSensorsStatus" />
     </node>
 
     <!-- The robot_2_0 -->
