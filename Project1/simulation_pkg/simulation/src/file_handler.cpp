@@ -59,7 +59,7 @@
           boost::bind(IsEqual, _1, fileName)
 
             It returns a pointer to a function that has the body of IsEqual but takes only one arguments. This is used
-          as predicate for the std::find_if function. 
+          as predicate for the std::find_if function.
  *
  */
 
@@ -164,7 +164,11 @@ int main (int argc, char** argv)
 	//ROS Initialization
   ros::init(argc, argv, "file_handler");
 
-  ros::NodeHandle nh_glob;
+  ros::NodeHandle nh_loc("~");
+
+  //  Check the user choice of saving the parameters
+  bool saveParams;
+  nh_loc.param<bool>("save_params", saveParams, true );
 
   //  The node must be provided with two args
   if( argc <  3 ) {
@@ -214,9 +218,12 @@ int main (int argc, char** argv)
   if( group == "/" )
     group = "";
 
-  //  Save all the parameters
-  const std::string rosparamCommand = "rosparam dump " + folderPath.string() + "/" + fileName.string() + ".yaml " + group ;
-  system( const_cast<char*>( rosparamCommand.c_str() ) );
+  //  Save all the parameters ( if required )
+  if( saveParams ) {
+    
+    const std::string rosparamCommand = "rosparam dump " + folderPath.string() + "/" + fileName.string() + ".yaml " + group ;
+    system( const_cast<char*>( rosparamCommand.c_str() ) );
+  }
 
 
   //  Record all the messages
