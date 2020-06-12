@@ -247,6 +247,9 @@ int main(int argc, char** argv)
         estimator_messages::Measurement accepted;
         accepted.line_index.data = measurement.lineIndex;
 
+        accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
+        accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
+
         if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
           accepted.line_type.data = "HORIZONTAL" ;
         else
