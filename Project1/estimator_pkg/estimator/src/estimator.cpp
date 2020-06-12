@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
-  const double sigmaTuning = 0.01;       // sqrt(pow(encodersResolution + 1, 2)/12);
+  const double sigmaTuning = sqrt(pow(encodersResolution + 1, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -155,8 +155,8 @@ int main(int argc, char** argv)
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
-  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("estimatedPosture", 1);
-  ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("Measurements", 1);
+  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
+  ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
 
 
   // Initialize sensors
