@@ -180,6 +180,31 @@ void Robot_2_0::PerformMotion() const
 }
 
 
+// void Robot_2_0::ComputeOdometry() const
+// {
+//
+//   // Current value of phi_1f and phi_2f
+//   currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
+//   currentReading[0] = std::floor( currentReading[0] ) ;
+//   currentReading[1] = std::floor( currentReading[1] ) ;
+//
+//   //  Define the wheels rotation in between two iterations
+//   Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
+//
+//   // Compute input discretized
+//   const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
+//
+//   // Compute odometry position
+//   q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
+//   q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
+//   q_odom.theta = q_odom.theta + d_input[1] ;
+//
+//   // Update
+//   previusReading = currentReading ;
+//
+// }
+
+// compute odometry with error in wheel radius and track gauge
 void Robot_2_0::ComputeOdometry() const
 {
 
@@ -191,8 +216,13 @@ void Robot_2_0::ComputeOdometry() const
   //  Define the wheels rotation in between two iterations
   Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
 
+  Eigen::Matrix2d jointToCartesian;
+  jointToCartesian << (wheelRadius*1.05)/2            ,      wheelRadius/2     ,
+                      (wheelRadius*1.05)/trackGauge   , -wheelRadius/trackGauge;
+
   // Compute input discretized
-  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
+  const Eigen::Vector2d d_input = jointToCartesian*rotation ;
+
 
   // Compute odometry position
   q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
