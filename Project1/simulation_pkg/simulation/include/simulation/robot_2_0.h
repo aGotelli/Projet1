@@ -73,7 +73,8 @@ public:
 
   Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
             const double _wheelRadius, const double _trailingOffSet,
-            const double _castorArmLength, const double _wMax, const double _resolution) :
+            const double _castorArmLength, const double _wMax,
+            const double _resolution, const double _wheel1Error) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             trackGauge(2*_frontAxle),
@@ -82,6 +83,7 @@ public:
             castorArmLength(_castorArmLength),
             wMax(_wMax),
             encoder( Encoders(_resolution) ),
+            wheel1Error(_wheel1Error),
             RobotBase() {/* All the rest is initialized as default */
               ROS_DEBUG_STREAM("Fully user-defined initialization called...");     }
 
@@ -99,6 +101,8 @@ public:
 
   // Function to update the J matrix elements
   void UpdateMatrix() const;
+
+  void UpdateOdomMatrix() const;
 
   // Function to control the max value of the velocities
   void EnsureMaxSpeed() const;
@@ -121,6 +125,7 @@ private:
     inline const double ResolutionToRad() const {return resolution/(2*M_PI); }
     inline const double Resolution() const {return resolution; }
 
+
   private:
     //  the resolution of the encoder
     const double resolution{360} ;   //  [dots/revolution]
@@ -135,6 +140,8 @@ private:
 
   const Encoders encoder;
 
+  const double wheel1Error { 0.0 };
+
   // Robot parameters
   const double trackGauge {0.4} ;             //  [m]
   const double wheelRadius {0.05 };           //  [m]
@@ -146,6 +153,8 @@ private:
   mutable Eigen::Vector2d u {0.0f, 0.0f} ;  //  [m/s, RAD/s]
 
   mutable Eigen::MatrixXd S{7, 2} ;         //  The kinematic model
+
+  mutable Eigen::MatrixXd S_odom{7, 2} ;    //  The kinematic model for the odometry
 
 
   mutable Eigen::Vector2d currentReading{0, 0};
@@ -207,6 +216,7 @@ void Robot_2_0::PerformMotion() const
 // compute odometry with error in wheel radius and track gauge
 void Robot_2_0::ComputeOdometry() const
 {
+  UpdateOdomMatrix();
 
   // Current value of phi_1f and phi_2f
   currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
@@ -216,18 +226,16 @@ void Robot_2_0::ComputeOdometry() const
   //  Define the wheels rotation in between two iterations
   Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
 
-  Eigen::Matrix2d jointToCartesian;
-  jointToCartesian << (wheelRadius*1.05)/2            ,      wheelRadius/2     ,
-                      (wheelRadius*1.05)/trackGauge   , -wheelRadius/trackGauge;
 
   // Compute input discretized
-  const Eigen::Vector2d d_input = jointToCartesian*rotation ;
+  const Eigen::Vector2d d_input = S_odom.block<2,2>(4,0).inverse()*rotation ;
 
 
-  // Compute odometry position
-  q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-  q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-  q_odom.theta = q_odom.theta + d_input[1] ;
+  q_odom = q_odom + S_odom*d_input;
+
+  // q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
+  // q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
+  // q_odom.theta = q_odom.theta + d_input[1] ;
 
   // Update
   previusReading = currentReading ;
@@ -246,6 +254,20 @@ void Robot_2_0::UpdateMatrix() const
                   1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                      ,
                   1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                      ,
           -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*trailingOffSet/wheelRadius                 ;
+
+}
+
+
+void Robot_2_0::UpdateOdomMatrix() const
+{
+
+  S_odom <<             cos(q_odom.theta)          ,                                    0                                        ,
+                        sin(q_odom.theta)          ,                                    0                                        ,
+                                0                  ,                                    1                                        ,
+              -sin(q_odom.beta_3c)/castorArmLength ,    -(castorArmLength + trailingOffSet*cos(q_odom.beta_3c))/castorArmLength  ,
+                   1/(wheelRadius*wheel1Error)     ,                 trackGauge/(2*(wheelRadius*wheel1Error))                    ,
+                        1/wheelRadius              ,                       -trackGauge/(2*wheelRadius)                           ,
+                -cos(q_odom.beta_3c)/wheelRadius   ,              sin(q_odom.beta_3c)*trailingOffSet/wheelRadius                 ;
 
 }
 
@@ -294,8 +316,10 @@ void Robot_2_0::PrepareMessages()
 
 
   //  Publish the current reading in dots
-  elapsedDots.phi_1f = currentReading[0]/encoder.ResolutionToRad() ;
-  elapsedDots.phi_2f = currentReading[1]/encoder.ResolutionToRad() ;
+  // elapsedDots.phi_1f = currentReading[0]/encoder.ResolutionToRad() ;
+  // elapsedDots.phi_2f = currentReading[1]/encoder.ResolutionToRad() ;
+  elapsedDots.phi_1f = q_odom.phi_1f ;
+  elapsedDots.phi_2f = q_odom.phi_2f ;
 
 
   //  Clear the joint state message

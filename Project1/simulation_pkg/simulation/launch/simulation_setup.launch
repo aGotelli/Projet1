@@ -5,7 +5,8 @@
 
   <arg name="r"                   default="0.05"  />
   <arg name="w_max"               default="10.0"  />
-  <arg name="encoders_resolution" default="360"  />
+  <arg name="encoders_resolution" default="360"   />
+  <arg name="wheel_1_error"       default="1.01"  />
 
   <arg name="c"     default="$(eval arg('r') + 0.05)"  />
 
@@ -80,6 +81,7 @@
       <param name="y_init"              value="$(arg y_init)"                 />
       <param name="theta_init"          value="$(arg theta_init)"             />
       <param name="encoders_resolution" value="$(arg encoders_resolution)"    />
+      <param name="wheel_1_error" value="$(arg wheel_1_error)"    />
     </node>
 
     <!-- The sensor -->

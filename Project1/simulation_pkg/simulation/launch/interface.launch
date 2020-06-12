@@ -17,6 +17,7 @@
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="360"   />    <!-- dots/wheel rotation -->
+  <arg name="wheel_1_error"       default="1.01"  />
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
