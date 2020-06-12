@@ -1,0 +1,27 @@
+<launch>
+
+  <arg name="file_name"         value="one_loop" />
+  <arg name="take_from_folder"  value="recorded_data"   />
+  <arg name="save_into_folder"  value="processed_data"  />
+
+  <rosparam command="load" file="$(find data)/$(arg take_from_folder)/$(arg file_name).yaml" />
+
+  <node pkg="rosbag" type="play" name="playback_simulation" output="screen" args="--delay=2 $(find data)/$(arg take_from_folder)/$(arg file_name).bag">
+    <remap from="/simulation/RobotPosture"    to="/RobotPosture" />
+    <remap from="/simulation/EncodersReading" to="/EncodersReading" />
+    <remap from="/simulation/IRSensorsStatus" to="/IRSensorsStatus" />
+    <remap from="/simulation/RobotOdometry"   to="/RobotOdometry" />
+  </node>
+
+  <node pkg="estimator" type="estimator_estimator" name="estimator">
+  </node>
+
+  <!-- The node to save all the needed data -->
+  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg file_name)" output="screen"  >
+    <param name="save_params"     value="false" />
+    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Measurements RobotPosture RobotOdometry"      />
+  </node>
+
+
+
+</launch>

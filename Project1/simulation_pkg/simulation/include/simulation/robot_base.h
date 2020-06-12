@@ -153,7 +153,7 @@ private:
   ros::Publisher Encoders { nh_glob.advertise<simulation_messages::Encoders>("EncodersReading", 1) } ;
 
   //  Publish the Odometry that has been computed
-  ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("/RobotOdometry", 10) } ;
+  ros::Publisher Odometry { nh_glob.advertise<nav_msgs::Odometry>("RobotOdometry", 10) } ;
 
   //  Publish a joint state message to control the URDF model
   ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
