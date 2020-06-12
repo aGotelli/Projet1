@@ -4,7 +4,7 @@ thend git clone the following: https://github.com/pyqtgraph/pyqtgraph.git
 
 once done the best pratce is to check so run :
 python -m pyqtgraph.examples
- 
+
 if it doesn't work (it problably won't) and you will get an error like:
 agotelli@ProBook:~$ python -m pyqtgraph.examples
 Traceback (most recent call last):
@@ -26,7 +26,8 @@ TypeError: super() takes at least 1 argument (0 given)
 then run:
 python3 -m pyqtgraph.examples
 
-If it work so we are cool. If it doesn't work, that's because the package is in your computer but not installed. The problem should result in the following error:
+If it work so we are cool. If it doesn't work, that's because the package is in your computer but not installed.
+The problem should result in the following error:
 agotelli@ProBook:~$ python3 -m pyqtgraph.examples
 /usr/bin/python3: Error while finding module specification for 'pyqtgraph.examples' (ModuleNotFoundError: No module named 'pyqtgraph')
 
@@ -39,16 +40,12 @@ then run again:
 python3 -m pyqtgraph.examples
 
 
-If it work so we are cool. If it doesn't work, that's because you're missing PyQt5, You may have in your 
-OS but not installed, so let's install it: 
+If it work so we are cool. If it doesn't work, that's because you're missing PyQt5, You may have in your
+OS but not installed, so let's install it:
 sudo pip install pyqt5
 
 
 Ok at this point by running the command:
 python3 -m pyqtgraph.examples
 
-The tutorial should open istantaneusly. Then you can create the plot that you want. 
-
-
-
-
+The tutorial should open istantaneusly. Then you can create the plot that you want.
