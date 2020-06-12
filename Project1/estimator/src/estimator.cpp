@@ -110,6 +110,7 @@ int main(int argc, char** argv)
               yInit         ,
         thetaInit*M_PI/180  ;
 
+  // Robot parameters
   double wheelRadius, a;
   nh_loc.param("/simulation/robot_2_0/wheel_radius", wheelRadius, 0.05);
   nh_loc.param("/simulation/robot_2_0/a", a, 0.2);
@@ -120,9 +121,13 @@ int main(int argc, char** argv)
   jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
+ double encodersResolution;
+ nh_loc.param("/simulation/robot_2_0/encoders_resolution", encodersResolution, (double)1.0) ;
 
   // Filter parameters
-  KalmanFilter kalman(jointToCartesian);
+  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
+  const double sigmaTuning = sqrt(pow(encodersResolution + 1, 2)/12);
+  KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
 
   Eigen::Matrix3d A;
   Eigen::MatrixXd B(3,2);
@@ -158,22 +163,15 @@ int main(int argc, char** argv)
 	//	Create the world object
 	const World world(xSpacing, ySpacing, lineThickness);
 
-  // Encoder resolution
-  double encodersResolution;
-  nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
-  ROS_INFO_STREAM("Sensor 1 : " << x1 << ", " << y1 );
-  ROS_INFO_STREAM("Sensor 2 : " << x2 << ", " << y2 );
-  // Inizialize the vector
+
+  //ROS_INFO_STREAM("Sensor 1 : " << x1 << ", " << y1 );
+  //ROS_INFO_STREAM("Sensor 2 : " << x2 << ", " << y2 );
+
+  // Inizialize the sensors' vector
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
-  // double sigmaTuning = 0.1;
-  //
-  // double encodersResolution =
-  //
-  // // Initialize sigmaTuning and sigmaMeasurement
-  // sigmaInit( sigmaTuning, encodersResolution, 1 );
-  // sigmaInit( sigmaMeasurement, lineThickness, 0 );
+
 
   ros::Rate estimatorRate(150);
 

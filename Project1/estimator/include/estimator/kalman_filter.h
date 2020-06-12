@@ -32,9 +32,11 @@
 
 class KalmanFilter {
 public:
-  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian) : jointToCartesian(_jointToCartesian) {}
+  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning) :
+                  jointToCartesian(_jointToCartesian), sigmaMeasurement(_sigmaMeasurement),
+                  sigmaTuning(_sigmaTuning) {}
 
-  //  Initialize the P matrix using the Uncertainties on the robot posture
+  //  Initialize the P matrix using the uncertainties on the robot posture
   const Eigen::Matrix3d Pinit() ;
 
   //  Propagate the error
@@ -72,10 +74,10 @@ private:
   const double sigmaTheta { 3*M_PI/180 };
 
   //  Uncertainty on the measurement
-  const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
+  const double sigmaMeasurement;  //  Default 0.0 not a good idea
 
   //  Inversely proportional on how accurate the model is
-  const double sigmaTuning { 0.0 };  //  Default 0.0 not a good idea
+  const double sigmaTuning;  //  Default 0.0 not a good idea
 
   const Eigen::Matrix2d jointToCartesian;
 
@@ -142,16 +144,6 @@ void EvolutionModel(Eigen::Vector3d& X, const Eigen::Vector2d input)
   X(1) = X(1) + input(0)*sin(X(2));
   X(2) = X(2) + input(1);
 }
-
-//
-// void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit){
-//
-//   const double sigmaMeasurement = sqrt(pow(lineThickness + unit, 2)/12)
-//
-//   return sigmaMeasurement;
-// }
-
-
 
 
 
