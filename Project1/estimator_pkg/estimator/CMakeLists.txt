@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   simulation_messages
 	std_msgs
 	geometry_msgs
+	estimator_messages
 )
 
 

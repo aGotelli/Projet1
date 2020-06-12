@@ -33,8 +33,14 @@
 class KalmanFilter {
 public:
   KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning) :
-                  jointToCartesian(_jointToCartesian), sigmaMeasurement(_sigmaMeasurement),
-                  sigmaTuning(_sigmaTuning) {}
+                  jointToCartesian(_jointToCartesian),
+                  sigmaMeasurement(_sigmaMeasurement),
+                  sigmaTuning(_sigmaTuning)
+                  {
+                    ROS_INFO_STREAM("Qwheels : " << Qwheels );
+                    ROS_INFO_STREAM("Qbeta   : " << Qbeta );
+                    ROS_INFO_STREAM("Qgamma  : " << Qgamma );
+                  }
 
   //  Initialize the P matrix using the uncertainties on the robot posture
   const Eigen::Matrix3d Pinit() ;
@@ -49,7 +55,8 @@ public:
                                               // ROS_INFO_STREAM("Qbeta   : " << Qbeta );
                                               // ROS_INFO_STREAM("Primo   : " << A*P*A.transpose() );
                                               // ROS_INFO_STREAM("Secondo : " << B*Qbeta*B.transpose() );
-                                              P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ; }
+                                              P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ;
+                                            }
 
   //  Perform the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
@@ -63,7 +70,8 @@ public:
                                     Eigen::Matrix3d& P)
                                     {
                                       // ROS_INFO_STREAM("product : " << (C*P*C.transpose()).value() );
-                                      return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ; }
+                                      return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ;
+                                    }
 
 
 private:
@@ -111,10 +119,10 @@ const Eigen::Matrix3d KalmanFilter::Pinit()
 void KalmanFilter::Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov)
 {
 
-  Eigen::MatrixXd K = P * C.transpose() /( (C*P*C.transpose()).value() + Qgamma) ;
+  Eigen::MatrixXd K = ( P*C.transpose() )/( (C*P*C.transpose()).value() + Qgamma ) ;
   //  estimation phase
   X = X + K*innov ;
-  P = (Eigen::MatrixBase<Eigen::Matrix3d>::Identity() - K*C) * P ;
+  P = (Eigen::MatrixBase<Eigen::Matrix3d>::Identity() - K*C)*P ;
 }
 
 

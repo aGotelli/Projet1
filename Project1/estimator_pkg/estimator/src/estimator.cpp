@@ -25,6 +25,8 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseWithCovariance.h>
 
+#include "estimator_messages/Measurement.h"
+
 // Include here the ".h" files corresponding to the topic type you use.
 #include <math.h>
 
@@ -55,9 +57,10 @@ void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
 // Callback function for sensor reading
 RobotSensors robotSensors;
 std::vector<Measurement> measurements;
+
 // State vector
 Eigen::Vector3d X;
-void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
+void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 {
 
   //  Received sensrs status
@@ -77,7 +80,6 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 
   }
 
-  //ROS_INFO_STREAM("How many measurements ? " << measurements.size() );
 }
 
 
@@ -94,14 +96,23 @@ int main(int argc, char** argv)
   double threshold;
   nh_loc.param("threshold", threshold, 3.8415);
 
+  //  Global world parameters
+	double xSpacing, ySpacing, lineThickness;					// [m]
+	nh_loc.param("/simulation/sensor/x_spacing", xSpacing, 1.0) ;
+	nh_loc.param("/simulation/sensor/y_spacing", ySpacing, 1.0) ;
+	nh_loc.param("/simulation/sensor/line_thickness", lineThickness, 0.005) ;
 
+  ROS_INFO_STREAM("World parameters : " << xSpacing << ", " << ySpacing << ", " << lineThickness );
 
+	//	Create the world object
+	const World world(xSpacing, ySpacing, lineThickness);
 
   // Initial pose
   double xInit, yInit, thetaInit;
   nh_loc.param("/simulation/robot_2_0/x_init", xInit, 0.0);
   nh_loc.param("/simulation/robot_2_0/y_init", yInit, 0.0);
   nh_loc.param("/simulation/robot_2_0/theta_init", thetaInit, 0.0);
+
   ROS_INFO_STREAM("xInit : " << xInit << " yInit : "<< yInit << " thetaInit : " << thetaInit ) ;
 
 
@@ -121,14 +132,18 @@ int main(int argc, char** argv)
   jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
- double encodersResolution;
- nh_loc.param("/simulation/robot_2_0/encoders_resolution", encodersResolution, (double)1.0) ;
+  double encodersResolution;
+  nh_loc.param("/simulation/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
-  const double sigmaTuning = sqrt(pow(encodersResolution + 1, 2)/12);
+  const double sigmaTuning = 0.01;       // sqrt(pow(encodersResolution + 1, 2)/12);
+
+  //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
 
+
+  //  Declaration of the kalman filter matrices (better to have them here)
   Eigen::Matrix3d A;
   Eigen::MatrixXd B(3,2);
   Eigen::Matrix3d P = kalman.Pinit();
@@ -136,13 +151,12 @@ int main(int argc, char** argv)
 
   // Declare your node's subscriptions and service clients
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("simulation/EncodersReading", 1, EncoderReading);
-  // ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, boost::bind(IrSensorsReading, _1, X ));
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, IrSensorsReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, IRSensorsReading);
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("estimatedPosture", 1);
-
+  ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("Measurements", 1);
 
 
   // Initialize sensors
@@ -154,24 +168,11 @@ int main(int argc, char** argv)
   nh_loc.param("/simulation/sensor/x2_pos", x2, 0.0) ;
   nh_loc.param("/simulation/sensor/y2_pos", y2, 0.1) ;		// Second one on the left of the robot
 
-  //  Global world parameters
-	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_loc.param("/simulation/sensor/x_spacing", xSpacing, 0.5) ;
-	nh_loc.param("/simulation/sensor/y_spacing", ySpacing, 1.0) ;
-	nh_loc.param("/simulation/sensor/line_thickness", lineThickness, 0.005) ;
-
-	//	Create the world object
-	const World world(xSpacing, ySpacing, lineThickness);
-
-
-  //ROS_INFO_STREAM("Sensor 1 : " << x1 << ", " << y1 );
-  //ROS_INFO_STREAM("Sensor 2 : " << x2 << ", " << y2 );
-
-  // Inizialize the sensors' vector
+  // Inizialize the robot' sesnors
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
-
+  Eigen::Vector2d input;
 
   ros::Rate estimatorRate(150);
 
@@ -181,13 +182,14 @@ int main(int argc, char** argv)
 
     // Compute rotation
     Eigen::Vector2d rotation = currentReading - previousReading;
+    ROS_INFO_STREAM("rotation            : " << rotation*180/M_PI );
 
     // Compute input
-    Eigen::Vector2d input = jointToCartesian*rotation;
+    input = jointToCartesian*rotation;
 
     // Compute evolution model
     EvolutionModel(X, input); //  SURE UNTILL HERE, EVOLUTION MODEL WORKS JUST FINE (BUT NO LIMITATION IN THETA)
-    // ROS_INFO_STREAM("state vect : " << X );
+    ROS_INFO_STREAM("state vect in       : " << X );
 
     // Update matrix A and B
     UpdateMatrix(X, input, A, B); //  SURE ABOUT THE UPDATE
@@ -218,7 +220,7 @@ int main(int argc, char** argv)
 
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
-      } else {
+      } else {  //  In this case the line detected is "vertical"
 
         C << 1, 0, - measurement.activeSensor->RelativePosition().x*sin(X(2)) - measurement.activeSensor->RelativePosition().y*cos(X(2)) ;
 
@@ -238,8 +240,19 @@ int main(int argc, char** argv)
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
-        //kalman.Estimation(P, X, C, innov) ;
-        // ROS_INFO_STREAM("covariance matrix :" << P);
+        kalman.Estimation(P, X, C, innov) ;
+
+        ROS_INFO_STREAM("state vect ps       : " << X );
+
+        estimator_messages::Measurement accepted;
+        accepted.line_index.data = measurement.lineIndex;
+
+        if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
+          accepted.line_type.data = "HORIZONTAL" ;
+        else
+          accepted.line_type.data = "VERTICAL" ;
+
+        shareMeasurements.publish( accepted ) ;
 
 
       }
@@ -250,29 +263,16 @@ int main(int argc, char** argv)
       Mahalanobis.publish( currentDist );
 
       //  Publish estimated posture and standard deviations
-/*
-      geometry_msgs/Pose pose
-        geometry_msgs/Point position
-          float64 x
-          float64 y
-          float64 z
-        geometry_msgs/Quaternion orientation
-          float64 x
-          float64 y
-          float64 z
-          float64 w
-      float64[36] covariance
-*/
       geometry_msgs::PoseWithCovariance estimatedPosture;
+
       estimatedPosture.pose.position.x = X(0);
       estimatedPosture.pose.position.y = X(1);
 
       estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
 
-      // Eigen::MatrixXd zeros = Eigen::MatrixXd::Zero(6, 6);
-      // zeros.block<3,3>(0, 0) = P;
-      //
-      // estimatedPosture.covariance = utility::toCovariance( zeros );
+      estimatedPosture.covariance[6*0 + 0] = P(0, 0);
+      estimatedPosture.covariance[6*1 + 1] = P(1, 1);
+      estimatedPosture.covariance[6*5 + 5] = P(2, 2);
 
       estPosture.publish( estimatedPosture );
 
