@@ -1,4 +1,0 @@
-robot_2_0: {a: 0.2, actuator_max_speed: 10.0, b: 0.4, c: 0.1, encoders_resolution: 360,
-  theta_init: 0.0, wheel_1_error: 1.01, wheel_radius: 0.05, x_init: 0.25, y_init: 0.5}
-sensor: {line_thickness: 0.005, x1_pos: 0.0, x2_pos: 0.0, x_spacing: 0.5, y1_pos: -0.1,
-  y2_pos: 0.1, y_spacing: 1.0}
