@@ -1,0 +1,8 @@
+<launch>
+
+  <node pkg="plotting" type="plotting" name="plotting" args="$(find data)/processed_data/one_loop.bag">
+  </node>
+
+
+
+</launch>
