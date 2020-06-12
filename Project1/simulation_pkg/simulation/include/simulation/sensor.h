@@ -220,6 +220,7 @@ void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
           sin( X(2) ),  cos( X(2) ), X(1)  ,
                0     ,       0     ,  1    ;
 
+  ROS_INFO_STREAM("state vect : " << X );
 }
 
 const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
@@ -271,8 +272,8 @@ void Sensor::CheckStatus() const
   //  Update the sensor status using the knowledge of the computed distances.
   if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
       state = true;
-      ROS_INFO_STREAM("Sensor is at x : " << this->AbsolutePosition().x  << " y : " << this->AbsolutePosition().y );
-      ROS_INFO_STREAM("Distances    : " << this->ComputeDistances() );
+      // ROS_INFO_STREAM("Sensor is at x : " << this->AbsolutePosition().x  << " y : " << this->AbsolutePosition().y );
+      // ROS_INFO_STREAM("Distances    : " << this->ComputeDistances() );
   } else {
       state = false;
   }
@@ -337,10 +338,11 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   const double minimum = overLine.cwiseAbs().minCoeff();
 
   const Eigen::VectorXd ratio = overLine.cwiseAbs()/overLine.cwiseAbs().minCoeff();
-
-
+  ROS_INFO_STREAM("sensor pos : " << oTm*HCoord );
+  ROS_INFO_STREAM("distances  : " << overLine );
+  ROS_INFO_STREAM("ratio      : " << ratio );
   //  Check if the distance from the line on the left is less then the half of line thickness
-  if( ratio[0] <= 5 ) {  //  Left line detected
+  if( ratio[0] <= 2 ) {  //  Left line detected
     measurements.push_back( Measurement(-worldLines(2, 0),
                                         utility::LINETYPE::VERTICAL, this ) );
     ROS_INFO_STREAM(" Left line ");
@@ -348,7 +350,7 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   }
 
   //  Check if the distance from the line on the right is less then the half of line thickness
-  if( ratio[1] <= 5 ) {  //  Right line detected
+  if( ratio[1] <= 2 ) {  //  Right line detected
     measurements.push_back( Measurement(-worldLines(2, 1),
                                         utility::LINETYPE::VERTICAL, this ) );
     ROS_INFO_STREAM(" Right line ");
@@ -356,7 +358,7 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   }
 
   //  Check if the distance from the line under the sensor is less then the half of line thickness
-  if( ratio[2] <= 5 ) {  //  Bottom line detected
+  if( ratio[2] <= 2 ) {  //  Bottom line detected
     measurements.push_back( Measurement(-worldLines(2, 2),
                                         utility::LINETYPE::HORIZONTAL, this ) );
     ROS_INFO_STREAM(" Bottom line ");
@@ -364,7 +366,7 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   }
 
   //  Check if the distance from the line above the sensor is less then the half of line thickness
-  if( ratio[3] <= 5 ) {  //  Upper line detected
+  if( ratio[3] <= 2 ) {  //  Upper line detected
     measurements.push_back( Measurement(-worldLines(2, 3),
                                         utility::LINETYPE::HORIZONTAL, this ) );
     ROS_INFO_STREAM(" Upper line ");

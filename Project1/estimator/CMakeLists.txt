@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   simulation_messages
 	std_msgs
+	geometry_msgs
 )
 
 

@@ -52,7 +52,7 @@ public:
   //  Perform the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
 
-  // Initialize sigmaTuning and sigmaMeasurement as variances 
+  // Initialize sigmaTuning and sigmaMeasurement as variances
   void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit);
 
   //  Compute the Mahalanobis distance given the current covariace matrix
@@ -143,13 +143,13 @@ void EvolutionModel(Eigen::Vector3d& X, const Eigen::Vector2d input)
   X(2) = X(2) + input(1);
 }
 
-
-void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit){
-
-  const double sigmaMeasurement = sqrt(pow(lineThickness + unit, 2)/12)
-
-  return sigmaMeasurement;
-}
+//
+// void sigmaInit(const double sigmaMeasurement, const double lineThickness, const double unit){
+//
+//   const double sigmaMeasurement = sqrt(pow(lineThickness + unit, 2)/12)
+//
+//   return sigmaMeasurement;
+// }
 
 
 

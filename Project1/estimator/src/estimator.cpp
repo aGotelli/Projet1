@@ -63,17 +63,17 @@ void IrSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
   //  Received sensrs status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
-    robotSensors.sens1().getMeasurement( measurements ) ;
-    // measurements.push_back( robotSensors.sens1().getMeasurement() );
-    //  ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
+    // robotSensors.sens1().getMeasurement( measurements ) ;
+    measurements.push_back( robotSensors.sens1().getMeasurement() );
+    ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
 
   }
 
   if( state->sens2 ) {
     robotSensors.sens2().UpdateTransform( X );
-    robotSensors.sens2().getMeasurement( measurements );
-    // measurements.push_back( robotSensors.sens2().getMeasurement() );
-    //  ROS_INFO_STREAM( "measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
+    // robotSensors.sens2().getMeasurement( measurements );
+    measurements.push_back( robotSensors.sens2().getMeasurement() );
+     // ROS_INFO_STREAM( "measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
 
   }
 
@@ -94,44 +94,16 @@ int main(int argc, char** argv)
   double threshold;
   nh_loc.param("threshold", threshold, 3.8415);
 
-/*
-
-/ground_generator/line_thickness
-/ground_generator/x_spacing
-/ground_generator/y_spacing
-
-/simulation/robot_2_0/a
-/simulation/robot_2_0/actuator_max_speed
-/simulation/robot_2_0/b
-/simulation/robot_2_0/c
-/simulation/robot_2_0/encoders_resolution
-/simulation/robot_2_0/theta_init
-/simulation/robot_2_0/wheel_radius
-/simulation/robot_2_0/x_init
-/simulation/robot_2_0/y_init
-/simulation/sensor/line_thickness
-/simulation/sensor/x1_pos
-/simulation/sensor/x2_pos
-/simulation/sensor/x_spacing
-/simulation/sensor/y1_pos
-/simulation/sensor/y2_pos
-/simulation/sensor/y_spacing
-
-
-
-
-
-
-
-*/
 
 
 
   // Initial pose
   double xInit, yInit, thetaInit;
-  nh_loc.param("/simulation/robot_2_0/x_init", xInit, 0.25);
-  nh_loc.param("/simulation/robot_2_0/y_init", yInit, 0.5);
+  nh_loc.param("/simulation/robot_2_0/x_init", xInit, 0.0);
+  nh_loc.param("/simulation/robot_2_0/y_init", yInit, 0.0);
   nh_loc.param("/simulation/robot_2_0/theta_init", thetaInit, 0.0);
+  ROS_INFO_STREAM("xInit : " << xInit << " yInit : "<< yInit << " thetaInit : " << thetaInit ) ;
+
 
   // State vector
   X <<        xInit         ,
@@ -189,14 +161,19 @@ int main(int argc, char** argv)
   // Encoder resolution
   double encodersResolution;
   nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
-
+  ROS_INFO_STREAM("Sensor 1 : " << x1 << ", " << y1 );
+  ROS_INFO_STREAM("Sensor 2 : " << x2 << ", " << y2 );
   // Inizialize the vector
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
-  // Initialize sigmaTuning and sigmaMeasurement
-  sigmaInit( sigmaTuning, encodersResolution, 1 );
-  sigmaInit( sigmaMeasurement, lineThickness, 0 );
+  // double sigmaTuning = 0.1;
+  //
+  // double encodersResolution =
+  //
+  // // Initialize sigmaTuning and sigmaMeasurement
+  // sigmaInit( sigmaTuning, encodersResolution, 1 );
+  // sigmaInit( sigmaMeasurement, lineThickness, 0 );
 
   ros::Rate estimatorRate(150);
 
@@ -212,7 +189,7 @@ int main(int argc, char** argv)
 
     // Compute evolution model
     EvolutionModel(X, input); //  SURE UNTILL HERE, EVOLUTION MODEL WORKS JUST FINE (BUT NO LIMITATION IN THETA)
-
+    // ROS_INFO_STREAM("state vect : " << X );
 
     // Update matrix A and B
     UpdateMatrix(X, input, A, B); //  SURE ABOUT THE UPDATE
@@ -263,7 +240,7 @@ int main(int argc, char** argv)
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
-        kalman.Estimation(P, X, C, innov) ;
+        //kalman.Estimation(P, X, C, innov) ;
         // ROS_INFO_STREAM("covariance matrix :" << P);
 
 
@@ -291,18 +268,14 @@ int main(int argc, char** argv)
       geometry_msgs::PoseWithCovariance estimatedPosture;
       estimatedPosture.pose.position.x = X(0);
       estimatedPosture.pose.position.y = X(1);
-<<<<<<< HEAD
-      estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>( X(2) );
 
-      // estimatedPosture.covariance.data[0] = sqrt(P(0,0));
-      // estimatedPosture.covariance[1].data = sqrt(P(1,1));
-      // estimatedPosture.covariance[2].data = sqrt(P(2,2));
-=======
-      estimatedPosture.pose.orientation = utility::ToQuaternion(X(2));
-      estimatedPosture.covariance.data.push_back( sqrt(P(0,0)) );
-      estimatedPosture.covariance.data.push_back( sqrt(P(1,1)) );
-      estimatedPosture.covariance.data.push_back( sqrt(P(2,2)) );
->>>>>>> e84cc05951ea0e132041f3fef3fd690f588e9c94
+      estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
+
+      // Eigen::MatrixXd zeros = Eigen::MatrixXd::Zero(6, 6);
+      // zeros.block<3,3>(0, 0) = P;
+      //
+      // estimatedPosture.covariance = utility::toCovariance( zeros );
+
       estPosture.publish( estimatedPosture );
 
 
