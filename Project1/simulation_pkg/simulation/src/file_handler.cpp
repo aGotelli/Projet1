@@ -182,6 +182,9 @@ int main (int argc, char** argv)
   std::string topisToSave;
   nh_loc.param<std::string>("topics_to_save", topisToSave, "");
 
+  if( topisToSave.empty() )
+    ROS_WARN_STREAM("YOU ARE NOT RECORDING ANY TOPICS");
+
   //  The node must be provided with two args
   if( argc <  3 ) {
     ROS_ERROR_STREAM(ros::this_node::getName() << " Not enought input arguments! You must provide the folder path and the file names ");
@@ -232,24 +235,6 @@ int main (int argc, char** argv)
   if( group == "/" )
     group = "";
 
-  //  Get the first character to ensure a correct format
-  char first = topisToSave.at(0);
-
-  //  Ensure a correct format
-  if( first != 32 ) //  32 is the integer value for " "
-      topisToSave.insert(0, " ");
-
-  //  Start from the beginning
-  std::size_t pos = 0;
-
-  while( pos < topisToSave.size() ) {
-    //  Insert the correct suffix
-    topisToSave.insert( pos + 1, (group + "/") );
-
-    //  Find new position
-    pos = topisToSave.find( " ", pos + group.size() );
-  } //  Exiting this loop with correctly formatted topics names and beginning with a space
-
 
   //  Save all the parameters ( if required )
   if( saveParams ) {
@@ -258,11 +243,34 @@ int main (int argc, char** argv)
     system( const_cast<char*>( rosparamCommand.c_str() ) );
   }
 
+  //  Record the topics (if any)
+  if( !topisToSave.empty() ) {
 
-  //  Record all the messages
-  const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag" + topisToSave ;
-  ROS_INFO_STREAM(rosbagCommand);
-  system( const_cast<char*>( rosbagCommand.c_str() ) );
+    //  Get the first character to ensure a correct format
+    char first = topisToSave.at(0);
+
+    //  Ensure a correct format
+    if( first != 32 ) //  32 is the integer value for " "
+        topisToSave.insert(0, " ");
+
+    //  Start from the beginning
+    std::size_t pos = 0;
+
+    while( pos < topisToSave.size() ) {
+      //  Insert the correct suffix
+      topisToSave.insert( pos + 1, (group + "/") );
+
+      //  Find new position
+      pos = topisToSave.find( " ", pos + group.size() );
+    } //  Exiting this loop with correctly formatted topics names and beginning with a space
+
+    //  Record all the messages
+    const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag" + topisToSave ;
+    ROS_INFO_STREAM(rosbagCommand);
+    system( const_cast<char*>( rosbagCommand.c_str() ) );
+
+
+  }
 
   return 0;
 
