@@ -82,10 +82,10 @@ private:
   const double sigmaTheta { 3*M_PI/180 };
 
   //  Uncertainty on the measurement
-  const double sigmaMeasurement;  //  Default 0.0 not a good idea
+  const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
 
   //  Inversely proportional on how accurate the model is
-  const double sigmaTuning;  //  Default 0.0 not a good idea
+  const double sigmaTuning { 0.0 };  //  Default 0.0 not a good idea
 
   const Eigen::Matrix2d jointToCartesian;
 
