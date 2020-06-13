@@ -18,6 +18,8 @@ if __name__ == '__main__':
 
     rospy.init_node('plotting')
 
+#################################~  COLLECTING DATA ~###################################
+
     #   Load from yaml file the parameters
     with file( sys.argv[1] + '.yaml' ) as setting:
         parameters = yaml.load( setting )
@@ -79,54 +81,16 @@ if __name__ == '__main__':
 
     #   Obtain the Mahalanobis distances
     mh_dist = []
-    time = []
+    time_dist = []
     for topic, dist, t in bag.read_messages(topics=['/Mahalanobis']):
         mh_dist.append( dist.data )
-        time.append( t.to_sec() )
-
-    #   Normalize the second counter
-    time = np.asarray(time)
-    time = time - time[0]
+        time_dist.append( t.to_sec() )
 
 
     #   No need of the bag file anymore
     bag.close()
 
-    #   Start the console
-    app = QtGui.QApplication([])
-
-    #   Create a window
-    win = pg.GraphicsWindow(title="Trajectories, measurements and distances")
-    win.resize(1000,600)
-    win.setWindowTitle('Trajectories, measurements and distances')
-
-    #   Enable antialiasing for prettier plots
-    pg.setConfigOptions(antialias=True)
-
-    #   Create the first window with paths, distances and errors
-    p1 = win.addPlot(title="Trajectories")
-
-    #   Create first plot containing the trajectories of robot, odometry
-    #   and estimator
-    p1.addLegend()
-    p1.plot(x_real, y_real, pen=(255,0,0), name="Real path")
-    p1.plot(x_odom, y_odom, pen=(0,255,0), name="Odometry path")
-    p1.plot(x_estm, y_estm, pen=(0,0,255), name="Estimated path")
-    p1.plot(x_m, y_m, pen=None, symbol='o')
-    p1.setLabel('left', "Y Axis", units='m')
-    p1.setLabel('bottom', "X Axis", units='m')
-    p1.showGrid(x=True, y=True)
-
-    #   Create a second plot with the Mahalanobis distances
-    p2 = win.addPlot(title="Mahalanobis distances")
-    p2.plot([time[0], time[-1]], [threshold, threshold], pen=(255,0,0), name="Threshold")
-    p2.plot(time, mh_dist, pen=None, symbol='o', name="Mahalanobis distance")
-    p2.setLabel('left', "x", units='undimensional distances')
-    p2.setLabel('bottom', "time", units='s')
-
-
-
-
+#################################~  PREPOCESS DATA ~###################################
 
     #   Skip motionless initial part if any
     nbSamples = len( np.asarray( x_real ) )
@@ -152,9 +116,12 @@ if __name__ == '__main__':
     del sim_time[stopIndex: -1]
     del theta_real[stopIndex: -1]
 
-    #   Normalize the second counter
+    #   Normalize the seconds counters
     sim_time = np.asarray(sim_time)
     sim_time = sim_time - sim_time[0]
+
+    time_dist = np.asarray(time_dist)
+    time_dist = time_dist - time_dist[0]
 
 
 
@@ -189,11 +156,49 @@ if __name__ == '__main__':
     y_err = np.asarray( y_real ) - np.asarray( y_estm )
     theta_err = np.asarray( theta_real ) - np.asarray( theta_estim )
 
-    #   Create a window
+
+#################################~  PLOTTING DATA ~###################################
+
+    #   Start the console
+    app = QtGui.QApplication([])
+
+    #   Create the first window with paths and distances
+    win1 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
+    win1.resize(1000,600)
+    win1.setWindowTitle('Trajectories, measurements and distances')
+
+    #   Enable antialiasing for prettier plots
+    pg.setConfigOptions(antialias=True)
+
+    #   Create first plot containing the trajectories of robot, odometry
+    #   and estimator
+    p1 = win1.addPlot(title="Trajectories")
+    p1.addLegend()
+    p1.plot(x_real, y_real, pen=(255,0,0), name="Real path")
+    p1.plot(x_odom, y_odom, pen=(0,255,0), name="Odometry path")
+    p1.plot(x_estm, y_estm, pen=(0,0,255), name="Estimated path")
+    p1.plot(x_m, y_m, pen=None, symbol='o')
+    p1.setLabel('left', "Y Axis", units='m')
+    p1.setLabel('bottom', "X Axis", units='m')
+    p1.showGrid(x=True, y=True)
+
+    #   Create a second plot with the Mahalanobis distances
+    p2 = win1.addPlot(title="Mahalanobis distances")
+    p2.plot([time_dist[0], time_dist[-1]], [threshold, threshold], pen=(255,0,0), name="Threshold")
+    p2.plot(time_dist, mh_dist, pen=None, symbol='o', name="Mahalanobis distance")
+    p2.setLabel('left', "x", units='undimensional distances')
+    p2.setLabel('bottom', "time", units='s')
+
+
+
+
+
+
+
+    #   Create the second window with the errors
     win2 = pg.GraphicsWindow(title="Errors along x, y and in heading")
     win2.resize(1000,600)
     win2.setWindowTitle('Errors along x, y and in heading')
-
 
 
     p3 = win2.addPlot(title="Error in x")
