@@ -1,24 +1,25 @@
 <launch>
-
+  <arg name="save_as"           value="sigmaTuning0_05" />
   <arg name="file_name"         value="one_loop" />
   <arg name="take_from_folder"  value="recorded_data"   />
   <arg name="save_into_folder"  value="processed_data"  />
 
   <rosparam command="load" file="$(find data)/$(arg take_from_folder)/$(arg file_name).yaml" />
 
-  <node pkg="rosbag" type="play" name="playback_simulation" output="screen" args="--delay=2 $(find data)/$(arg take_from_folder)/$(arg file_name).bag">
+  <node pkg="rosbag" type="play" name="playback_simulation" args="--delay=2 $(find data)/$(arg take_from_folder)/$(arg file_name).bag" required="true">
     <remap from="/simulation/RobotPosture"    to="/RobotPosture" />
     <remap from="/simulation/EncodersReading" to="/EncodersReading" />
     <remap from="/simulation/IRSensorsStatus" to="/IRSensorsStatus" />
     <remap from="/simulation/RobotOdometry"   to="/RobotOdometry" />
   </node>
 
-  <node pkg="estimator" type="estimator_estimator" name="estimator">
+  <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
+    <param name="threshold"     value="3.8415" />
+    <param name="sigma_tuning"     value="0.05" />
   </node>
 
   <!-- The node to save all the needed data -->
-  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg file_name)" output="screen"  >
-    <param name="save_params"     value="false" />
+  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg save_as)" output="screen"  >
     <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Measurements RobotPosture RobotOdometry"      />
   </node>
 

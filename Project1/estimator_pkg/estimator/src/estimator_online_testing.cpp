@@ -68,6 +68,7 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
     robotSensors.sens1().UpdateTransform( X );
     // robotSensors.sens1().getMeasurement( measurements ) ;
     measurements.push_back( robotSensors.sens1().getMeasurement() );
+    ROS_INFO_STREAM( "measurement 1 : " << robotSensors.sens1().getMeasurement().lineIndex << " " <<  robotSensors.sens1().getMeasurement().lineType );
 
   }
 
@@ -75,6 +76,7 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
     robotSensors.sens2().UpdateTransform( X );
     // robotSensors.sens2().getMeasurement( measurements );
     measurements.push_back( robotSensors.sens2().getMeasurement() );
+     // ROS_INFO_STREAM( "measurement 2 : " << robotSensors.sens2().getMeasurement().lineIndex << " " <<  robotSensors.sens2().getMeasurement().lineType );
 
   }
 
@@ -92,14 +94,13 @@ int main(int argc, char** argv)
   //  chi2inv(0.95,2) = 5.9915
   //  chi2inv(0.95,1) = 3.8415
   double threshold;
-  nh_loc.param("threshold", threshold, 0.0 );
-  //  Forgetting to set the threshold is a big mistake, the penality is regetting all the measurements
+  nh_loc.param("threshold", threshold, 3.8415);
 
   //  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_glob.param("/sensor/x_spacing", xSpacing, 1.0) ;
-	nh_glob.param("/sensor/y_spacing", ySpacing, 1.0) ;
-	nh_glob.param("/sensor/line_thickness", lineThickness, 0.005) ;
+	nh_loc.param("/simulation/sensor/x_spacing", xSpacing, 1.0) ;
+	nh_loc.param("/simulation/sensor/y_spacing", ySpacing, 1.0) ;
+	nh_loc.param("/simulation/sensor/line_thickness", lineThickness, 0.005) ;
 
   ROS_INFO_STREAM("World parameters : " << xSpacing << ", " << ySpacing << ", " << lineThickness );
 
@@ -108,9 +109,9 @@ int main(int argc, char** argv)
 
   // Initial pose
   double xInit, yInit, thetaInit;
-  nh_glob.param("/robot_2_0/x_init", xInit, 0.0);
-  nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
-  nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
+  nh_loc.param("/simulation/robot_2_0/x_init", xInit, 0.0);
+  nh_loc.param("/simulation/robot_2_0/y_init", yInit, 0.0);
+  nh_loc.param("/simulation/robot_2_0/theta_init", thetaInit, 0.0);
 
   ROS_INFO_STREAM("xInit : " << xInit << " yInit : "<< yInit << " thetaInit : " << thetaInit ) ;
 
@@ -120,11 +121,27 @@ int main(int argc, char** argv)
               yInit         ,
         thetaInit*M_PI/180  ;
 
+//===================================== TEMP =====================================================
+  visualization_msgs::Marker robotMarker;
+
+  utility::InitMarker(robotMarker);
+
+  geometry_msgs::Pose robotPosture;
+
+  robotPosture.position.x = X(0);
+  robotPosture.position.y = X(1);
+
+  robotPosture.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>( X(2) );
+
+  utility::UpdateMarker(robotPosture, robotMarker );
+
+
+//=================================================================================================
 
   // Robot parameters
   double wheelRadius, a;
-  nh_glob.param("/robot_2_0/wheel_radius", wheelRadius, 0.05);
-  nh_glob.param("/robot_2_0/a", a, 0.2);
+  nh_loc.param("/simulation/robot_2_0/wheel_radius", wheelRadius, 0.05);
+  nh_loc.param("/simulation/robot_2_0/a", a, 0.2);
 
   double trackGauge = 2*a;
 
@@ -133,13 +150,11 @@ int main(int argc, char** argv)
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
   double encodersResolution;
-  nh_glob.param("/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
+  nh_loc.param("/simulation/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
-
-  double sigmaTuning;
-  nh_glob.param("sigma_tuning", sigmaTuning, 0.0);
+  const double sigmaTuning = 0.1 ;   // sqrt(pow(encodersResolution + 1, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -152,23 +167,24 @@ int main(int argc, char** argv)
   ROS_INFO_STREAM("covariance matrix :" << P);
 
   // Declare your node's subscriptions and service clients
-  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
+  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("simulation/EncodersReading", 1, EncoderReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("simulation/IRSensorsStatus", 1, IRSensorsReading);
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
+  ros::Publisher RobotMarker = nh_glob.advertise<visualization_msgs::Marker>("/estimator_output", 1);
 
 
   // Initialize sensors
   double x1, y1;
-  nh_glob.param("/sensor/x1_pos", x1, 0.0) ;
-  nh_glob.param("/sensor/y1_pos", y1, -0.1) ;	// First one on the right of the robot
+  nh_loc.param("/simulation/sensor/x1_pos", x1, 0.0) ;
+  nh_loc.param("/simulation/sensor/y1_pos", y1, -0.1) ;	// First one on the right of the robot
 
   double x2, y2;
-  nh_glob.param("/sensor/x2_pos", x2, 0.0) ;
-  nh_glob.param("/sensor/y2_pos", y2, 0.1) ;		// Second one on the left of the robot
+  nh_loc.param("/simulation/sensor/x2_pos", x2, 0.0) ;
+  nh_loc.param("/simulation/sensor/y2_pos", y2, 0.1) ;		// Second one on the left of the robot
 
   // Inizialize the robot' sesnors
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
@@ -184,23 +200,35 @@ int main(int argc, char** argv)
 
     // Compute rotation
     Eigen::Vector2d rotation = currentReading - previousReading;
+    ROS_INFO_STREAM("rotation            : " << rotation*180/M_PI );
 
     // Compute input
     input = jointToCartesian*rotation;
 
     // Compute evolution model
-    EvolutionModel(X, input);
+    EvolutionModel(X, input); //  SURE UNTILL HERE, EVOLUTION MODEL WORKS JUST FINE (BUT NO LIMITATION IN THETA)
+    ROS_INFO_STREAM("state vect in       : " << X );
 
+    //===================================== TEMP ====================================================
+
+      robotPosture.position.x = X(0);
+      robotPosture.position.y = X(1);
+
+      robotPosture.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>( X(2) );
+
+      utility::UpdateMarker(robotPosture, robotMarker );
+
+    //=================================================================================================
 
     // Update matrix A and B
-    UpdateMatrix(X, input, A, B);
+    UpdateMatrix(X, input, A, B); //  SURE ABOUT THE UPDATE
 
 
     // Update propagation error matrix
-    kalman.Propagation(P, A, B);
+    kalman.Propagation(P, A, B);  //  PROPAGATIONS WORKS FINE (sigmatuning = 0.0)
 
     // Check for any measurements
-    for(const auto& measurement : measurements ) {
+    for(const auto& measurement : measurements ) {  //  SURE ABOUT THE MEASUREMENTS, THE FUNCTION RETURNS MEANINGFULL DATA
 
       double dMaha;
       Eigen::MatrixXd C(1, 3);
@@ -213,6 +241,10 @@ int main(int argc, char** argv)
         const double Y = measurement.activeSensor->AbsolutePosition().y;
         const double Yhat = measurement.lineIndex;
 
+        // ROS_INFO_STREAM("HORIZONTAL ");
+        // ROS_INFO_STREAM(" Y    = " << Y );
+        // ROS_INFO_STREAM(" Yhat = " << Yhat );
+
         innov = Y - Yhat ;
 
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
@@ -224,34 +256,34 @@ int main(int argc, char** argv)
         const double Y =  measurement.activeSensor->AbsolutePosition().x;
         const double Yhat = measurement.lineIndex ;
 
+        // ROS_INFO_STREAM("VERTICAL ");
+        // ROS_INFO_STREAM(" Y    = " << Y );
+        // ROS_INFO_STREAM(" Yhat = " << Yhat );
+
         innov =  Y - Yhat ;
 
         dMaha = kalman.ComputeMahalanobis( innov, C, P );
 
       }
-
+      // ROS_INFO_STREAM("dMaha : " << dMaha);
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
 
-        //  Create a message to publish the current measurement
-        estimator_messages::Measurement accepted;
+        ROS_INFO_STREAM("state vect ps       : " << X );
 
-        //  Indicate the index of the line
+        estimator_messages::Measurement accepted;
         accepted.line_index.data = measurement.lineIndex;
 
-        //  Include the position
         accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
         accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
 
-        //  Filtering based on the type
         if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
           accepted.line_type.data = "HORIZONTAL" ;
         else
           accepted.line_type.data = "VERTICAL" ;
 
-        //  Than publish the newly measurement
         shareMeasurements.publish( accepted ) ;
 
 
@@ -262,32 +294,28 @@ int main(int argc, char** argv)
       currentDist.data = dMaha;
       Mahalanobis.publish( currentDist );
 
+      //  Publish estimated posture and standard deviations
+      geometry_msgs::PoseWithCovariance estimatedPosture;
+
+      estimatedPosture.pose.position.x = X(0);
+      estimatedPosture.pose.position.y = X(1);
+
+      estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
+
+      estimatedPosture.covariance[6*0 + 0] = P(0, 0);
+      estimatedPosture.covariance[6*1 + 1] = P(1, 1);
+      estimatedPosture.covariance[6*5 + 5] = P(2, 2);
+
+      estPosture.publish( estimatedPosture );
+
+
     }
-    //  Publish estimated posture and standard deviations
-    geometry_msgs::PoseWithCovariance estimatedPosture;
 
-    //  Initialize the position
-    estimatedPosture.pose.position.x = X(0);
-    estimatedPosture.pose.position.y = X(1);
+    RobotMarker.publish( robotMarker );
 
-    //  Initialize orientation
-    estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
-
-    //  Define the covariance
-    estimatedPosture.covariance[6*0 + 0] = P(0, 0);
-    estimatedPosture.covariance[6*1 + 1] = P(1, 1);
-    estimatedPosture.covariance[6*5 + 5] = P(2, 2);
-
-    //  Publish the message
-    estPosture.publish( estimatedPosture );
-
-    //  Update before next iteration
     previousReading = currentReading ;
-
-    //  Clear measurements for not repeating
     measurements.clear();
 
-    //  Wait remaining time
     estimatorRate.sleep();
   }
 
