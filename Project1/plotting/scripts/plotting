@@ -313,12 +313,12 @@ if __name__ == '__main__':
     win4.setWindowTitle('Velocities')
 
     p12 = win4.addPlot(title="Linear Velocity")
-    p12.plot(sim_time, linear, pen=(255,0,0), name="linear vel")
+    p12.plot( linear, pen=(255,0,0), name="linear vel")
     p12.setLabel('left', "linear vel")
     p12.setLabel('bottom', "time", units='s')
 
     p13 = win4.addPlot(title="Angular Velocity")
-    p13.plot(sim_time, angular, pen=(255,0,0), name="angular vel")
+    p13.plot( angular, pen=(255,0,0), name="angular vel")
     p13.setLabel('left', "angular vel")
     p13.setLabel('bottom', "time", units='s')
 
