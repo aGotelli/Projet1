@@ -220,7 +220,6 @@ void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
           sin( X(2) ),  cos( X(2) ), X(1)  ,
                0     ,       0     ,  1    ;
 
-  ROS_INFO_STREAM("state vect : " << X );
 }
 
 const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
@@ -272,8 +271,6 @@ void Sensor::CheckStatus() const
   //  Update the sensor status using the knowledge of the computed distances.
   if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
       state = true;
-      // ROS_INFO_STREAM("Sensor is at x : " << this->AbsolutePosition().x  << " y : " << this->AbsolutePosition().y );
-      // ROS_INFO_STREAM("Distances    : " << this->ComputeDistances() );
   } else {
       state = false;
   }
