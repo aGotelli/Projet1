@@ -1,5 +1,5 @@
 <launch>
-  <arg name="save_as"           value="sigmaTuning0_05" />
+  <arg name="save_as"           value="sigmaTuning0_005_150hz" />
   <arg name="file_name"         value="one_loop" />
   <arg name="take_from_folder"  value="recorded_data"   />
   <arg name="save_into_folder"  value="processed_data"  />
@@ -15,7 +15,7 @@
 
   <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
     <param name="threshold"     value="3.8415" />
-    <param name="sigma_tuning"     value="0.05" />
+    <param name="sigma_tuning"     value="0.005" />
   </node>
 
   <!-- The node to save all the needed data -->
