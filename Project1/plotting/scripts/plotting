@@ -152,6 +152,12 @@ if __name__ == '__main__':
 
 
 
+    #del x_estm[-1]
+    #del y_estm[-1]
+    #del theta_estim[-1]
+
+
+
     x_err = np.asarray( x_real ) - np.asarray( x_estm )
     y_err = np.asarray( y_real ) - np.asarray( y_estm )
     theta_err = np.asarray( theta_real ) - np.asarray( theta_estim )
