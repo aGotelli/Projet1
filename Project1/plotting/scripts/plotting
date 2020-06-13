@@ -296,10 +296,14 @@ if __name__ == '__main__':
     p9.setLabel('left', "sigma x")
     p9.setLabel('bottom', "time", units='s')
 
+    win3.nextRow()
+
     p10 = win3.addPlot(title="Standard deviation of y")
     p10.plot(sim_time, cov_y, pen=(255,0,0), name="sigma Y")
     p10.setLabel('left', "sigma y")
     p10.setLabel('bottom', "time", units='s')
+
+    win3.nextRow()
 
     p11 = win3.addPlot(title="Standard deviation of theta")
     p11.plot(sim_time, cov_theta, pen=(255,0,0), name="sigma Theta")
@@ -316,6 +320,8 @@ if __name__ == '__main__':
     p12.plot( linear, pen=(255,0,0), name="linear vel")
     p12.setLabel('left', "linear vel")
     p12.setLabel('bottom', "time", units='s')
+
+    win4.nextRow()
 
     p13 = win4.addPlot(title="Angular Velocity")
     p13.plot( angular, pen=(255,0,0), name="angular vel")
