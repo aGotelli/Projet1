@@ -139,7 +139,7 @@ int main(int argc, char** argv)
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
 
   double sigmaTuning;
-  nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
+  nh_glob.param("sigma_tuning", sigmaTuning, 0.0);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
   // Declare your node's subscriptions and service clients
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 10, IRSensorsReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
 
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
