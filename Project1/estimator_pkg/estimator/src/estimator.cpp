@@ -24,6 +24,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseWithCovariance.h>
+#include <geometry_msgs/Twist.h>
 
 #include "estimator_messages/Measurement.h"
 
@@ -159,6 +160,7 @@ int main(int argc, char** argv)
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
+  ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/Velocities", 1);
 
 
   // Initialize sensors
@@ -280,6 +282,12 @@ int main(int argc, char** argv)
 
     //  Publish the message
     estPosture.publish( estimatedPosture );
+
+    //  Publish velocities
+    geometry_msgs::Twist vel;
+    vel.linear.x = input[0];
+    vel.angular.z = input[1];
+    pubInput.publish( vel );
 
     //  Update before next iteration
     previousReading = currentReading ;

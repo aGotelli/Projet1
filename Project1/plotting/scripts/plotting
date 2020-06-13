@@ -58,10 +58,13 @@ if __name__ == '__main__':
         x_odom.append( odom.pose.pose.position.x )
         y_odom.append( odom.pose.pose.position.y )
 
-    #   Obain the path that the estimator has computed
+    #   Obtain the path that the estimator has computed
     x_estm = []
     y_estm = []
     theta_estim = []
+    cov_x = []
+    cov_y = []
+    cov_theta = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
         x_estm.append( estm.pose.position.x )
         y_estm.append( estm.pose.position.y )
@@ -69,6 +72,9 @@ if __name__ == '__main__':
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
         theta_estim.append( yaw )
+        cov_x.append( estm.covariance[6*0 + 0] )
+        cov_y.append( estm.covariance[6*1 + 1] )
+        cov_theta.append( estm.covariance[6*5 + 5] )
 
 
 
@@ -85,6 +91,13 @@ if __name__ == '__main__':
     for topic, dist, t in bag.read_messages(topics=['/Mahalanobis']):
         mh_dist.append( dist.data )
         time_dist.append( t.to_sec() )
+
+ #   Obtain the input velocities
+    linear = []
+    angular = []
+    for topic, vel, t in bag.read_messages(topics=['/Velocities']):
+        linear.append( vel.linear.x )
+        angular.append( vel.angular.z )
 
 
     #   No need of the bag file anymore
@@ -146,9 +159,16 @@ if __name__ == '__main__':
     del x_estm[0: startIndex]
     del y_estm[0: startIndex]
     del theta_estim[0: startIndex]
+    del cov_x[0: startIndex]
+    del cov_y[0: startIndex]
+    del cov_theta[0: startIndex]
     del x_estm[stopIndex: -1]
     del y_estm[stopIndex: -1]
     del theta_estim[stopIndex: -1]
+    del cov_x[stopIndex: -1]
+    del cov_y[stopIndex: -1]
+    del cov_theta[stopIndex: -1]
+
 
 
 
@@ -265,6 +285,42 @@ if __name__ == '__main__':
     p8.sigXRangeChanged.connect(updateRegion)
     updatePlot()
 
+
+    #  Create the third window with standard deviations
+    win3 = pg.GraphicsWindow(title="Standard deviations of x, y and theta")
+    win3.resize(1000,600)
+    win3.setWindowTitle('Standard deviations of x, y and theta')
+
+    p9 = win3.addPlot(title="Standard deviation of x")
+    p9.plot(sim_time, cov_x, pen=(255,0,0), name="sigma X")
+    p9.setLabel('left', "sigma x")
+    p9.setLabel('bottom', "time", units='s')
+
+    p10 = win3.addPlot(title="Standard deviation of y")
+    p10.plot(sim_time, cov_y, pen=(255,0,0), name="sigma Y")
+    p10.setLabel('left', "sigma y")
+    p10.setLabel('bottom', "time", units='s')
+
+    p11 = win3.addPlot(title="Standard deviation of theta")
+    p11.plot(sim_time, cov_theta, pen=(255,0,0), name="sigma Theta")
+    p11.setLabel('left', "sigma theta")
+    p11.setLabel('bottom', "time", units='s')
+
+
+     #  Create the fourth window with velocities
+    win4 = pg.GraphicsWindow(title="Velocities")
+    win4.resize(1000,600)
+    win4.setWindowTitle('Velocities')
+
+    p12 = win4.addPlot(title="Linear Velocity")
+    p12.plot(sim_time, linear, pen=(255,0,0), name="linear vel")
+    p12.setLabel('left', "linear vel")
+    p12.setLabel('bottom', "time", units='s')
+
+    p13 = win4.addPlot(title="Angular Velocity")
+    p13.plot(sim_time, angular, pen=(255,0,0), name="angular vel")
+    p13.setLabel('left', "angular vel")
+    p13.setLabel('bottom', "time", units='s')
 
 
 

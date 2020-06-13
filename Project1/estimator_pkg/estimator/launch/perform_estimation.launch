@@ -20,7 +20,7 @@
 
   <!-- The node to save all the needed data -->
   <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg save_as)" output="screen"  >
-    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Measurements RobotPosture RobotOdometry"      />
+    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Velocieties Measurements RobotPosture RobotOdometry"      />
   </node>
 
 
