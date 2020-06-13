@@ -1,6 +1,6 @@
 <launch>
 
-  <node pkg="plotting" type="plotting" name="plotting" args="$(find data)/processed_data/one_loop.bag">
+  <node pkg="plotting" type="plotting" name="plotting" output="screen" args="$(find data)/processed_data/sigmaTuning0_05">
   </node>
 
 

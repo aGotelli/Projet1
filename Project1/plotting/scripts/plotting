@@ -5,6 +5,7 @@
 import rospy
 import rosbag
 import sys
+import yaml
 from pyqtgraph.Qt import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
@@ -16,53 +17,81 @@ if __name__ == '__main__':
 
     rospy.init_node('plotting')
 
-    #QtGui.QApplication.setGraphicsSystem('raster')
-    app = QtGui.QApplication([])
-    #mw = QtGui.QMainWindow()
-    #mw.resize(800,800)
+    #   Load from yaml file the parameters
+    with file( sys.argv[1] + '.yaml' ) as setting:
+        parameters = yaml.load( setting )
 
-    win = pg.GraphicsWindow(title="Basic plotting examples")
-    win.resize(1000,600)
-    win.setWindowTitle('pyqtgraph example: Plotting')
+    #   Obatin world parameters
+    xSpacing = parameters['sensor']['x_spacing']
+    ySpacing = parameters['sensor']['y_spacing']
+    lineThickness = parameters['sensor']['line_thickness']
 
-    # Enable antialiasing for prettier plots
-    pg.setConfigOptions(antialias=True)
+    #   Obtain estimator setting
+    sigmaTuning = parameters['estimator']['sigma_tuning']
+    threshold  = parameters['estimator']['threshold']
 
+    #   Open the required bag file
+    bag = rosbag.Bag( sys.argv[1] + '.bag' )
 
+    #   Obatin the real path that the robot has followed
     x_real = []
     y_real = []
-
-    x_odom = []
-    y_odom = []
-
-    x_estm = []
-    y_estm = []
-
-    x_m = []
-    y_m = []
-
-    bag = rosbag.Bag( sys.argv[1] )
-
     for topic, robot, t in bag.read_messages(topics=['/RobotPosture']):
         x_real.append(robot.position.x)
         y_real.append(robot.position.y)
 
-
+    #   Obtain an estimation of the path odometry based
+    x_odom = []
+    y_odom = []
     for topic, odom, t in bag.read_messages(topics=['/RobotOdometry']):
         x_odom.append(odom.pose.pose.position.x)
         y_odom.append(odom.pose.pose.position.y)
 
+    #   Obain the path that the estimator has computed
+    x_estm = []
+    y_estm = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
         x_estm.append(estm.pose.position.x)
         y_estm.append(estm.pose.position.y)
 
+    #   Obtain information about the measurements
+    x_m = []
+    y_m = []
     for topic, meas, t in bag.read_messages(topics=['/Measurements']):
         x_m.append(meas.pose.position.x)
         y_m.append(meas.pose.position.y)
 
+    #   Obtain the Mahalanobis distances
+    mh_dist = []
+    time = []
+    for topic, dist, t in bag.read_messages(topics=['/Mahalanobis']):
+        mh_dist.append( dist.data )
+        time.append( t.to_sec() )
+
+    #   NOrmalize the second counter
+    time = np.asarray(time)
+    time = time - time[0]
+
+    #   No need of the bag file anymore
     bag.close()
 
-    p1 = win.addPlot(title="Trajectory")
+    #   Start the console
+    app = QtGui.QApplication([])
+
+    #   Create a window
+    win = pg.GraphicsWindow(title="Trajectories, measurements and distances")
+    win.resize(1000,600)
+    win.setWindowTitle('Trajectories, measurements and distances')
+
+    #   Enable antialiasing for prettier plots
+    pg.setConfigOptions(antialias=True)
+
+    #   Create the first window with paths, distances and errors
+    p1 = win.addPlot(title="Trajectories")
+
+    #   Create first plot containing the trajectories of robot, odometry
+    #   and estimator
+    p1.addLegend()
     p1.plot(x_real, y_real, pen=(255,0,0), name="Real path")
     p1.plot(x_odom, y_odom, pen=(0,255,0), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=(0,0,255), name="Estimated path")
@@ -70,6 +99,40 @@ if __name__ == '__main__':
     p1.setLabel('left', "Y Axis", units='m')
     p1.setLabel('bottom', "X Axis", units='m')
     p1.showGrid(x=True, y=True)
+
+    #   Create a second plot with the Mahalanobis distances
+    p2 = win.addPlot(title="Mahalanobis distances")
+    p2.plot([time[0], time[-1]], [threshold, threshold], pen=(255,0,0), name="Threshold")
+    p2.plot(time, mh_dist, pen=None, symbol='o', name="Mahalanobis distance")
+    p2.setLabel('left', "x", units='undimensional distances')
+    p2.setLabel('bottom', "time", units='s')
+
+    x_err = np.asarray(x_real) - np.asarray(x_estm)
+    y_err = []
+
+
+    #print( len( x_estm ) )
+    #for i in range( len( x_estm ))
+    #    x_err.append( x_real[i] - x_estm[i] )
+    #    y_err.append( y_real[i] - y_estm[i] )
+#
+#    p2 = win.addPlot(title="Error in x")
+#    p2.plot(x_err, t, pen=(255,0,0), name="Error X")
+#    p2.setLabel('left', "x", units='m')
+#    p2.setLabel('bottom', "time", units='s')
+#
+#    p3 = win.addPlot(title="Error in y")
+#    p3.plot(y_err, t, pen=(255,0,0), name="Error Y")
+#    p3.setLabel('left', "y", units='m')
+#    p3.setLabel('bottom', "time", units='s')
+#
+    #win.nextRow()
+
+    #p4 = win.addPlot(title="Error in theta")
+    #p4.plot((theta_real-theta_estm), t, pen=(255,0,0), name="Error theta")
+    #p4.setLabel('left', "theta", units='rad')
+    #p4.setLabel('bottom', "time", units='s')
+
 
 
 
