@@ -70,7 +70,6 @@ int main (int argc, char** argv)
     double castorArmLength;                       //  [m]
     double wMax ;                                 //  [RAD/s]
     double encodersResolution ;                   //  [dots/wheel rotation]
-    double wheel1Error;                           //  [percentage]
 
     nh_loc.param("a", frontAxle, 0.2) ;
     nh_loc.param("wheel_radius", wheelRadius, 0.05) ;
@@ -78,7 +77,14 @@ int main (int argc, char** argv)
     nh_loc.param("c", castorArmLength, 0.15) ;
     nh_loc.param("actuator_max_speed", wMax, (double)10.0) ;
     nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
-    nh_loc.param("wheel_1_error", wheel1Error, 1.01) ;
+
+
+
+
+    double wheel1Error;                           //  [percentage]
+    double trackGaugeError;                       //  [percentage]
+    nh_loc.param("wheel_1_error", wheel1Error, 1.00) ;
+    nh_loc.param("track_gauge_error", trackGaugeError, 1.00) ;
 
     //  Check that the passed arguments are correct and meaningfull
     if( frontAxle < 0 ||
@@ -96,7 +102,7 @@ int main (int argc, char** argv)
     Robot_2_0 robot(utility::Pose2D(xInit, yInit, thetaInit),
                     frontAxle, wheelRadius, trailingOffSet,
                     castorArmLength, wMax,
-                    encodersResolution, wheel1Error );
+                    encodersResolution, wheel1Error, trackGaugeError);
 
     robot.isMoving() ;
 
