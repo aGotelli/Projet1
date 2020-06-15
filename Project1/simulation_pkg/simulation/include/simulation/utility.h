@@ -454,8 +454,8 @@ struct Pose2D {
     sensorMarker.color.b = 0.0f;
     sensorMarker.color.a = 1.0f;
 
-    //  Set the lifetime as no end
-    sensorMarker.lifetime = ros::Duration();
+    //  Set the lifetime as sixty seconds to avoid memory leaks when running long simulations 
+    sensorMarker.lifetime = ros::Duration(60);
 
     return sensorMarker;
   }
