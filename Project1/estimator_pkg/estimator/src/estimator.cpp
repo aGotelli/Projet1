@@ -23,18 +23,13 @@
 // ROS
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
-#include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/Twist.h>
-
 #include "estimator_messages/Measurement.h"
 
 // Include here the ".h" files corresponding to the topic type you use.
 #include <math.h>
 
 #include "estimator/kalman_filter.h"
-#include "simulation/utility.h"
-#include "simulation/sensor.h"
-#include "simulation/world.h"
 #include "simulation_messages/Encoders.h"
 #include "simulation_messages/IRSensors.h"
 
@@ -81,6 +76,12 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 
 }
 
+geometry_msgs::Pose realPosture;
+void RealPostureReceived(const geometry_msgs::Pose::ConstPtr& _realPosture)
+{
+  realPosture = (*_realPosture);
+}
+
 
 
 
@@ -90,11 +91,15 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh_glob, nh_loc("~");
 
-  //  chi2inv(0.95,2) = 5.9915
-  //  chi2inv(0.95,1) = 3.8415
   double threshold;
   nh_loc.param("threshold", threshold, 0.0 );
   //  Forgetting to set the threshold is a big mistake, the penality is regetting all the measurements
+
+  double sigmaTuning;
+  nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
+
+  int frequency;
+  nh_loc.param<int>("estimator_frequency", frequency, 150 );
 
   //  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
@@ -113,55 +118,15 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
   nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
 
-  ROS_INFO_STREAM("xInit : " << xInit << " yInit : "<< yInit << " thetaInit : " << thetaInit ) ;
-
-
-  // State vector
-  X <<        xInit         ,
-              yInit         ,
-        thetaInit*M_PI/180  ;
-
-
   // Robot parameters
   double wheelRadius, a;
   nh_glob.param("/robot_2_0/wheel_radius", wheelRadius, 0.05);
   nh_glob.param("/robot_2_0/a", a, 0.2);
+  const double trackGauge = 2*a;
 
-  double trackGauge = 2*a;
-
-  Eigen::Matrix2d jointToCartesian;
-  jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
-                       wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
-
+  //  Obatain the encoders resolutions
   double encodersResolution;
   nh_glob.param("/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
-
-  // Filter parameters
-  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
-
-  double sigmaTuning;
-  nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
-
-  //  Initialize the Kalman filter with the parameters
-  KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
-
-
-  //  Declaration of the kalman filter matrices (better to have them here)
-  Eigen::Matrix3d A;
-  Eigen::MatrixXd B(3,2);
-  Eigen::Matrix3d P = kalman.Pinit();
-  ROS_INFO_STREAM("covariance matrix :" << P);
-
-  // Declare your node's subscriptions and service clients
-  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 10, IRSensorsReading);
-
-  // Declare you publishers and service servers
-  ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
-  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
-  ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
-  ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/Velocities", 1);
-
 
   // Initialize sensors
   double x1, y1;
@@ -176,9 +141,52 @@ int main(int argc, char** argv)
   robotSensors.AddSensor( Sensor( x1, y1, world ) ) ;
   robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
+
+  // Declare your node's subscriptions and service clients
+  ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 10, IRSensorsReading);
+
+  //  This last subscriber is not part of the estimator itself, but allows to do a simple comparison with the real posture
+  ros::Subscriber obtainRealPosture = nh_glob.subscribe<geometry_msgs::Pose>("/RobotPosture", 1, RealPostureReceived);
+
+  // Declare you publishers and service servers
+  ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
+  ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
+  ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
+  ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/Velocities", 1);
+
+  //  This last publisher is not part of the estimator itself, but allows to do a simple comparison with the real posture
+  ros::Publisher errorStreamer = nh_glob.advertise<geometry_msgs::Pose>("/EstimationError", 1);
+
+
+
+  //  State vector
+  X <<        xInit         ,
+              yInit         ,
+        thetaInit*M_PI/180  ;
+
+
+  //   Joint to cartesian matrix
+  Eigen::Matrix2d jointToCartesian;
+  jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
+                       wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
+
+
+  // Filter parameters
+  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
+
+  //  Initialize the Kalman filter with the parameters
+  KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
+
+
+  //  Declaration of the kalman filter matrices (better to have them here)
+  Eigen::Matrix3d A;
+  Eigen::MatrixXd B(3,2);
+  Eigen::Matrix3d P = kalman.Pinit();
+
   Eigen::Vector2d input;
 
-  ros::Rate estimatorRate(150);
+  ros::Rate estimatorRate( frequency );
 
   while( ros::ok() ) {
 
@@ -237,25 +245,8 @@ int main(int argc, char** argv)
         //  Only if we referred to a good line, update
         kalman.Estimation(P, X, C, innov) ;
 
-        //  Create a message to publish the current measurement
-        estimator_messages::Measurement accepted;
-
-        //  Indicate the index of the line
-        accepted.line_index.data = measurement.lineIndex;
-
-        //  Include the position
-        accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
-        accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
-
-        //  Filtering based on the type
-        if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
-          accepted.line_type.data = "HORIZONTAL" ;
-        else
-          accepted.line_type.data = "VERTICAL" ;
-
         //  Than publish the newly measurement
-        shareMeasurements.publish( accepted ) ;
-
+        shareMeasurements.publish( Accepted( measurement ) ) ;
 
       }
 
@@ -265,29 +256,19 @@ int main(int argc, char** argv)
       Mahalanobis.publish( currentDist );
 
     }
+
     //  Publish estimated posture and standard deviations
-    geometry_msgs::PoseWithCovariance estimatedPosture;
-
-    //  Initialize the position
-    estimatedPosture.pose.position.x = X(0);
-    estimatedPosture.pose.position.y = X(1);
-
-    //  Initialize orientation
-    estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
-
-    //  Define the covariance
-    estimatedPosture.covariance[6*0 + 0] = P(0, 0);
-    estimatedPosture.covariance[6*1 + 1] = P(1, 1);
-    estimatedPosture.covariance[6*5 + 5] = P(2, 2);
-
-    //  Publish the message
-    estPosture.publish( estimatedPosture );
+    estPosture.publish( Estimation(X, P) );
 
     //  Publish velocities
     geometry_msgs::Twist vel;
     vel.linear.x = input[0];
     vel.angular.z = input[1];
     pubInput.publish( vel );
+
+
+    // Publish the message with the error in the posture
+    errorStreamer.publish( PostureError(realPosture, Estimation(X, P) ) ) ;
 
     //  Update before next iteration
     previousReading = currentReading ;

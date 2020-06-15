@@ -1,5 +1,5 @@
 <launch>
-  <arg name="save_as"           value="sigmaTuning0_005_150hz" />
+  <arg name="save_as"           value="one_loop_ds" />
   <arg name="file_name"         value="one_loop" />
   <arg name="take_from_folder"  value="recorded_data"   />
   <arg name="save_into_folder"  value="processed_data"  />
@@ -14,13 +14,14 @@
   </node>
 
   <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
-    <param name="threshold"     value="3.8415" />
-    <param name="sigma_tuning"     value="0.005" />
+    <param name="threshold"                       value="3.8415"  />  <!-- chi2inv(0.95,1) = 3.8415 -->
+    <param name="sigma_tuning"                    value="0.005"   />
+    <param name="estimator_frequency" type="int"  value="50"     />
   </node>
 
   <!-- The node to save all the needed data -->
   <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg save_as)" output="screen"  >
-    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Velocieties Measurements RobotPosture RobotOdometry"      />
+    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Velocities Measurements RobotPosture RobotOdometry EstimationError"      />
   </node>
 
 

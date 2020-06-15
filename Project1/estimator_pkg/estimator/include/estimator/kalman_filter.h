@@ -20,12 +20,14 @@
 
  *
  */
-
+#include <geometry_msgs/PoseWithCovariance.h>
 
 #include <cmath>
 #include <iostream>
 #include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
-//#include "estimator/robot.h"
+#include "simulation/utility.h"
+#include "simulation/sensor.h"
+#include "simulation/world.h"
 
 
 
@@ -37,9 +39,9 @@ public:
                   sigmaMeasurement(_sigmaMeasurement),
                   sigmaTuning(_sigmaTuning)
                   {
-                    ROS_INFO_STREAM("Qwheels : " << Qwheels );
-                    ROS_INFO_STREAM("Qbeta   : " << Qbeta );
-                    ROS_INFO_STREAM("Qgamma  : " << Qgamma );
+                    ROS_DEBUG_STREAM("Qwheels : " << Qwheels );
+                    ROS_DEBUG_STREAM("Qbeta   : " << Qbeta );
+                    ROS_DEBUG_STREAM("Qgamma  : " << Qgamma );
                   }
 
   //  Initialize the P matrix using the uncertainties on the robot posture
@@ -152,6 +154,66 @@ void EvolutionModel(Eigen::Vector3d& X, const Eigen::Vector2d input)
   X(1) = X(1) + input(0)*sin(X(2));
   X(2) = X(2) + input(1);
 }
+
+
+
+//  Publish estimated posture and standard deviations
+geometry_msgs::PoseWithCovariance Estimation(const Eigen::Vector3d& X, const Eigen::Matrix3d& P)
+{
+  geometry_msgs::PoseWithCovariance estimatedPosture;
+
+  //  Initialize the position
+  estimatedPosture.pose.position.x = X(0);
+  estimatedPosture.pose.position.y = X(1);
+
+  //  Initialize orientation
+  estimatedPosture.pose.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(X(2));
+
+  //  Define the covariance
+  estimatedPosture.covariance[6*0 + 0] = P(0, 0);
+  estimatedPosture.covariance[6*1 + 1] = P(1, 1);
+  estimatedPosture.covariance[6*5 + 5] = P(2, 2);
+
+  return estimatedPosture;
+}
+
+//  Publish estimated posture and standard deviations
+geometry_msgs::Pose PostureError(const geometry_msgs::Pose& realPosture, const geometry_msgs::PoseWithCovariance& estimatedPosture)
+{
+  geometry_msgs::Pose postureError;
+
+  postureError.position.x    = realPosture.position.x    - estimatedPosture.pose.position.x     ;
+  postureError.position.y    = realPosture.position.y    - estimatedPosture.pose.position.y     ;
+  postureError.orientation.x = realPosture.orientation.x - estimatedPosture.pose.orientation.x  ;
+  postureError.orientation.y = realPosture.orientation.y - estimatedPosture.pose.orientation.y  ;
+  postureError.orientation.z = realPosture.orientation.z - estimatedPosture.pose.orientation.z  ;
+  postureError.orientation.w = realPosture.orientation.w - estimatedPosture.pose.orientation.w  ;
+
+  return postureError;
+}
+
+
+estimator_messages::Measurement Accepted(const Measurement& measurement)
+{
+  //  Create a message to publish the current measurement
+  estimator_messages::Measurement accepted;
+
+  //  Indicate the index of the line
+  accepted.line_index.data = measurement.lineIndex;
+
+  //  Include the position
+  accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
+  accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
+
+  //  Filtering based on the type
+  if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
+    accepted.line_type.data = "HORIZONTAL" ;
+  else
+    accepted.line_type.data = "VERTICAL" ;
+
+  return accepted;
+}
+
 
 
 
