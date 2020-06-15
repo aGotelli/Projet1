@@ -82,6 +82,7 @@ public:
 
   virtual void isMoving();
 
+
 protected:
 
   //  Virtual Callback
@@ -102,6 +103,7 @@ protected:
   //  words, in this function the data obtained in the cycle are copied into
   //  the messages just before they are published.
   virtual void PrepareMessages()=0;
+
 
 
   //  The dots readed by the encoders mounted on the fixed wheels.
@@ -132,6 +134,9 @@ protected:
 
 private:
 
+  // Timer callback
+  void TimerCallback(const ros::TimerEvent& event);
+
   //Node handle
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
@@ -158,16 +163,24 @@ private:
   //  Publish a joint state message to control the URDF model
   ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
+  // Setting a timer
+  ros::Timer timer { nh_glob.createTimer(ros::Duration(0.5), &RobotBase::TimerCallback, this) };
+
+
 };
 
-
-
+void RobotBase::TimerCallback(const ros::TimerEvent& event){
+  utility::UpdatePath( robotPosture, generatedPath ) ;
+  if( generatedPath.points.size() >= 2)
+      ShowMarker.publish( generatedPath ) ;
+}
 
 void RobotBase::isMoving()
 {
 
   //  Initialize the line of the path before proceeding
   utility::InitLineStrip( generatedPath ) ;
+
 
   //  Initialize the time
   prevTime = ros::Time::now() ;
@@ -195,8 +208,9 @@ void RobotBase::isMoving()
       //  Elaborate the data for being published
       PrepareMessages() ;
 
+
       //  Update the line strip for visualization
-      utility::UpdatePath( robotPosture, generatedPath ) ;
+      //utility::UpdatePath( robotPosture, generatedPath ) ;
 
       //  Publish current robot posture
       Robot.publish( robotPosture );
@@ -205,8 +219,8 @@ void RobotBase::isMoving()
       Encoders.publish( elapsedDots );
 
       //  Publish the line strip for visualization
-      if( generatedPath.points.size() >= 2)
-        ShowMarker.publish( generatedPath ) ;
+      //if( generatedPath.points.size() >= 2)
+        //ShowMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
       JointsController.publish( actuations ) ;
@@ -219,7 +233,6 @@ void RobotBase::isMoving()
 
   }
 }
-
 
 
 
