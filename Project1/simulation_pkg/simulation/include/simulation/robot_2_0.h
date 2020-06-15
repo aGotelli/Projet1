@@ -74,7 +74,8 @@ public:
   Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
             const double _wheelRadius, const double _trailingOffSet,
             const double _castorArmLength, const double _wMax,
-            const double _resolution, const double _wheel1Error) :
+            const double _resolution, const double _wheel1Error,
+            const double _trackGaugeError) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             trackGauge(2*_frontAxle),
@@ -84,7 +85,9 @@ public:
             wMax(_wMax),
             encoder( Encoders(_resolution) ),
             wheel1Error(_wheel1Error),
+            trackGaugeError(_trackGaugeError),
             RobotBase() {/* All the rest is initialized as default */
+              ROS_INFO_STREAM("trackGaugeError : " << trackGaugeError );
               ROS_DEBUG_STREAM("Fully user-defined initialization called...");     }
 
 
@@ -140,7 +143,8 @@ private:
 
   const Encoders encoder;
 
-  const double wheel1Error { 0.0 };
+  const double wheel1Error     { 0.0 };
+  const double trackGaugeError { 0.0 };
 
   // Robot parameters
   const double trackGauge {0.4} ;             //  [m]
@@ -189,30 +193,6 @@ void Robot_2_0::PerformMotion() const
 }
 
 
-// void Robot_2_0::ComputeOdometry() const
-// {
-//
-//   // Current value of phi_1f and phi_2f
-//   currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
-//   currentReading[0] = std::floor( currentReading[0] ) ;
-//   currentReading[1] = std::floor( currentReading[1] ) ;
-//
-//   //  Define the wheels rotation in between two iterations
-//   Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
-//
-//   // Compute input discretized
-//   const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
-//
-//   // Compute odometry position
-//   q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-//   q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-//   q_odom.theta = q_odom.theta + d_input[1] ;
-//
-//   // Update
-//   previusReading = currentReading ;
-//
-// }
-
 // compute odometry with error in wheel radius and track gauge
 void Robot_2_0::ComputeOdometry() const
 {
@@ -232,10 +212,6 @@ void Robot_2_0::ComputeOdometry() const
 
 
   q_odom = q_odom + S_odom*d_input;
-
-  // q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-  // q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-  // q_odom.theta = q_odom.theta + d_input[1] ;
 
   // Update
   previusReading = currentReading ;
@@ -265,9 +241,9 @@ void Robot_2_0::UpdateOdomMatrix() const
                         sin(q_odom.theta)          ,                                    0                                        ,
                                 0                  ,                                    1                                        ,
               -sin(q_odom.beta_3c)/castorArmLength ,    -(castorArmLength + trailingOffSet*cos(q_odom.beta_3c))/castorArmLength  ,
-                   1/(wheelRadius*wheel1Error)     ,                 trackGauge/(2*(wheelRadius*wheel1Error))                    ,
-                        1/wheelRadius              ,                       -trackGauge/(2*wheelRadius)                           ,
-                -cos(q_odom.beta_3c)/wheelRadius   ,              sin(q_odom.beta_3c)*trailingOffSet/wheelRadius                 ;
+                   1/(wheelRadius*wheel1Error)     ,          (trackGauge*trackGaugeError)/(2*(wheelRadius*wheel1Error))         ,
+                        1/wheelRadius              ,                -(trackGauge*trackGaugeError)/(2*wheelRadius)                ,
+                -cos(q_odom.beta_3c)/wheelRadius   ,                 sin(q_odom.beta_3c)*trailingOffSet/wheelRadius              ;
 
 }
 
