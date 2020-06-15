@@ -97,6 +97,7 @@ int main(int argc, char** argv)
 
   double sigmaTuning;
   nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
+  //  Default zero means fully relying on odometry
 
   ROS_INFO_STREAM("Sigma tuning  : " << sigmaTuning );
 
@@ -180,11 +181,11 @@ int main(int argc, char** argv)
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
   //   Convert to millimeters
-  jointToCartesian = jointToCartesian*1000;
+  //jointToCartesian = jointToCartesian*1000;
 
 
   // Filter parameters
-  const double sigmaMeasurement = sqrt(pow(lineThickness*1000, 2)/12);
+  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -251,6 +252,9 @@ int main(int argc, char** argv)
 
       }
 
+      ROS_INFO_STREAM("Innovation :" << innov );
+      ROS_INFO_STREAM("dMaha      :" << dMaha );
+      ROS_INFO_STREAM("" );
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
@@ -259,17 +263,21 @@ int main(int argc, char** argv)
         //  Than publish the newly measurement
         shareMeasurements.publish( Accepted( measurement ) ) ;
 
+        //  Publish result for the Mahalanobis distance
+        std_msgs::Float32 currentDist;
+        currentDist.data = dMaha;
+        Mahalanobis.publish( currentDist );
+
       }
 
-      //  Publish result for the Mahalanobis distance
-      std_msgs::Float32 currentDist;
-      currentDist.data = dMaha;
-      Mahalanobis.publish( currentDist );
+
 
     }
 
     //  Publish estimated posture and standard deviations
     estPosture.publish( Estimation(X, P) );
+
+    //ROS_INFO_STREAM("Covariance matrix : " << P );
 
     //  Publish velocities
     geometry_msgs::Twist vel;

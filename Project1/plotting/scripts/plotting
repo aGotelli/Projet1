@@ -153,10 +153,6 @@ if __name__ == '__main__':
     sim_time = sim_time - sim_time[0]
 
 
-    print('length of the simulation %s', len(x_real))
-
-    print('length of the estimation %s', len(x_estm))
-    print('length of the estimation %s', len(y_estm))
 
     #   Skip motionless initial part if any
     nbSamples = len( np.asarray( x_estm ) ) -1
@@ -207,8 +203,6 @@ if __name__ == '__main__':
 
     estm_time = np.asarray(estm_time)
     estm_time = estm_time - estm_time[0]
-
-    print('length of the estimation %s', len(x_estm))
 
 
 #################################~  PLOTTING DATA ~###################################

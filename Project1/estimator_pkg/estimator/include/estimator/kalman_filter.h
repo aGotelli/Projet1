@@ -52,11 +52,7 @@ public:
                                             const Eigen::Matrix3d& A,
                                             const Eigen::MatrixXd& B )
                                             {
-                                              // ROS_INFO_STREAM("A       : " << A );
-                                              // ROS_INFO_STREAM("B       : " << B );
-                                              // ROS_INFO_STREAM("Qbeta   : " << Qbeta );
-                                              // ROS_INFO_STREAM("Primo   : " << A*P*A.transpose() );
-                                              // ROS_INFO_STREAM("Secondo : " << B*Qbeta*B.transpose() );
+                                              //  Compute the error propagation in the reference frame
                                               P = A*P*A.transpose() + B*Qbeta*B.transpose() + Qalpha ;
                                             }
 
@@ -71,7 +67,9 @@ public:
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
                                     {
-                                      // ROS_INFO_STREAM("product : " << (C*P*C.transpose()).value() );
+                                      //  Compute the Mahalanobis distance using the usual formula
+
+                                      ROS_INFO_STREAM("The denom  : " << (C*P*C.transpose()).value() + Qgamma );
                                       return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ;
                                     }
 
@@ -79,8 +77,8 @@ public:
 private:
 
   //  Uncertainties on the robot initial posture
-  const double sigmaX     { 8.0f };
-  const double sigmaY     { 8.0f };
+  const double sigmaX     { 0.008f };
+  const double sigmaY     { 0.008f };
   const double sigmaTheta { 3*M_PI/180 };
 
   //  Uncertainty on the measurement
