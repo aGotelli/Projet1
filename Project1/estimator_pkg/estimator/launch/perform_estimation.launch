@@ -1,22 +1,42 @@
 <launch>
-  <arg name="save_as"           value="one_loop_ds" />
-  <arg name="file_name"         value="one_loop" />
-  <arg name="take_from_folder"  value="recorded_data"   />
-  <arg name="save_into_folder"  value="processed_data"  />
+
+  <arg name="save_as"           default=""                />
+  <arg name="file_name"         default=""                />
+  <arg name="take_from_folder"  default="recorded_data"   />
+  <arg name="save_into_folder"  default="processed_data"  />
+
+  <arg name="threshold"     default="0.0"   />
+  <arg name="sigma_tuning"  default="0.0"   />
+
+  <arg name="speed_factor"    default="1" />
+  <arg name="subsample_rate"  default="1" />
+
+  <arg name="simulation_frame_rate" default="150" />
+
+  <arg name="hz" default="$(eval arg('speed_factor')*arg('simulation_frame_rate') )"  />
+
+  <param name="use_sim_time" value="true" />
+
 
   <rosparam command="load" file="$(find data)/$(arg take_from_folder)/$(arg file_name).yaml" />
 
-  <node pkg="rosbag" type="play" name="playback_simulation" args="--delay=2 $(find data)/$(arg take_from_folder)/$(arg file_name).bag" required="true">
-    <remap from="/simulation/RobotPosture"    to="/RobotPosture" />
+
+  <node pkg="rosbag" type="play" name="playback_simulation" args="--delay=2
+                                                                  --clock
+                                                                  --hz=$(arg hz)
+                                                                  --rate=$(arg speed_factor)
+                                                                  $(find data)/$(arg take_from_folder)/$(arg file_name).bag"
+                                                                  required="true">
+    <remap from="/simulation/RobotPosture"    to="/RobotPosture"    />
     <remap from="/simulation/EncodersReading" to="/EncodersReading" />
     <remap from="/simulation/IRSensorsStatus" to="/IRSensorsStatus" />
-    <remap from="/simulation/RobotOdometry"   to="/RobotOdometry" />
+    <remap from="/simulation/RobotOdometry"   to="/RobotOdometry"   />
   </node>
 
   <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
-    <param name="threshold"                       value="3.8415"  />  <!-- chi2inv(0.95,1) = 3.8415 -->
-    <param name="sigma_tuning"                    value="0.005"   />
-    <param name="estimator_frequency" type="int"  value="50"     />
+    <param name="threshold"                       value="$(arg threshold)"    />  
+    <param name="sigma_tuning"                    value="$(arg sigma_tuning)" />
+    <param name="estimator_frequency" type="int"  value="50"      />
   </node>
 
   <!-- The node to save all the needed data -->
