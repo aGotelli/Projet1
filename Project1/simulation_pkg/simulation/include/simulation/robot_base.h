@@ -170,7 +170,11 @@ private:
 };
 
 void RobotBase::TimerCallback(const ros::TimerEvent& event){
+
+  //  Update the line strip for visualization
   utility::UpdatePath( robotPosture, generatedPath ) ;
+
+  //  Publish the line strip for visualization
   if( generatedPath.points.size() >= 2)
       ShowMarker.publish( generatedPath ) ;
 }
@@ -208,19 +212,11 @@ void RobotBase::isMoving()
       //  Elaborate the data for being published
       PrepareMessages() ;
 
-
-      //  Update the line strip for visualization
-      //utility::UpdatePath( robotPosture, generatedPath ) ;
-
       //  Publish current robot posture
       Robot.publish( robotPosture );
 
       //  Publish current wheels orientations
       Encoders.publish( elapsedDots );
-
-      //  Publish the line strip for visualization
-      //if( generatedPath.points.size() >= 2)
-        //ShowMarker.publish( generatedPath ) ;
 
       //  Publish the joint state
       JointsController.publish( actuations ) ;
