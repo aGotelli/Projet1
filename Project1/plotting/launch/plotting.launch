@@ -1,6 +1,6 @@
 <launch>
 
-  <node pkg="plotting" type="plotting" name="plotting" output="screen" args="$(find data)/processed_data/150hz">
+  <node pkg="plotting" type="plotting" name="plotting" output="screen" args="$(find data)/processed_data/one_loop_ds">
   </node>
 
 

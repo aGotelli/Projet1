@@ -36,11 +36,12 @@ if __name__ == '__main__':
     #   Open the required bag file
     bag = rosbag.Bag( sys.argv[1] + '.bag' )
 
+
     #   Obatin the real path that the robot has followed
     x_real = []
     y_real = []
-    sim_time = []
     theta_real = []
+    sim_time = []
     for topic, robot, t in bag.read_messages(topics=['/RobotPosture']):
         x_real.append( robot.position.x )
         y_real.append( robot.position.y )
@@ -51,13 +52,6 @@ if __name__ == '__main__':
         sim_time.append( t.to_sec() )
 
 
-    #   Obtain an estimation of the path odometry based
-    x_odom = []
-    y_odom = []
-    for topic, odom, t in bag.read_messages(topics=['/RobotOdometry']):
-        x_odom.append( odom.pose.pose.position.x )
-        y_odom.append( odom.pose.pose.position.y )
-
     #   Obtain the path that the estimator has computed
     x_estm = []
     y_estm = []
@@ -65,6 +59,7 @@ if __name__ == '__main__':
     cov_x = []
     cov_y = []
     cov_theta = []
+    estm_time = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
         x_estm.append( estm.pose.position.x )
         y_estm.append( estm.pose.position.y )
@@ -75,7 +70,28 @@ if __name__ == '__main__':
         cov_x.append( estm.covariance[6*0 + 0] )
         cov_y.append( estm.covariance[6*1 + 1] )
         cov_theta.append( estm.covariance[6*5 + 5] )
+        estm_time.append( t.to_sec() )
 
+
+    #   Obtain the error in the estimation
+    x_err = []
+    y_err = []
+    theta_err = []
+    for topic, error, t in bag.read_messages(topics=['/EstimationError']):
+        x_err.append( error.position.x )
+        y_err.append( error.position.y )
+        orientation_q = error.orientation
+        orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
+        (roll, pitch, yaw) = euler_from_quaternion( orientation_list )
+        theta_err.append( yaw )
+
+
+    #   Obtain an estimation of the path odometry based
+    x_odom = []
+    y_odom = []
+    for topic, odom, t in bag.read_messages(topics=['/RobotOdometry']):
+        x_odom.append( odom.pose.pose.position.x )
+        y_odom.append( odom.pose.pose.position.y )
 
 
     #   Obtain information about the measurements
@@ -85,6 +101,7 @@ if __name__ == '__main__':
         x_m.append( meas.pose.position.x )
         y_m.append( meas.pose.position.y )
 
+
     #   Obtain the Mahalanobis distances
     mh_dist = []
     time_dist = []
@@ -92,7 +109,8 @@ if __name__ == '__main__':
         mh_dist.append( dist.data )
         time_dist.append( t.to_sec() )
 
- #   Obtain the input velocities
+
+    #   Obtain the input velocities
     linear = []
     angular = []
     for topic, vel, t in bag.read_messages(topics=['/Velocities']):
@@ -122,23 +140,20 @@ if __name__ == '__main__':
     #   Extract relevant data by removing motionless parts).
     del x_real[0: startIndex]
     del y_real[0: startIndex]
-    del sim_time[0: startIndex]
     del theta_real[0: startIndex]
+    del sim_time[0: startIndex]
+
     del x_real[stopIndex: -1]
     del y_real[stopIndex: -1]
-    del sim_time[stopIndex: -1]
     del theta_real[stopIndex: -1]
+    del sim_time[stopIndex: -1]
 
     #   Normalize the seconds counters
     sim_time = np.asarray(sim_time)
     sim_time = sim_time - sim_time[0]
 
-    time_dist = np.asarray(time_dist)
-    time_dist = time_dist - time_dist[0]
 
-
-
-
+    print('length of the simulation %s', len(x_real))
 
     #   Skip motionless initial part if any
     nbSamples = len( np.asarray( x_estm ) )
@@ -162,31 +177,163 @@ if __name__ == '__main__':
     del cov_x[0: startIndex]
     del cov_y[0: startIndex]
     del cov_theta[0: startIndex]
+    del x_err[0: startIndex]
+    del y_err[0: startIndex]
+    del theta_err[0: startIndex]
+    del estm_time[0: startIndex]
+
     del x_estm[stopIndex: -1]
     del y_estm[stopIndex: -1]
     del theta_estim[stopIndex: -1]
     del cov_x[stopIndex: -1]
     del cov_y[stopIndex: -1]
     del cov_theta[stopIndex: -1]
+    del x_err[stopIndex: -1]
+    del y_err[stopIndex: -1]
+    del theta_err[stopIndex: -1]
+    del estm_time[stopIndex: -1]
 
+    #   Normalize the seconds counters
+    time_dist = np.asarray(time_dist)
+    time_dist = time_dist - time_dist[0]
 
+    estm_time = np.asarray(estm_time)
+    estm_time = estm_time - estm_time[0]
 
-
-    #del x_estm[-1]
-    #del y_estm[-1]
-    #del theta_estim[-1]
-
-
-
-    x_err = np.asarray( x_real ) - np.asarray( x_estm )
-    y_err = np.asarray( y_real ) - np.asarray( y_estm )
-    theta_err = np.asarray( theta_real ) - np.asarray( theta_estim )
+    print('length of the estimation %s', len(x_estm))
 
 
 #################################~  PLOTTING DATA ~###################################
 
     #   Start the console
     app = QtGui.QApplication([])
+
+
+
+
+
+
+    #  Create the fourth window with velocities
+    win4 = pg.GraphicsWindow(title="Velocities")
+    win4.resize(1000,600)
+    win4.setWindowTitle('Velocities')
+
+    p12 = win4.addPlot(title="Linear Velocity")
+    p12.plot( linear, pen=(255,0,0), name="linear vel")
+    p12.setLabel('left', "linear vel")
+    p12.setLabel('bottom', "time", units='s')
+
+    win4.nextRow()
+
+    p13 = win4.addPlot(title="Angular Velocity")
+    p13.plot( angular, pen=(255,0,0), name="angular vel")
+    p13.setLabel('left', "angular vel")
+    p13.setLabel('bottom', "time", units='s')
+
+
+
+
+
+
+    #  Create the third window with standard deviations
+    win3 = pg.GraphicsWindow(title="Standard deviations of x, y and theta")
+    win3.resize(1000,600)
+    win3.setWindowTitle('Standard deviations of x, y and theta')
+
+    p9 = win3.addPlot(title="Standard deviation of x")
+    p9.plot(estm_time, cov_x, pen=(255,0,0), name="sigma X")
+    p9.setLabel('left', "sigma x")
+    p9.setLabel('bottom', "time", units='s')
+
+    win3.nextRow()
+
+    p10 = win3.addPlot(title="Standard deviation of y")
+    p10.plot(estm_time, cov_y, pen=(255,0,0), name="sigma Y")
+    p10.setLabel('left', "sigma y")
+    p10.setLabel('bottom', "time", units='s')
+
+    win3.nextRow()
+
+    p11 = win3.addPlot(title="Standard deviation of theta")
+    p11.plot(estm_time, cov_theta, pen=(255,0,0), name="sigma Theta")
+    p11.setLabel('left', "sigma theta")
+    p11.setLabel('bottom', "time", units='s')
+
+
+
+
+
+
+    #   Create the second window with the errors
+    win2 = pg.GraphicsWindow(title="Errors along x, y and in heading")
+    win2.resize(1000,600)
+    win2.setWindowTitle('Errors along x, y and in heading')
+
+
+    p3 = win2.addPlot(title="Error in x")
+    p3.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
+    p3.setLabel('left', "x", units='m')
+    p3.setLabel('bottom', "time", units='s')
+    lr_1 = pg.LinearRegionItem([0,5])
+    #lr_1.setZValue(-0.01)
+    p3.addItem(lr_1)
+
+    p4 = win2.addPlot(title="Zoom on selected region")
+    p4.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
+    def updatePlot():
+        p4.setXRange(*lr_1.getRegion(), padding=0)
+    def updateRegion():
+        lr_1.setRegion(p4.getViewBox().viewRange()[0])
+    lr_1.sigRegionChanged.connect(updatePlot)
+    p4.sigXRangeChanged.connect(updateRegion)
+    updatePlot()
+
+    win2.nextRow()
+
+    p5 = win2.addPlot(title="Error in y")
+    p5.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
+    p5.setLabel('left', "y", units='m')
+    p5.setLabel('bottom', "time", units='s')
+    lr_2 = pg.LinearRegionItem([0,5])
+    #lr.setZValue(-10)
+    p5.addItem(lr_2)
+
+    p6 = win2.addPlot(title="Zoom on selected region")
+    p6.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
+    def updatePlot():
+        p6.setXRange(*lr_2.getRegion(), padding=0)
+    def updateRegion():
+        lr_2.setRegion(p6.getViewBox().viewRange()[0])
+    lr_2.sigRegionChanged.connect(updatePlot)
+    p6.sigXRangeChanged.connect(updateRegion)
+    updatePlot()
+
+    win2.nextRow()
+
+    p7 = win2.addPlot(title="Error in theta")
+    p7.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
+    p7.setLabel('left', "theta", units='rad')
+    p7.setLabel('bottom', "time", units='s')
+    lr_3 = pg.LinearRegionItem([5,10])
+    #lr.setZValue(-10)
+    p7.addItem(lr_3)
+
+    p8 = win2.addPlot(title="Zoom on selected region")
+    p8.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
+    def updatePlot():
+        p8.setXRange(*lr_3.getRegion(), padding=0)
+    def updateRegion():
+        lr_3.setRegion(p8.getViewBox().viewRange()[0])
+    lr_3.sigRegionChanged.connect(updatePlot)
+    p8.sigXRangeChanged.connect(updateRegion)
+    updatePlot()
+
+
+
+
+
+
+
 
     #   Create the first window with paths and distances
     win1 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
@@ -223,119 +370,6 @@ if __name__ == '__main__':
     p2.plot(time_dist, mh_dist, pen=None, symbol='o', name="Mahalanobis distance")
     p2.setLabel('left', "x", units='undimensional distances')
     p2.setLabel('bottom', "time", units='s')
-
-
-
-
-
-
-
-    #   Create the second window with the errors
-    win2 = pg.GraphicsWindow(title="Errors along x, y and in heading")
-    win2.resize(1000,600)
-    win2.setWindowTitle('Errors along x, y and in heading')
-
-
-    p3 = win2.addPlot(title="Error in x")
-    p3.plot(sim_time, x_err, pen=(255,0,0), name="Error X")
-    p3.setLabel('left', "x", units='m')
-    p3.setLabel('bottom', "time", units='s')
-    lr_1 = pg.LinearRegionItem([0,5])
-    #lr_1.setZValue(-0.01)
-    p3.addItem(lr_1)
-
-    p4 = win2.addPlot(title="Zoom on selected region")
-    p4.plot(sim_time, x_err, pen=(255,0,0), name="Error X")
-    def updatePlot():
-        p4.setXRange(*lr_1.getRegion(), padding=0)
-    def updateRegion():
-        lr_1.setRegion(p4.getViewBox().viewRange()[0])
-    lr_1.sigRegionChanged.connect(updatePlot)
-    p4.sigXRangeChanged.connect(updateRegion)
-    updatePlot()
-
-    win2.nextRow()
-
-    p5 = win2.addPlot(title="Error in y")
-    p5.plot(sim_time, y_err, pen=(255,0,0), name="Error Y")
-    p5.setLabel('left', "y", units='m')
-    p5.setLabel('bottom', "time", units='s')
-    lr_2 = pg.LinearRegionItem([0,5])
-    #lr.setZValue(-10)
-    p5.addItem(lr_2)
-
-    p6 = win2.addPlot(title="Zoom on selected region")
-    p6.plot(sim_time, y_err, pen=(255,0,0), name="Error Y")
-    def updatePlot():
-        p6.setXRange(*lr_2.getRegion(), padding=0)
-    def updateRegion():
-        lr_2.setRegion(p6.getViewBox().viewRange()[0])
-    lr_2.sigRegionChanged.connect(updatePlot)
-    p6.sigXRangeChanged.connect(updateRegion)
-    updatePlot()
-
-    win2.nextRow()
-
-    p7 = win2.addPlot(title="Error in theta")
-    p7.plot(sim_time, theta_err, pen=(255,0,0), name="Error theta")
-    p7.setLabel('left', "theta", units='rad')
-    p7.setLabel('bottom', "time", units='s')
-    lr_3 = pg.LinearRegionItem([5,10])
-    #lr.setZValue(-10)
-    p7.addItem(lr_3)
-
-    p8 = win2.addPlot(title="Zoom on selected region")
-    p8.plot(sim_time, theta_err, pen=(255,0,0), name="Error theta")
-    def updatePlot():
-        p8.setXRange(*lr_3.getRegion(), padding=0)
-    def updateRegion():
-        lr_3.setRegion(p8.getViewBox().viewRange()[0])
-    lr_3.sigRegionChanged.connect(updatePlot)
-    p8.sigXRangeChanged.connect(updateRegion)
-    updatePlot()
-
-
-    #  Create the third window with standard deviations
-    win3 = pg.GraphicsWindow(title="Standard deviations of x, y and theta")
-    win3.resize(1000,600)
-    win3.setWindowTitle('Standard deviations of x, y and theta')
-
-    p9 = win3.addPlot(title="Standard deviation of x")
-    p9.plot(sim_time, cov_x, pen=(255,0,0), name="sigma X")
-    p9.setLabel('left', "sigma x")
-    p9.setLabel('bottom', "time", units='s')
-
-    win3.nextRow()
-
-    p10 = win3.addPlot(title="Standard deviation of y")
-    p10.plot(sim_time, cov_y, pen=(255,0,0), name="sigma Y")
-    p10.setLabel('left', "sigma y")
-    p10.setLabel('bottom', "time", units='s')
-
-    win3.nextRow()
-
-    p11 = win3.addPlot(title="Standard deviation of theta")
-    p11.plot(sim_time, cov_theta, pen=(255,0,0), name="sigma Theta")
-    p11.setLabel('left', "sigma theta")
-    p11.setLabel('bottom', "time", units='s')
-
-
-     #  Create the fourth window with velocities
-    win4 = pg.GraphicsWindow(title="Velocities")
-    win4.resize(1000,600)
-    win4.setWindowTitle('Velocities')
-
-    p12 = win4.addPlot(title="Linear Velocity")
-    p12.plot( linear, pen=(255,0,0), name="linear vel")
-    p12.setLabel('left', "linear vel")
-    p12.setLabel('bottom', "time", units='s')
-
-    win4.nextRow()
-
-    p13 = win4.addPlot(title="Angular Velocity")
-    p13.plot( angular, pen=(255,0,0), name="angular vel")
-    p13.setLabel('left', "angular vel")
-    p13.setLabel('bottom', "time", units='s')
 
 
 
