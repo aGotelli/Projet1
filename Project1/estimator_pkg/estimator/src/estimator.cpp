@@ -98,8 +98,12 @@ int main(int argc, char** argv)
   double sigmaTuning;
   nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
 
+  ROS_INFO_STREAM("Sigma tuning  : " << sigmaTuning );
+
   int frequency;
   nh_loc.param<int>("estimator_frequency", frequency, 150 );
+
+  ROS_INFO_STREAM("Estimator frequency : " << frequency );
 
   //  Global world parameters
 	double xSpacing, ySpacing, lineThickness;					// [m]
@@ -118,6 +122,8 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
   nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
 
+  ROS_INFO_STREAM("Initial position : " << xInit << ", " << yInit << ", " << thetaInit );
+
   // Robot parameters
   double wheelRadius, a;
   nh_glob.param("/robot_2_0/wheel_radius", wheelRadius, 0.05);
@@ -127,6 +133,8 @@ int main(int argc, char** argv)
   //  Obatain the encoders resolutions
   double encodersResolution;
   nh_glob.param("/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
+
+  ROS_INFO_STREAM("Encoders resolution : " << encodersResolution );
 
   // Initialize sensors
   double x1, y1;
@@ -171,9 +179,12 @@ int main(int argc, char** argv)
   jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
+  //   Convert to millimeters
+  jointToCartesian = jointToCartesian*1000;
+
 
   // Filter parameters
-  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
+  const double sigmaMeasurement = sqrt(pow(lineThickness*1000, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);

@@ -15,6 +15,8 @@
 
   <arg name="hz" default="$(eval arg('speed_factor')*arg('simulation_frame_rate') )"  />
 
+  <arg name="estimator_freq" default="$(eval arg('speed_factor')*150/arg('subsample_rate') )"  />
+
   <param name="use_sim_time" value="true" />
 
 
@@ -34,9 +36,9 @@
   </node>
 
   <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
-    <param name="threshold"                       value="$(arg threshold)"    />  
+    <param name="threshold"                       value="$(arg threshold)"    />
     <param name="sigma_tuning"                    value="$(arg sigma_tuning)" />
-    <param name="estimator_frequency" type="int"  value="50"      />
+    <param name="estimator_frequency" type="int"  value="$(arg estimator_freq)"      />
   </node>
 
   <!-- The node to save all the needed data -->

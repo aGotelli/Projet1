@@ -107,7 +107,7 @@ protected:
 
 
   //  The dots readed by the encoders mounted on the fixed wheels.
-  simulation_messages::Encoders elapsedDots;  //  No need of default initialization
+  simulation_messages::Encoders wheelsRotations;  //  No need of default initialization
 
   //  The full robot pusture obtained with the kinematic model.
   geometry_msgs::Pose robotPosture;    //  No need of default initialization
@@ -135,7 +135,7 @@ protected:
 private:
 
   // Timer callback
-  void TimerCallback(const ros::TimerEvent& event);
+  void TimerCallback(const ros::TimerEvent&);
 
   //Node handle
   ros::NodeHandle nh_glob;                    //  No need of default initialization
@@ -169,7 +169,8 @@ private:
 
 };
 
-void RobotBase::TimerCallback(const ros::TimerEvent& event){
+void RobotBase::TimerCallback(const ros::TimerEvent&)
+{
 
   //  Update the line strip for visualization
   utility::UpdatePath( robotPosture, generatedPath ) ;
@@ -216,7 +217,7 @@ void RobotBase::isMoving()
       Robot.publish( robotPosture );
 
       //  Publish current wheels orientations
-      Encoders.publish( elapsedDots );
+      Encoders.publish( wheelsRotations );
 
       //  Publish the joint state
       JointsController.publish( actuations ) ;

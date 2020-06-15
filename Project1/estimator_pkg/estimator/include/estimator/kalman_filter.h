@@ -39,9 +39,9 @@ public:
                   sigmaMeasurement(_sigmaMeasurement),
                   sigmaTuning(_sigmaTuning)
                   {
-                    ROS_DEBUG_STREAM("Qwheels : " << Qwheels );
-                    ROS_DEBUG_STREAM("Qbeta   : " << Qbeta );
-                    ROS_DEBUG_STREAM("Qgamma  : " << Qgamma );
+                    ROS_INFO_STREAM("Qwheels                            : " << Qwheels );
+                    ROS_INFO_STREAM("Qbeta                              : " << Qbeta );
+                    ROS_INFO_STREAM("Qgamma                             : " << Qgamma );
                   }
 
   //  Initialize the P matrix using the uncertainties on the robot posture

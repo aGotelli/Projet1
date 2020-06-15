@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="vertical_path" />
+  <arg name="file_name"         value="tuning_s1" />
 
   <!-- Select the folder containig the desired estimation file -->
   <arg name="take_from_folder"  value="processed_data"   />

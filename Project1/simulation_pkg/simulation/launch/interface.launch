@@ -62,7 +62,7 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   reacreate the simulation -->
-  <arg name="file_name"   value="long_path" />
+  <arg name="file_name"   value="problem" />
   <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is awailabe, it is possible to use it to control the

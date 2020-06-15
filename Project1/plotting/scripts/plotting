@@ -155,8 +155,11 @@ if __name__ == '__main__':
 
     print('length of the simulation %s', len(x_real))
 
+    print('length of the estimation %s', len(x_estm))
+    print('length of the estimation %s', len(y_estm))
+
     #   Skip motionless initial part if any
-    nbSamples = len( np.asarray( x_estm ) )
+    nbSamples = len( np.asarray( x_estm ) ) -1
     i = 0
     while (i<nbSamples) and (x_estm[i]-x_estm[i+1]==0) and (y_estm[i]-y_estm[i+1]==0):
         i = i+1
@@ -352,9 +355,10 @@ if __name__ == '__main__':
     #   and estimator
     p1 = win1.addPlot(title="Trajectories")
     p1.addLegend()
-    p1.plot(x_real, y_real, width=40, pen=(255,0,0), name="Real path")
-    p1.plot(x_odom, y_odom, width=40, pen=(0,255,0), name="Odometry path")
-    p1.plot(x_estm, y_estm, width=40, pen=(0,0,255), name="Estimated path")
+    #pen = pg.mkPen("Real path", color=(255,0,0), width=4)
+    p1.plot(x_real, y_real, pen=pg.mkPen('r', width=4), name="Real path")
+    p1.plot(x_odom, y_odom, pen=pg.mkPen('g', width=4), name="Odometry path")
+    p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
     p1.plot(x_m, y_m, pen=None, symbol='o')
     p1.setLabel('left', "Y Axis", units='m')
     p1.setLabel('bottom', "X Axis", units='m')
