@@ -1,6 +1,10 @@
 <launch>
 
-  <node pkg="plotting" type="plotting" name="plotting" output="screen" args="$(find data)/processed_data/one_loop_ds">
+
+  <arg name="file_name"         default="" />
+  <arg name="take_from_folder"  default="" />
+
+  <node pkg="plotting" type="plotting" name="plotting" output="screen" args="$(find data)/$(arg take_from_folder)/$(arg file_name)">
   </node>
 
 
