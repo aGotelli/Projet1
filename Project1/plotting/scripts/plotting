@@ -206,6 +206,15 @@ if __name__ == '__main__':
     p1.plot(x_m, y_m, pen=None, symbol='o')
     p1.setLabel('left', "Y Axis", units='m')
     p1.setLabel('bottom', "X Axis", units='m')
+    #   Plot the lines in a 10x10 world as in rviz
+    for a in range( int(5/xSpacing) ):
+        p1.plot([a*xSpacing, a*xSpacing], [-5, 5], pen=(150, 150, 150))
+        p1.plot([-a*xSpacing, -a*xSpacing], [-5, 5], pen=(150, 150, 150))
+
+    for b in range( int(5/ySpacing) ):
+        p1.plot([-5, 5], [b*ySpacing, b*ySpacing], pen=(150, 150, 150))
+        p1.plot([-5, 5], [-b*ySpacing, -b*ySpacing], pen=(150, 150, 150))
+
     p1.showGrid(x=True, y=True)
 
     #   Create a second plot with the Mahalanobis distances
