@@ -59,7 +59,10 @@ public:
   //  Perform the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 378ab203aa9c1e33f400bd9bf0f4f5ad1d42406d
   //  Compute the Mahalanobis distance given the current covariace matrix
   inline double ComputeMahalanobis(double innov,
                                     Eigen::MatrixXd& C,
