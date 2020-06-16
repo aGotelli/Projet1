@@ -160,11 +160,19 @@ private:
 
   mutable Eigen::MatrixXd S_odom{7, 2} ;    //  The kinematic model for the odometry
 
-
+  //  Declare the encoders values readed between two iterations
   mutable Eigen::Vector2d currentReading{0, 0};
   mutable Eigen::Vector2d previusReading{0, 0};
-  mutable Eigen::Vector2d currentReading_imp{0, 0};
-  mutable Eigen::Vector2d previusReading_imp{0, 0};
+
+  //  Declare the values of the ideal angles (from a perfect model) between two iterations
+  mutable Eigen::Vector2d previusIdealAngles{0, 0};
+  mutable Eigen::Vector2d currentIdealAngles{0, 0};
+
+  //  Declaration of the real angles (from a model which accounts for errors
+  //  in the robot assably). Here, again, in between two iterations.
+  mutable Eigen::Vector2d previusRealAngles{0, 0};
+  mutable Eigen::Vector2d currentRealAngles{0, 0};
+
 };
 
 
@@ -200,15 +208,14 @@ void Robot_2_0::ComputeOdometry() const
 {
   UpdateOdomMatrix();
 
-
   // Current value of phi_1f and phi_2f
-  currentReading  = Eigen::Vector2d(q.phi_1f, q.phi_2f)
+  currentIdealAngles  = Eigen::Vector2d(q.phi_1f, q.phi_2f);
 
   //  Define the wheels rotation in between two iterations
-  Eigen::Vector2d rotation = currentReading - previusReading;
+  Eigen::Vector2d rotation = currentIdealAngles - previusIdealAngles;
 
   // Virtual value of input with no errors
-  const Eigen::Vector2d virtual_input = S_odom.block<2,2>(4,0).inverse()*rotation ;
+  const Eigen::Vector2d virtualInput = S_odom.block<2,2>(4,0).inverse()*rotation ;
 
   // Matrix with errors in wheel radius and track gauge
   Eigen::Matrix2d imperfection;
@@ -216,27 +223,29 @@ void Robot_2_0::ComputeOdometry() const
                         1/wheelRadius              ,            -(trackGauge*trackGaugeError)/(2*wheelRadius)                ;
 
   // Compute rotation considering errors
-  const Eigen::Vector2d rotation_imp = imperfection*virtual_input ;
+  const Eigen::Vector2d rotationsFromInput = imperfection*virtualInput ;
+
+  //  Sum up to previus rotation which also accounts errors
+  currentRealAngles = previusRealAngles + rotationsFromInput;
 
   // Take into account encoder resolution
-  currentReading_imp = imp_rot*encoder.ResolutionToRad() + previusReading_imp;
-  currentReading_imp[0] = std::floor( currentReading_imp[0] ) ;
-  currentReading_imp[1] = std::floor( currentReading_imp[1] ) ;
+  currentReading = currentRealAngles*encoder.ResolutionToRad() ;
+  currentReading[0] = std::floor( currentReading[0] ) ;
+  currentReading[1] = std::floor( currentReading[1] ) ;
 
   // Compute rotation considering errors and encoder resolution
-  Eigen::Vector2d rotation_new = ( (currentReading_imp - previusReading_imp)/encoder.ResolutionToRad() );
+  Eigen::Vector2d rotationFromEncoders = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
 
   // Compute input discretized
-  const Eigen::Vector2d d_input = S_odom.block<2,2>(4,0).inverse()*rotation_new ;
+  const Eigen::Vector2d inputFromReadings = S_odom.block<2,2>(4,0).inverse()*rotationFromEncoders ;
 
-
-  q_odom = q_odom + S_odom*d_input;
-
-
+  //  Now perform the usual computation using a the implemented model 
+  q_odom = q_odom + S_odom*inputFromReadings;
 
   // Update
+  previusIdealAngles = currentIdealAngles ;
   previusReading = currentReading ;
-  previusReading_imp = currentReading_imp ;
+  previusRealAngles = currentRealAngles;
 
 
 }
