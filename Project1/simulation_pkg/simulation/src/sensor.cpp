@@ -132,7 +132,7 @@ int main (int argc, char** argv)
 	ros::Publisher SensorsDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
 
-	ros::Rate rate(150);
+	ros::Rate rate(500);
 
 	while (ros::ok()) {
 	  ros::spinOnce();

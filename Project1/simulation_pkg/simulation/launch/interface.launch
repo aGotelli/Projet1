@@ -17,7 +17,7 @@
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
-  <arg name="wheel_1_error"       value="1.0"  />    <!-- [percentage] -->
+  <arg name="wheel_1_error"       value="1.01"  />    <!-- [percentage] -->
   <arg name="track_gauge_error"   value="1.0"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
@@ -62,7 +62,7 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   reacreate the simulation -->
-  <arg name="file_name"   value="simple" />
+  <arg name="file_name"   value="one_loop" />
   <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is awailabe, it is possible to use it to control the

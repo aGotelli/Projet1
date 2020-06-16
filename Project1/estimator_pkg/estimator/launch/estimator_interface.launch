@@ -4,10 +4,10 @@
   <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="tuning_s1_bis" />
+  <arg name="save_as"           value="one_loop_sigma03_bis" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="problem" />
+  <arg name="file_name"         value="one_loop" />
 
   <!-- Select the folder containig the desired simulation file -->
   <arg name="take_from_folder"  value="recorded_data"   />
@@ -23,7 +23,7 @@
   <arg name="subsample_rate"  value="1" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
-  <arg name="sigma_tuning"  value="0.1"   />
+  <arg name="sigma_tuning"  value="0.03"   />
 
 
   <!-- Include the launch file which executes the estimation -->

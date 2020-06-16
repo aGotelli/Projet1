@@ -95,11 +95,26 @@ if __name__ == '__main__':
 
 
     #   Obtain information about the measurements
-    x_m = []
-    y_m = []
+    sx = []
+    sy = []
+    lines_detected = []
+    prev_h = -1000
+    prev_v = -1000
     for topic, meas, t in bag.read_messages(topics=['/Measurements']):
-        x_m.append( meas.pose.position.x )
-        y_m.append( meas.pose.position.y )
+        sx.append( meas.pose.position.x )
+        sy.append( meas.pose.position.y )
+
+        if meas.line_type.data == 'HORIZONTAL':
+
+            if meas.line_index.data != prev_h:
+                pos = [[meas.pose.position.x - xSpacing/2, meas.pose.position.x + xSpacing/2], [meas.line_index.data, meas.line_index.data]]
+                lines_detected.append(pos)
+                prev_h = meas.line_index.data
+        else:
+            if meas.line_index.data != prev_v:
+                pos = [[meas.line_index.data, meas.line_index.data], [meas.pose.position.y - ySpacing/2, meas.pose.position.y + ySpacing/2]]
+                lines_detected.append(pos)
+                prev_v = meas.line_index.data
 
 
     #   Obtain the Mahalanobis distances
@@ -120,6 +135,8 @@ if __name__ == '__main__':
 
     #   No need of the bag file anymore
     bag.close()
+
+    print( len( lines_detected ))
 
 #################################~  PREPOCESS DATA ~###################################
 
@@ -203,6 +220,7 @@ if __name__ == '__main__':
 
     estm_time = np.asarray(estm_time)
     estm_time = estm_time - estm_time[0]
+
 
 
 #################################~  PLOTTING DATA ~###################################
@@ -353,7 +371,13 @@ if __name__ == '__main__':
     p1.plot(x_real, y_real, pen=pg.mkPen('r', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('g', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
-    p1.plot(x_m, y_m, pen=None, symbol='o')
+    p1.plot(sx, sy, pen=None, symbol='o')
+
+
+    for line in lines_detected:
+        p1.plot(line[0], line[1], pen=(255,0,0))
+
+
     p1.setLabel('left', "Y Axis", units='m')
     p1.setLabel('bottom', "X Axis", units='m')
     #   Plot the lines in a 10x10 world as in rviz

@@ -163,6 +163,9 @@ private:
 
   mutable Eigen::Vector2d currentReading{0, 0};
   mutable Eigen::Vector2d previusReading{0, 0};
+
+  mutable Eigen::Vector2d currentAngles{0, 0};
+  mutable Eigen::Vector2d previusAngles{0, 0};
 };
 
 
@@ -198,6 +201,7 @@ void Robot_2_0::ComputeOdometry() const
 {
   UpdateOdomMatrix();
 
+
   // Current value of phi_1f and phi_2f
   currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
   currentReading[0] = std::floor( currentReading[0] ) ;
@@ -218,12 +222,9 @@ void Robot_2_0::ComputeOdometry() const
 
   q_odom = q_odom + S_odom*d_input;
 
-  // q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-  // q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-  // q_odom.theta = q_odom.theta + d_input[1] ;
-
   // Update
   previusReading = currentReading ;
+
 
 }
 

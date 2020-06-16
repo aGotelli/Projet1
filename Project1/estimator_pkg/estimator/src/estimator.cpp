@@ -95,9 +95,15 @@ int main(int argc, char** argv)
   nh_loc.param("threshold", threshold, 0.0 );
   //  Forgetting to set the threshold is a big mistake, the penality is regetting all the measurements
 
+  //  Obatain the encoders resolutions
+  double encodersResolution;
+  nh_glob.param("/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
+
+  ROS_INFO_STREAM("Encoders resolution : " << encodersResolution );
+
   double sigmaTuning;
-  nh_loc.param("sigma_tuning", sigmaTuning, 0.0);
-  //  Default zero means fully relying on odometry
+  nh_loc.param("sigma_tuning", sigmaTuning, sqrt(pow(2/encodersResolution*M_PI, 2)/12));
+  //  Default only takes into account the encoders resolution, with a perfect an high freq. model
 
   ROS_INFO_STREAM("Sigma tuning  : " << sigmaTuning );
 
@@ -130,12 +136,6 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/wheel_radius", wheelRadius, 0.05);
   nh_glob.param("/robot_2_0/a", a, 0.2);
   const double trackGauge = 2*a;
-
-  //  Obatain the encoders resolutions
-  double encodersResolution;
-  nh_glob.param("/robot_2_0/encoders_resolution", encodersResolution, (double)360) ;
-
-  ROS_INFO_STREAM("Encoders resolution : " << encodersResolution );
 
   // Initialize sensors
   double x1, y1;
@@ -183,7 +183,6 @@ int main(int argc, char** argv)
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
-  const double sigmaTuning = sqrt(pow(2/encodersResolution*M_PI, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -250,8 +249,6 @@ int main(int argc, char** argv)
 
       }
 
-      ROS_INFO_STREAM("Innovation : " << innov*innov );
-      ROS_INFO_STREAM("dMaha      : " << dMaha );
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
@@ -266,9 +263,6 @@ int main(int argc, char** argv)
         Mahalanobis.publish( currentDist );
 
       }
-      ROS_INFO_STREAM("State vec  : " << X );
-      ROS_INFO_STREAM("" );
-
 
 
     }
