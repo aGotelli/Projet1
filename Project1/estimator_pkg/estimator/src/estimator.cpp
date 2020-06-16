@@ -180,9 +180,6 @@ int main(int argc, char** argv)
   jointToCartesian <<       wheelRadius/2      ,      wheelRadius/2       ,
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
-  //   Convert to millimeters
-  //jointToCartesian = jointToCartesian*1000;
-
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
@@ -253,9 +250,8 @@ int main(int argc, char** argv)
 
       }
 
-      ROS_INFO_STREAM("Innovation :" << innov );
-      ROS_INFO_STREAM("dMaha      :" << dMaha );
-      ROS_INFO_STREAM("" );
+      ROS_INFO_STREAM("Innovation : " << innov*innov );
+      ROS_INFO_STREAM("dMaha      : " << dMaha );
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
@@ -270,6 +266,8 @@ int main(int argc, char** argv)
         Mahalanobis.publish( currentDist );
 
       }
+      ROS_INFO_STREAM("State vec  : " << X );
+      ROS_INFO_STREAM("" );
 
 
 

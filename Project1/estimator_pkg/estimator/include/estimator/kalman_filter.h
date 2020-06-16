@@ -59,6 +59,10 @@ public:
   //  Perform the estimation for the model
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 378ab203aa9c1e33f400bd9bf0f4f5ad1d42406d
   //  Compute the Mahalanobis distance given the current covariace matrix
   inline double ComputeMahalanobis(double innov,
                                     Eigen::MatrixXd& C,
@@ -117,6 +121,8 @@ void KalmanFilter::Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eige
 {
 
   Eigen::MatrixXd K = ( P*C.transpose() )/( (C*P*C.transpose()).value() + Qgamma ) ;
+
+  ROS_INFO_STREAM("K gain  : " << K );
   //  estimation phase
   X = X + K*innov ;
   P = (Eigen::MatrixBase<Eigen::Matrix3d>::Identity() - K*C)*P ;
