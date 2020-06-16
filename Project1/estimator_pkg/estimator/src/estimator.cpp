@@ -186,6 +186,7 @@ int main(int argc, char** argv)
 
   // Filter parameters
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
+  const double sigmaTuning = sqrt(pow(2/encodersResolution*M_PI, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
@@ -232,8 +233,8 @@ int main(int argc, char** argv)
 
         C << 0, 1,  measurement.activeSensor->RelativePosition().x*cos(X(2)) - measurement.activeSensor->RelativePosition().y*sin(X(2)) ;
 
-        const double Y = measurement.activeSensor->AbsolutePosition().y;
-        const double Yhat = measurement.lineIndex;
+        const double Y = measurement.lineIndex ;
+        const double Yhat = measurement.activeSensor->AbsolutePosition().y;
 
         innov = Y - Yhat ;
 
@@ -243,8 +244,8 @@ int main(int argc, char** argv)
 
         C << 1, 0, - measurement.activeSensor->RelativePosition().x*sin(X(2)) - measurement.activeSensor->RelativePosition().y*cos(X(2)) ;
 
-        const double Y =  measurement.activeSensor->AbsolutePosition().x;
-        const double Yhat = measurement.lineIndex ;
+        const double Y =   measurement.lineIndex ;
+        const double Yhat = measurement.activeSensor->AbsolutePosition().x;
 
         innov =  Y - Yhat ;
 
