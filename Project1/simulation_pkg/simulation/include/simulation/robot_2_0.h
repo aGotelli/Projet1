@@ -163,14 +163,8 @@ private:
 
   mutable Eigen::Vector2d currentReading{0, 0};
   mutable Eigen::Vector2d previusReading{0, 0};
-<<<<<<< HEAD
-
-  mutable Eigen::Vector2d currentAngles{0, 0};
-  mutable Eigen::Vector2d previusAngles{0, 0};
-=======
   mutable Eigen::Vector2d currentReading_imp{0, 0};
   mutable Eigen::Vector2d previusReading_imp{0, 0};
->>>>>>> 7c66697a349f951a91c312bb78dfee52d10fdfa4
 };
 
 
@@ -238,11 +232,8 @@ void Robot_2_0::ComputeOdometry() const
 
   q_odom = q_odom + S_odom*d_input;
 
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 7c66697a349f951a91c312bb78dfee52d10fdfa4
   // Update
   previusReading = currentReading ;
   previusReading_imp = currentReading_imp ;
