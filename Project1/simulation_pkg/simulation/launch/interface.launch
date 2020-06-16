@@ -17,8 +17,8 @@
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
-  <arg name="wheel_1_error"       value="1.02"  />    <!-- [percentage] -->
-  <arg name="track_gauge_error"   value="1.02"  />    <!-- [percentage] -->
+  <arg name="wheel_1_error"       value="1.0"  />    <!-- [percentage] -->
+  <arg name="track_gauge_error"   value="1.0"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -45,8 +45,8 @@
   simulation frequency the dispacement is 0.0033 i.e. 3.33 mm.
   In other words, it is strongly recommended to use a line thikness
   proportionated at the robot parameters.  [all the parameters are in meters]-->
-  <arg name="x_spacing"       value="0.25"     />
-  <arg name="y_spacing"       value="0.25"     />
+  <arg name="x_spacing"       value="0.5"     />
+  <arg name="y_spacing"       value="0.5"     />
   <arg name="line_thickness"  value="0.005"   />
 
 
@@ -62,7 +62,7 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   reacreate the simulation -->
-  <arg name="file_name"   value="problem" />
+  <arg name="file_name"   value="simple" />
   <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is awailabe, it is possible to use it to control the
