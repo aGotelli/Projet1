@@ -163,9 +163,14 @@ private:
 
   mutable Eigen::Vector2d currentReading{0, 0};
   mutable Eigen::Vector2d previusReading{0, 0};
+<<<<<<< HEAD
 
   mutable Eigen::Vector2d currentAngles{0, 0};
   mutable Eigen::Vector2d previusAngles{0, 0};
+=======
+  mutable Eigen::Vector2d currentReading_imp{0, 0};
+  mutable Eigen::Vector2d previusReading_imp{0, 0};
+>>>>>>> 7c66697a349f951a91c312bb78dfee52d10fdfa4
 };
 
 
@@ -203,27 +208,44 @@ void Robot_2_0::ComputeOdometry() const
 
 
   // Current value of phi_1f and phi_2f
-  currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
-  currentReading[0] = std::floor( currentReading[0] ) ;
-  currentReading[1] = std::floor( currentReading[1] ) ;
+  currentReading  = Eigen::Vector2d(q.phi_1f, q.phi_2f)
 
   //  Define the wheels rotation in between two iterations
-  Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
+  Eigen::Vector2d rotation = currentReading - previusReading;
 
+  // Virtual value of input with no errors
+  const Eigen::Vector2d virtual_input = S_odom.block<2,2>(4,0).inverse()*rotation ;
 
+  // Matrix with errors in wheel radius and track gauge
   Eigen::Matrix2d imperfection;
   imperfection <<  1/(wheelRadius*wheel1Error)     ,      (trackGauge*trackGaugeError)/(2*(wheelRadius*wheel1Error))         ,
                         1/wheelRadius              ,            -(trackGauge*trackGaugeError)/(2*wheelRadius)                ;
 
+  // Compute rotation considering errors
+  const Eigen::Vector2d rotation_imp = imperfection*virtual_input ;
+
+  // Take into account encoder resolution
+  currentReading_imp = imp_rot*encoder.ResolutionToRad() + previusReading_imp;
+  currentReading_imp[0] = std::floor( currentReading_imp[0] ) ;
+  currentReading_imp[1] = std::floor( currentReading_imp[1] ) ;
+
+  // Compute rotation considering errors and encoder resolution
+  Eigen::Vector2d rotation_new = ( (currentReading_imp - previusReading_imp)/encoder.ResolutionToRad() );
 
   // Compute input discretized
-  const Eigen::Vector2d d_input = imperfection.inverse()*rotation ;
+  const Eigen::Vector2d d_input = S_odom.block<2,2>(4,0).inverse()*rotation_new ;
 
 
   q_odom = q_odom + S_odom*d_input;
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 7c66697a349f951a91c312bb78dfee52d10fdfa4
   // Update
   previusReading = currentReading ;
+  previusReading_imp = currentReading_imp ;
 
 
 }
