@@ -580,6 +580,7 @@ However, if it doesn't work, that's because the package is in your computer but 
         sudo pip install pyqtgraph
 
 To test the package now run the command:
+
         python3 -m pyqtgraph.examples
 
 If it doesn't work, that's because PyQt5 is missing. It is thus needed to install it.
