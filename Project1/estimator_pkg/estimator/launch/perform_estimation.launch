@@ -1,0 +1,51 @@
+<launch>
+
+  <arg name="save_as"           default=""                />
+  <arg name="file_name"         default=""                />
+  <arg name="take_from_folder"  default="recorded_data"   />
+  <arg name="save_into_folder"  default="processed_data"  />
+
+  <arg name="threshold"     default="0.0"   />
+  <arg name="sigma_tuning"  default="0.0"   />
+
+  <arg name="speed_factor"    default="1" />
+  <arg name="subsample_rate"  default="1" />
+
+  <arg name="simulation_frame_rate" default="150" />
+
+  <arg name="hz" default="$(eval arg('speed_factor')*arg('simulation_frame_rate') )"  />
+
+  <arg name="estimator_freq" default="$(eval arg('speed_factor')*150/arg('subsample_rate') )"  />
+
+  <param name="use_sim_time" value="true" />
+
+
+  <rosparam command="load" file="$(find data)/$(arg take_from_folder)/$(arg file_name).yaml" />
+
+
+  <node pkg="rosbag" type="play" name="playback_simulation" args="--delay=2
+                                                                  --clock
+                                                                  --hz=$(arg hz)
+                                                                  --rate=$(arg speed_factor)
+                                                                  $(find data)/$(arg take_from_folder)/$(arg file_name).bag"
+                                                                  required="true">
+    <remap from="/simulation/RobotPosture"    to="/RobotPosture"    />
+    <remap from="/simulation/EncodersReading" to="/EncodersReading" />
+    <remap from="/simulation/IRSensorsStatus" to="/IRSensorsStatus" />
+    <remap from="/simulation/RobotOdometry"   to="/RobotOdometry"   />
+  </node>
+
+  <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
+    <param name="threshold"                       value="$(arg threshold)"    />
+    <param name="sigma_tuning"                    value="$(arg sigma_tuning)" />
+    <param name="estimator_frequency" type="int"  value="$(arg estimator_freq)"      />
+  </node>
+
+  <!-- The node to save all the needed data -->
+  <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg save_as)" output="screen"  >
+    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Velocities Measurements RobotPosture RobotOdometry EstimationError"      />
+  </node>
+
+
+
+</launch>

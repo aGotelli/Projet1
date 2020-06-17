@@ -16,7 +16,9 @@
   <!-- Parameters of wheels and related actuators -->
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
-  <arg name="encoders_resolution" value="360"   />    <!-- dots/wheel rotation -->
+  <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
+  <arg name="wheel_1_error"       value="1.01"  />    <!-- [percentage] -->
+  <arg name="track_gauge_error"   value="1.0"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -27,9 +29,9 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="2" />  <!-- meters -->
-  <arg name="y_init"      value="2" />  <!-- meters -->
-  <arg name="theta_init"  value="45.0" />  <!-- grad -->
+  <arg name="x_init"      value="2.0" />  <!-- meters -->
+  <arg name="y_init"      value="0.0" />  <!-- meters -->
+  <arg name="theta_init"  value="0.0" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
   y_spacing represent the offset of the lines along x and y respectively.
@@ -44,7 +46,7 @@
   In other words, it is strongly recommended to use a line thikness
   proportionated at the robot parameters.  [all the parameters are in meters]-->
   <arg name="x_spacing"       value="0.5"     />
-  <arg name="y_spacing"       value="1.0"     />
+  <arg name="y_spacing"       value="0.5"     />
   <arg name="line_thickness"  value="0.005"   />
 
 
@@ -60,7 +62,7 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   reacreate the simulation -->
-  <arg name="file_name"   value="bag_and_param" />
+  <arg name="file_name"   value="one_loop" />
   <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is awailabe, it is possible to use it to control the
@@ -74,7 +76,7 @@
   <arg name="joystick_tag"  value="js1"   />
 
 
-  <arg name="record" value="false" />
+  <arg name="record" value="true" />
 
 
   <!-- Include the launch file which executes the simulations -->

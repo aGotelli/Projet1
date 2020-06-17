@@ -35,7 +35,6 @@
  */
 
 #include <visualization_msgs/Marker.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
@@ -43,6 +42,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <memory>
 
 namespace utility
 {
@@ -63,6 +63,7 @@ namespace utility
 
   enum COLOR { RED, GREEN };
 
+  enum LINETYPE{ HORIZONTAL, VERTICAL };
 
   //  Constrain an angle in the range [-M_PI, M_PI]
   inline const double LimitAngle( double a) ;
@@ -157,6 +158,8 @@ struct Pose2D {
   double y { 0.0 } ;
   double theta { 0.0 } ;
 };
+
+
 
   template<class QuaternionTemplated>
   typename item_return<QuaternionTemplated>::type ToQuaternion(const double yaw, const double pitch, const double roll)
@@ -451,8 +454,8 @@ struct Pose2D {
     sensorMarker.color.b = 0.0f;
     sensorMarker.color.a = 1.0f;
 
-    //  Set the lifetime as no end
-    sensorMarker.lifetime = ros::Duration();
+    //  Set the lifetime as sixty seconds to avoid memory leaks when running long simulations 
+    sensorMarker.lifetime = ros::Duration(60);
 
     return sensorMarker;
   }

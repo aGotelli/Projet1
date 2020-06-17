@@ -85,16 +85,23 @@ int main (int argc, char** argv)
 
 	bool onlyOnce = true;
   ros::Rate rate(50);
+	double t0 = ros::Time::now().toSec();
   while (ros::ok()){
       ros::spinOnce();
 
-			if(onlyOnce) {
-				for(const auto& chunk : generator.Chunks() ) {
-					TilesDisplay.publish( chunk->tile );
-					TilesDisplay.publish( chunk->lines );
-				}
+
+			generator.ChuckBelonging(robotPosture);
+
+
+			for(const auto& chunk : generator.Chunks() ) {
+				TilesDisplay.publish( chunk->tile );
+				TilesDisplay.publish( chunk->lines );
 			}
 
+			//	Ensure the application to have correctly started and that rviz has
+			//	obtained the ground. Then delete the chink to save memory
+			if( (ros::Time::now().toSec() - t0) > 5 )
+				generator.ClearChunks();
 
 
       rate.sleep();

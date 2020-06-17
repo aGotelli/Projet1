@@ -82,6 +82,7 @@ public:
 
   virtual void isMoving();
 
+
 protected:
 
   //  Virtual Callback
@@ -104,8 +105,9 @@ protected:
   virtual void PrepareMessages()=0;
 
 
+
   //  The dots readed by the encoders mounted on the fixed wheels.
-  simulation_messages::Encoders elapsedDots;  //  No need of default initialization
+  simulation_messages::Encoders wheelsRotations;  //  No need of default initialization
 
   //  The full robot pusture obtained with the kinematic model.
   geometry_msgs::Pose robotPosture;    //  No need of default initialization
@@ -131,6 +133,9 @@ protected:
 
 
 private:
+
+  // Timer callback
+  void TimerCallback(const ros::TimerEvent&);
 
   //Node handle
   ros::NodeHandle nh_glob;                    //  No need of default initialization
@@ -158,16 +163,29 @@ private:
   //  Publish a joint state message to control the URDF model
   ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
+  // Setting a timer
+  ros::Timer timer { nh_glob.createTimer(ros::Duration(0.5), &RobotBase::TimerCallback, this) };
+
+
 };
 
+void RobotBase::TimerCallback(const ros::TimerEvent&)
+{
 
+  //  Update the line strip for visualization
+  utility::UpdatePath( robotPosture, generatedPath ) ;
 
+  //  Publish the line strip for visualization
+  if( generatedPath.points.size() >= 2)
+      ShowMarker.publish( generatedPath ) ;
+}
 
 void RobotBase::isMoving()
 {
 
   //  Initialize the line of the path before proceeding
   utility::InitLineStrip( generatedPath ) ;
+
 
   //  Initialize the time
   prevTime = ros::Time::now() ;
@@ -195,18 +213,11 @@ void RobotBase::isMoving()
       //  Elaborate the data for being published
       PrepareMessages() ;
 
-      //  Update the line strip for visualization
-      utility::UpdatePath( robotPosture, generatedPath ) ;
-
       //  Publish current robot posture
       Robot.publish( robotPosture );
 
       //  Publish current wheels orientations
-      Encoders.publish( elapsedDots );
-
-      //  Publish the line strip for visualization
-      if( generatedPath.points.size() >= 2)
-        ShowMarker.publish( generatedPath ) ;
+      Encoders.publish( wheelsRotations );
 
       //  Publish the joint state
       JointsController.publish( actuations ) ;
@@ -219,7 +230,6 @@ void RobotBase::isMoving()
 
   }
 }
-
 
 
 

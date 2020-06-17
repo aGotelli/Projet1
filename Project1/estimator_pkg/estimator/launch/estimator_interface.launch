@@ -1,0 +1,37 @@
+<launch>
+
+  <!-- Select the folder where you want to put the estimator outputs file -->
+  <arg name="save_into_folder"  value="processed_data"  />
+
+  <!-- Select the name for the file containig the estimator outputs -->
+  <arg name="save_as"           value="one_loop_sigma03_bis" />
+
+  <!-- Select the simulation files to be loaded -->
+  <arg name="file_name"         value="one_loop" />
+
+  <!-- Select the folder containig the desired simulation file -->
+  <arg name="take_from_folder"  value="recorded_data"   />
+
+  <!-- Select the desired computation acceleration. This parameter increases the
+  rate at which the rosbag publishes the data and the rate of the estimator
+  accordingly.                                                               -->
+  <arg name="speed_factor"    value="1" />
+
+  <!-- This parameter allows to run the estimator at a frequency nth times lower
+  than the simulation frequency. In this way it is possible to test the
+  simulation in worst conditions.                                            -->
+  <arg name="subsample_rate"  value="1" />
+
+  <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
+  <arg name="sigma_tuning"  value="0.03"   />
+
+
+  <!-- Include the launch file which executes the estimation -->
+  <include file="$(find estimator)/launch/perform_estimation.launch" pass_all_args="true">
+  </include>
+
+
+
+
+
+</launch>

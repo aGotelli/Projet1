@@ -43,7 +43,7 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/Pose.h>
-#include <memory>
+
 
 
 struct Size {
@@ -121,10 +121,10 @@ visualization_msgs::Marker PlaceTile( const utility::Pose2D& position, const Siz
 }
 
 
-enum TYPE{ HORIZONTAL, VERTICAL };
+
 int h_index = 0;
 int v_index = 0;
-visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Size& chunkSize, const TYPE& type, const World& world, const utility::Pose2D& chunkCenter)
+visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Size& chunkSize, const utility::LINETYPE& type, const World& world, const utility::Pose2D& chunkCenter)
 {
   visualization_msgs::Marker line;
 
@@ -132,13 +132,13 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
 	line.header.stamp = ros::Time::now();
   line.lifetime = ros::Duration();
 
-  if(type == TYPE::VERTICAL) {
+  if(type == utility::LINETYPE::VERTICAL) {
     line.ns = "vertical_line";
     line.id = v_index;
     v_index ++ ;
   }
 
-  if(type == TYPE::HORIZONTAL) {
+  if(type == utility::LINETYPE::HORIZONTAL) {
     line.ns = "horizontal_line";
     line.id = h_index;
     h_index ++ ;
@@ -162,12 +162,12 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
   p1.x = position.x;
   p1.y = position.y;
 
-  if(type == TYPE::VERTICAL) {
+  if(type == utility::LINETYPE::VERTICAL) {
     p2.x = position.x;
     p2.y = position.y + copysign( chunkSize.y, chunkCenter.y);
   }
 
-  if(type == TYPE::HORIZONTAL) {
+  if(type == utility::LINETYPE::HORIZONTAL) {
     p2.x = position.x + copysign( chunkSize.x, chunkCenter.x);
     p2.y = position.y;
   }
@@ -182,7 +182,7 @@ visualization_msgs::Marker PlaceLine( const utility::Pose2D& position, const Siz
 
 
 
-std::unique_ptr<Ground> Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, const World& world )
+std::shared_ptr<Ground> Generation( const utility::Pose2D& chunkCenter, const Size& chunkSize, const World& world )
 {
   //  First allocate the memory for the array of markers comupting the numbers of
   //  tiles along x and y
@@ -197,15 +197,15 @@ std::unique_ptr<Ground> Generation( const utility::Pose2D& chunkCenter, const Si
   visualization_msgs::MarkerArray lines;
   lines.markers.reserve( linesNumber );
 
+
   for(int i= 0; i <= tilesNormalX; i ++) {  //  Creating the "vertical" lines
-    lines.markers.push_back( PlaceLine( utility::Pose2D( copysign( i*world.XSpacing(), chunkCenter.x), 0.0), chunkSize, TYPE::VERTICAL, world, chunkCenter) );
+    lines.markers.push_back( PlaceLine( utility::Pose2D( copysign( i*world.XSpacing(), chunkCenter.x), 0.0), chunkSize, utility::LINETYPE::VERTICAL, world, chunkCenter) );
   }
 
   for(int j= 0; j <= tilesNormalY; j ++) {  //  Creating the "horizontal" lines
-    lines.markers.push_back( PlaceLine( utility::Pose2D( 0.0, copysign( j*world.YSpacing(), chunkCenter.y)), chunkSize, TYPE::HORIZONTAL, world, chunkCenter) ) ;
+    lines.markers.push_back( PlaceLine( utility::Pose2D( 0.0, copysign( j*world.YSpacing(), chunkCenter.y)), chunkSize, utility::LINETYPE::HORIZONTAL, world, chunkCenter) ) ;
   }
-
-  return std::make_unique<Ground>(tile, lines, chunkCenter);
+  return std::make_shared<Ground>(tile, lines, chunkCenter);
 }
 
 
@@ -219,9 +219,11 @@ public:
 
   void InitWorld();
 
-  //void ChuckBelonging(const geometry_msgs::PoseStamped& robotPosture);
+  void ChuckBelonging(const geometry_msgs::Pose& robotPosture);
 
-  inline const std::vector< std::unique_ptr<Ground> >& Chunks() const {return chunks;}
+  inline const std::vector< std::shared_ptr<Ground> >& Chunks() const {return chunks;}
+
+  inline void ClearChunks() {chunks.clear(); }
 
 
 
@@ -229,7 +231,9 @@ private:
 
   const World world;
 
-  std::vector< std::unique_ptr<Ground> > chunks ;
+  std::vector< std::shared_ptr<Ground>> chunks ;
+
+  std::vector<std::shared_ptr<Ground>> coveredWorld ;
 
   const Size chunkSize{ Size(5.0f, 5.0f) };
 };
@@ -245,6 +249,35 @@ void WorldGenerator::InitWorld()
 
   chunks.push_back( Generation( utility::Pose2D( chunkSize.x/2, -chunkSize.y/2 ), chunkSize, world) ) ;
 
+  coveredWorld = chunks;
+
+}
+
+
+void WorldGenerator::ChuckBelonging(const geometry_msgs::Pose& robotPosture)
+{
+  bool inside = false;
+  //  Check if the robot is inside one of the generated chunk
+  for(const auto& cell : coveredWorld) {
+    if( robotPosture.position.x <= cell->center.x + chunkSize.x &&
+        robotPosture.position.x >= cell->center.x - chunkSize.x &&
+        robotPosture.position.y <= cell->center.y + chunkSize.y &&
+        robotPosture.position.x >= cell->center.y - chunkSize.y    ) {
+
+          inside = true;
+        }
+
+        ROS_INFO_STREAM("Is inside: " << (bool)inside );
+
+  }
+
+  //  If it is not inside any of the generated chunk, create appositely
+  if( !inside) {
+    const double x_pos = std::floor(robotPosture.position.x/chunkSize.x)*chunkSize.x + chunkSize.x/2;
+    const double y_pos = std::floor(robotPosture.position.y/chunkSize.y)*chunkSize.x + chunkSize.y/2;
+    chunks.push_back( Generation( utility::Pose2D( x_pos, y_pos ), chunkSize, world) ) ;
+    coveredWorld.push_back( Generation( utility::Pose2D( x_pos, y_pos ), chunkSize, world) ) ;
+  }
 }
 
 

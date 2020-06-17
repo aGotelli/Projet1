@@ -16,8 +16,20 @@
  * Description
             The aim of this file is to save all the recorded data in the proper folder. Moreover,
           as the architecture is versatile and some parameters can be changed, based on the specification
-          of the project, all the informations regarding this, are also saved. In this way, the details
-          of the robot, of the world and of the sensor are always visible and available.
+          of the project, all the informations regarding this, are also saved.
+
+            This nodes works by taking some informations from the user:
+          1) If they want to save the parameters
+          2) Which topics must be saved
+
+            This node is designed to be used in the same level of the data that must be recorded. Meaning that,
+          if the topics and parameters are inside some group, the node must be putted in the same group.
+
+            In the case where the simulation is not in a group the node can handle this case.
+          However the user is encouraged to use the namespaces i.e. the groups properly.
+          This will lead to a clearer and more understandable architecture for the simulation.
+          In fact, the group allow grouping together components that work on the same task or concept.
+
 
             This file has a build-in method to avoid to overwrite and existing file, causing to loose some
           precious data. However, it is recommended to use a file name without spaces and that does not end
@@ -26,11 +38,6 @@
             This node has also a build in method to ensure the existence of the folder where to storage the
           files. If the folder does not exist then it is created in the path given. However if the path is
           not correct the node is shut down and simulation goes on WITHOUT SAVING ANY FILE.
-
-            This node is designed to be used in the same group of the simulation. In the case where the simulation
-          is not in a group the node can handle this case. However the user is encouraged to use the namespaces i.e.
-          the groups properly. This will lead to a clearer and more understandable architecture for the simulation.
-          In fact, the group allow grouping together components that work on the same task or concept.
 
             To check that the file is not already present in the folder, the function std::find_if is used. However,
           sometimes, it is not quite easy to understand how it works.
@@ -59,7 +66,7 @@
           boost::bind(IsEqual, _1, fileName)
 
             It returns a pointer to a function that has the body of IsEqual but takes only one arguments. This is used
-          as predicate for the std::find_if function. 
+          as predicate for the std::find_if function.
  *
  */
 
@@ -77,6 +84,7 @@
 
 //ROS
 #include <ros/ros.h>
+#include <ros/master.h>
 #include <rosbag/bag.h>
 #include <geometry_msgs/PoseStamped.h>
 
@@ -164,7 +172,18 @@ int main (int argc, char** argv)
 	//ROS Initialization
   ros::init(argc, argv, "file_handler");
 
-  ros::NodeHandle nh_glob;
+  ros::NodeHandle nh_glob, nh_loc("~");
+
+  //  Check the user choice of saving the parameters
+  bool saveParams;
+  nh_loc.param<bool>("save_params", saveParams, true );
+
+  //  Read the topic to save
+  std::string topisToSave;
+  nh_loc.param<std::string>("topics_to_save", topisToSave, "" );
+
+  if( topisToSave.empty() )
+    ROS_WARN_STREAM("YOU ARE NOT RECORDING ANY TOPICS");
 
   //  The node must be provided with two args
   if( argc <  3 ) {
@@ -207,22 +226,67 @@ int main (int argc, char** argv)
   FindFile(folderPath, fileName );
 
 
+
+
   //  Obtain the namespace
   std::string group = ros::this_node::getNamespace() ;
-
+  ROS_INFO_STREAM(group);
   //  If the simulation is not defined in a namespace then the group is incorrect
   if( group == "/" )
     group = "";
 
-  //  Save all the parameters
-  const std::string rosparamCommand = "rosparam dump " + folderPath.string() + "/" + fileName.string() + ".yaml " + group ;
-  system( const_cast<char*>( rosparamCommand.c_str() ) );
+
+  //  Save all the parameters ( if required )
+  if( saveParams ) {
+
+    const std::string rosparamCommand = "rosparam dump " + folderPath.string() + "/" + fileName.string() + ".yaml " + group ;
+    system( const_cast<char*>( rosparamCommand.c_str() ) );
+  }
 
 
-  //  Record all the messages
-  const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag " + group + "/EncodersReading " + group + "/IRSensorsStatus " + group + "/RobotPosture " ;
-  ROS_INFO_STREAM(rosbagCommand);
-  system( const_cast<char*>( rosbagCommand.c_str() ) );
+  //  Record topis if any
+  if( !topisToSave.empty() ) {
+
+    //  Get the first character to ensure a correct format
+    char first = topisToSave.at(0);
+
+    //  Ensure a correct format
+    if( first != 32 ) //  32 is the integer value for " "
+        topisToSave.insert(0, " ");
+
+    //  Start from the beginning
+    std::size_t pos = 0;
+
+    while( pos < topisToSave.size() ) {
+
+      //  Check status of the group
+      if( !group.empty() ) {
+          //  Insert the correct suffix
+          topisToSave.insert( pos + 1, (group + "/") );
+
+          //  Find new position
+          pos = topisToSave.find( " ", pos + group.size() );
+      } else {
+          //  Insert the correct suffix
+          topisToSave.insert( pos + 1,  "/" );
+
+          //  Find new position
+          pos = topisToSave.find( " ", pos + 1 );
+      }
+
+    } //  Exiting this loop with correctly formatted topics names and beginning with a space
+
+
+    //  Record all the messages
+    const std::string rosbagCommand = "rosbag record -O" + folderPath.string() + "/" + fileName.string() + ".bag" + topisToSave ;
+    ROS_INFO_STREAM(rosbagCommand);
+    system( const_cast<char*>( rosbagCommand.c_str() ) );
+  }
+
+
+
+
+
 
   return 0;
 

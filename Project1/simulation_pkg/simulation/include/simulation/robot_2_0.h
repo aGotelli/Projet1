@@ -32,11 +32,41 @@
           displacement is added to the current value so all the coordinates are
           updated.
 
-            Morover, in this file it is computed the odometry. Starting from the
-          current value of phi angles of the two fixed wheels, the elementary
-          rotation of the two wheels between two instants of time are computed
-          taking into account the wheel resolution. In this way, the discretized
-          input is obtained and, through it, the odometry coordinates are updated.
+            Morover, in this file it is computed the odometry. The aim is to
+          include in this file the possibility to simuate a real robot. A real
+          robot has some kind of uncertaintis due to assembly and geometrical
+          errors. As a result, the simulation should output the encoders values
+          that are sigthly different of the real angles (depending on the
+          amount of errors). In other words the simulation should take into
+          account:
+          1) The encoders' Resolution
+          2) The error in the wheel radius
+          3) An error in the track gauge
+          To achieve this goal (In the Function ComputeOdometry()) the following
+          explain the passges.
+
+            Starting from the current value of phi angles of the two fixed
+          wheels, the elementary rotations of the two wheels between two
+          instants of time are computed. With this info, the input is computed
+          as a dispacement caused by the wheels rotations. Once the "virtual
+          input" or desired input is computed, it is applied to the model,
+          taking into account the errors. This will lead to some sigthly
+          different wheels rotations angles. These rotations are summed up with
+          a vector containg the previus rotations (starting from zero) into
+          another vector, which contains the wheels angles for the real model.
+          This allows to have te comulative error due to models imperfections.
+
+            The last mentioned vector (currentRealAngles) contains the values
+          of the wheels angles of the real model. In these last values the
+          encoder resolution is taken into account. The angles are converted in
+          dots in each encoder. The number of dots is floored in order to
+          simulatie the reading of an ecoder. Comparing the current reading with
+          the previus reading the rotation is obtained (as elapesd dots).
+
+            Finally odometry applies using the values readed from the encoders
+          and the ideal model.
+
+            The robot has two values which are
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -73,7 +103,9 @@ public:
 
   Robot_2_0(const utility::Pose2D& initial, const double _frontAxle,
             const double _wheelRadius, const double _trailingOffSet,
-            const double _castorArmLength, const double _wMax, const double _resolution) :
+            const double _castorArmLength, const double _wMax,
+            const double _resolution, const double _wheel1Error,
+            const double _trackGaugeError) :
             q( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             q_odom( robot_2_0::GeneralizedCoordinates( initial.x, initial.y, initial.theta) ),
             trackGauge(2*_frontAxle),
@@ -82,7 +114,10 @@ public:
             castorArmLength(_castorArmLength),
             wMax(_wMax),
             encoder( Encoders(_resolution) ),
+            wheel1Error(_wheel1Error),
+            trackGaugeError(_trackGaugeError),
             RobotBase() {/* All the rest is initialized as default */
+              ROS_INFO_STREAM("trackGaugeError : " << trackGaugeError );
               ROS_DEBUG_STREAM("Fully user-defined initialization called...");     }
 
 
@@ -100,6 +135,8 @@ public:
   // Function to update the J matrix elements
   void UpdateMatrix() const;
 
+  void UpdateOdomMatrix() const;
+
   // Function to control the max value of the velocities
   void EnsureMaxSpeed() const;
 
@@ -115,11 +152,12 @@ private:
     Encoders()=default;
 
     Encoders(const double _resolution) : resolution(_resolution) {
-      ROS_INFO_STREAM("resolution : " << resolution );
+      ROS_DEBUG_STREAM("resolution : " << resolution );
     }
 
     inline const double ResolutionToRad() const {return resolution/(2*M_PI); }
     inline const double Resolution() const {return resolution; }
+
 
   private:
     //  the resolution of the encoder
@@ -135,6 +173,9 @@ private:
 
   const Encoders encoder;
 
+  const double wheel1Error     { 0.0 };
+  const double trackGaugeError { 0.0 };
+
   // Robot parameters
   const double trackGauge {0.4} ;             //  [m]
   const double wheelRadius {0.05 };           //  [m]
@@ -147,9 +188,21 @@ private:
 
   mutable Eigen::MatrixXd S{7, 2} ;         //  The kinematic model
 
+  mutable Eigen::MatrixXd S_odom{7, 2} ;    //  The kinematic model for the odometry
 
+  //  Declare the encoders values readed between two iterations
   mutable Eigen::Vector2d currentReading{0, 0};
   mutable Eigen::Vector2d previusReading{0, 0};
+
+  //  Declare the values of the ideal angles (from a perfect model) between two iterations
+  mutable Eigen::Vector2d previusIdealAngles{0, 0};
+  mutable Eigen::Vector2d currentIdealAngles{0, 0};
+
+  //  Declaration of the real angles (from a model which accounts for errors
+  //  in the robot assably). Here, again, in between two iterations.
+  mutable Eigen::Vector2d previusRealAngles{0, 0};
+  mutable Eigen::Vector2d currentRealAngles{0, 0};
+
 };
 
 
@@ -180,27 +233,49 @@ void Robot_2_0::PerformMotion() const
 }
 
 
+// compute odometry with error in wheel radius and track gauge
 void Robot_2_0::ComputeOdometry() const
 {
+  UpdateOdomMatrix();
 
   // Current value of phi_1f and phi_2f
-  currentReading  = ( Eigen::Vector2d(q.phi_1f, q.phi_2f) )*encoder.ResolutionToRad() ;
+  currentIdealAngles  = Eigen::Vector2d(q.phi_1f, q.phi_2f);
+
+  //  Define the wheels rotation in between two iterations
+  Eigen::Vector2d rotation = currentIdealAngles - previusIdealAngles;
+
+  // Virtual value of input with no errors
+  const Eigen::Vector2d virtualInput = S_odom.block<2,2>(4,0).inverse()*rotation ;
+
+  // Matrix with errors in wheel radius and track gauge
+  Eigen::Matrix2d imperfection;
+  imperfection <<  1/(wheelRadius*wheel1Error)     ,      (trackGauge*trackGaugeError)/(2*(wheelRadius*wheel1Error))         ,
+                        1/wheelRadius              ,            -(trackGauge*trackGaugeError)/(2*wheelRadius)                ;
+
+  // Compute rotation considering errors
+  const Eigen::Vector2d rotationsFromInput = imperfection*virtualInput ;
+
+  //  Sum up to previus rotation which also accounts errors
+  currentRealAngles = previusRealAngles + rotationsFromInput;
+
+  // Take into account encoder resolution
+  currentReading = currentRealAngles*encoder.ResolutionToRad() ;
   currentReading[0] = std::floor( currentReading[0] ) ;
   currentReading[1] = std::floor( currentReading[1] ) ;
 
-  //  Define the wheels rotation in between two iterations
-  Eigen::Vector2d rotation = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
+  // Compute rotation considering errors and encoder resolution
+  Eigen::Vector2d rotationFromEncoders = ( (currentReading - previusReading)/encoder.ResolutionToRad() );
 
   // Compute input discretized
-  const Eigen::Vector2d d_input = S.block<2,2>(4,0).inverse()*rotation ;
+  const Eigen::Vector2d inputFromReadings = S_odom.block<2,2>(4,0).inverse()*rotationFromEncoders ;
 
-  // Compute odometry position
-  q_odom.x = q_odom.x + d_input[0]*cos(q_odom.theta) ;
-  q_odom.y = q_odom.y + d_input[0]*sin(q_odom.theta) ;
-  q_odom.theta = q_odom.theta + d_input[1] ;
+  //  Now perform the usual computation using a the implemented model
+  q_odom = q_odom + S_odom*inputFromReadings;
 
   // Update
+  previusIdealAngles = currentIdealAngles ;
   previusReading = currentReading ;
+  previusRealAngles = currentRealAngles;
 
 }
 
@@ -216,6 +291,20 @@ void Robot_2_0::UpdateMatrix() const
                   1/wheelRadius         ,                        trackGauge/(2*wheelRadius)                      ,
                   1/wheelRadius         ,                       -trackGauge/(2*wheelRadius)                      ,
           -cos(q.beta_3c)/wheelRadius   ,              sin(q.beta_3c)*trailingOffSet/wheelRadius                 ;
+
+}
+
+
+void Robot_2_0::UpdateOdomMatrix() const
+{
+
+  S_odom <<            cos(q_odom.theta)          ,                                         0                                   ,
+                       sin(q_odom.theta)          ,                                         0                                   ,
+                              0                   ,                                         1                                   ,
+             -sin(q_odom.beta_3c)/castorArmLength ,    -(castorArmLength + trailingOffSet*cos(q_odom.beta_3c))/castorArmLength  ,
+                        1/wheelRadius             ,                             trackGauge/(2*wheelRadius)                      ,
+                        1/wheelRadius             ,                            -trackGauge/(2*wheelRadius)                      ,
+               -cos(q_odom.beta_3c)/wheelRadius   ,                  sin(q_odom.beta_3c)*trailingOffSet/wheelRadius             ;
 
 }
 
@@ -249,7 +338,6 @@ void Robot_2_0::PrepareMessages()
   robotPosture.orientation = utility::ToQuaternion<geometry_msgs::Quaternion>(q.theta) ;
 
 
-
   //  Time handling for odometry posture
   robotOdometry.header.stamp = currentTime;
 
@@ -264,8 +352,8 @@ void Robot_2_0::PrepareMessages()
 
 
   //  Publish the current reading in dots
-  elapsedDots.phi_1f = currentReading[0]/encoder.ResolutionToRad() ;
-  elapsedDots.phi_2f = currentReading[1]/encoder.ResolutionToRad() ;
+  wheelsRotations.phi_1f = q_odom.phi_1f ;
+  wheelsRotations.phi_2f = q_odom.phi_2f ;
 
 
   //  Clear the joint state message

@@ -96,11 +96,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        joint_offset:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         map:
           Alpha: 1
           Show Axes: false
@@ -116,6 +111,11 @@ Visualization Manager:
           Show Trail: false
           Value: true
         sensor_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        trailing_offset:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -175,6 +175,14 @@ Visualization Manager:
       Radius: 0.10000000149011612
       Reference Frame: <Fixed Frame>
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /estimator_output
+      Name: Marker
+      Namespaces:
+        RobotShape: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -203,16 +211,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.024744987487793
+      Distance: 10.370173454284668
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.30717134475708
-        Y: 2.518233299255371
-        Z: 1.1646194458007812
+        X: 2.6710503101348877
+        Y: -0.16956597566604614
+        Z: -0.26605767011642456
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
