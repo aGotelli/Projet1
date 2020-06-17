@@ -377,6 +377,8 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
 
 
 const utility::Pose2D Sensor::AbsolutePosition() const
+//  This function returns the absolute position of the sensor. However it 
+//  requires the execution of the function UpdateTransform() before calling
 {
   const Eigen::Vector3d oHCoord = oTm*HCoord;
   //ROS_INFO_STREAM("sensor is in : " << oHCoord );
@@ -405,6 +407,9 @@ private:
 
 
 void RobotSensors::AddSensor(const Sensor& newSensor)
+//   This function is to be used when adding a sensor to the robot. This function
+//   Ensures that all the sensors have the same instance of the world. In fact, if,
+//   for some reasons, a sensor has a different istance, its outputs will be inconsistent
 {
   if( sensors.empty() ) {
     //  Directly add the new member
@@ -424,55 +429,7 @@ void RobotSensors::AddSensor(const Sensor& newSensor)
 
 }
 
-/*
 
-
-void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
-{
-
-  //  Obtain the lines around the sensor
-  const Eigen::MatrixXd worldLines = this->EvaluateLinesAround();
-
-  //  Obatin the vector contain the distances among the lines
-  const Eigen::VectorXd overLine = this->ComputeDistances( worldLines );
-
-
-  //  Check if the distance from the line on the left is less then the half of line thickness
-  if( std::abs( overLine[0] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Left line detected
-    measurements.push_back( Measurement(-worldLines(2, 0),
-                                        utility::LINETYPE::VERTICAL, this ) );
-    ROS_INFO_STREAM(" Left line ");
-
-  }
-
-  //  Check if the distance from the line on the right is less then the half of line thickness
-  if( std::abs( overLine[1] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Right line detected
-    measurements.push_back( Measurement(-worldLines(2, 1),
-                                        utility::LINETYPE::VERTICAL, this ) );
-    ROS_INFO_STREAM(" Right line ");
-
-  }
-
-  //  Check if the distance from the line under the sensor is less then the half of line thickness
-  if( std::abs( overLine[2] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Bottom line detected
-    measurements.push_back( Measurement(-worldLines(2, 2),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
-    ROS_INFO_STREAM(" Bottom line ");
-
-  }
-
-  //  Check if the distance from the line above the sensor is less then the half of line thickness
-  if( std::abs( overLine[3] ) <= this->ItsWorld().LineThickness()/2 ) {  //  Upper line detected
-    measurements.push_back( Measurement(-worldLines(2, 3),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
-    ROS_INFO_STREAM(" Upper line ");
-
-  }
-
-}
-
-
-*/
 
 
 #endif //SENSOR_H
