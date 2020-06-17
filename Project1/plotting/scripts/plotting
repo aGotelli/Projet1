@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-    #   Extract relevant data by removing motionless parts).
+    #   Extract relevant data by removing motionless parts
     del x_real[0: startIndex]
     del y_real[0: startIndex]
     del theta_real[0: startIndex]
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-    #   Extract relevant data by removing motionless parts).
+    #   Extract relevant data by removing motionless parts
     del x_estm[0: startIndex]
     del y_estm[0: startIndex]
     del theta_estim[0: startIndex]
@@ -229,10 +229,6 @@ if __name__ == '__main__':
     app = QtGui.QApplication([])
 
 
-
-
-
-
     #  Create the fourth window with velocities
     win4 = pg.GraphicsWindow(title="Velocities")
     win4.resize(1000,600)
@@ -249,8 +245,6 @@ if __name__ == '__main__':
     p13.plot( estm_time, angular, pen=(255,0,0), name="angular vel")
     p13.setLabel('left', "angular vel")
     p13.setLabel('bottom', "time", units='s')
-
-
 
 
 
@@ -278,8 +272,6 @@ if __name__ == '__main__':
     p11.plot(estm_time, cov_theta, pen=(255,0,0), name="sigma Theta")
     p11.setLabel('left', "sigma theta")
     p11.setLabel('bottom', "time", units='s')
-
-
 
 
 
@@ -352,9 +344,6 @@ if __name__ == '__main__':
 
 
 
-
-
-
     #   Create the first window with paths and distances
     win1 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
     win1.resize(1000,600)
@@ -367,7 +356,6 @@ if __name__ == '__main__':
     #   and estimator
     p1 = win1.addPlot(title="Trajectories")
     p1.addLegend()
-    #pen = pg.mkPen("Real path", color=(255,0,0), width=4)
     p1.plot(x_real, y_real, pen=pg.mkPen('r', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('g', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")

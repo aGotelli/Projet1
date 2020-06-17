@@ -15,14 +15,14 @@
  *
  * Description
             This file is meant to collect all the parameters of the world, to
-				generate a backgound for the simulation. In this way, it makes the
+				generate a background for the simulation. In this way, it makes the
 				whole simulation more user friendly.
 
-          Several choiches have been made following the advices of the
-          Guidelines: https://github.com/isocpp/CppCoreGuidelines
+        Several choiches have been made following the advices of the
+        Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
-          Related chapthers of the CppCoreGuidelines:
-            ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
+        Related chapthers of the CppCoreGuidelines:
+          ° All the Nl section, especially NL.16 and NL.17 but not the NL.10
 
 
  *
@@ -72,7 +72,7 @@ int main (int argc, char** argv)
 	// Declare your node's subscriptions and service clients
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::Pose>("RobotPosture", 1, RobotPostureReceived);
 
-    // Declare you publishers and service servers
+    // Declare your publishers and service servers
 	ros::Publisher TilesDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
 
@@ -80,18 +80,15 @@ int main (int argc, char** argv)
 
 	generator.InitWorld();
 
-	//	Wait two seconds before publishing
-	//ros::Duration(5.0).sleep();
-
 	bool onlyOnce = true;
+
   ros::Rate rate(50);
 	double t0 = ros::Time::now().toSec();
+
   while (ros::ok()){
       ros::spinOnce();
 
-
 			generator.ChuckBelonging(robotPosture);
-
 
 			for(const auto& chunk : generator.Chunks() ) {
 				TilesDisplay.publish( chunk->tile );
@@ -99,7 +96,7 @@ int main (int argc, char** argv)
 			}
 
 			//	Ensure the application to have correctly started and that rviz has
-			//	obtained the ground. Then delete the chink to save memory
+			//	obtained the ground. Then delete the chunk to save memory
 			if( (ros::Time::now().toSec() - t0) > 5 )
 				generator.ClearChunks();
 

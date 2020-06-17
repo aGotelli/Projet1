@@ -19,10 +19,10 @@
  *		° /visualization_marker_array
  *
  * Description
-            	The aim of this file is to provide and interface to simulate the
-			sensor behaviour. The node simply subscribes to the robot position.
-			With the knowledge of this position and the coordinates of the sensor
-			in the robot frame it simulates the sensors.
+            The aim of this file is to provide an interface to simulate the
+				sensor behaviour. The node simply subscribes to the robot position.
+				With the knowledge of this position and the coordinates of the sensor
+				in the robot frame it simulates the sensors.
 
  *
  */
@@ -65,7 +65,7 @@ simulation_messages::IRSensors SensorsStatus()
 			sens.CheckStatus();
 		}
 
-		//	check status of the sensor on the right
+		//	Check status of the sensor on the right
 		if( robotSensors.All()[0].GetState() ) {
 			status.sens1 = true;
 
@@ -82,11 +82,8 @@ simulation_messages::IRSensors SensorsStatus()
 			sensorsActivations.markers.push_back(	utility::PlaceActiveSensor( robotSensors.All()[1].AbsolutePosition(),
 																																												utility::SENSOR::LEFT ) );
 		}
-
 		return status;
-
 }
-
 
 
 
@@ -122,13 +119,13 @@ int main (int argc, char** argv)
 	robotSensors.AddSensor( Sensor( x2, y2, world ) ) ;
 
 
-	//	Subscribe to the published robot position to obtain infromation about its pose
+	//	Subscribe to the published robot position to obtain information about its pose
 	ros::Subscriber RecivedPosture = nh_glob.subscribe<geometry_msgs::Pose>("RobotPosture", 1, RobotPostureReceived);
 
-	//	Publishes the sensors status
+	//	Publish the sensors status
 	ros::Publisher IRSensors = nh_glob.advertise<simulation_messages::IRSensors>("IRSensorsStatus", 1);
 
-	//	Publishes marker to help understand
+	//	Publish marker to help understand
 	ros::Publisher SensorsDisplay = nh_glob.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array", 1);
 
 

@@ -61,13 +61,13 @@
 
 
   <!-- Specify the file name and the folder where to save the files needed to
-  reacreate the simulation -->
+  recreate the simulation -->
   <arg name="file_name"   value="one_loop" />
   <arg name="folder_name" value="recorded_data" />
 
-  <!-- If the a joystick is awailabe, it is possible to use it to control the
-  robot. However it may be required to create anther adapert as the joystick
-  output will be different from the one used. If no joystick is availabe,
+  <!-- If the a joystick is available, it is possible to use it to control the
+  robot. However it may be required to create anther adapet as the joystick
+  output will be different from the one used. If no joystick is available,
   setting the value use_joystick to false will allow to use the keyboard to
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the

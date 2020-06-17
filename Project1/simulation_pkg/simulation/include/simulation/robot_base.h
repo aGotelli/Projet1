@@ -25,7 +25,7 @@
           what is related to the kinematics of the robot and what is needed to
           make the simulation to work.
 
-            The function that have to be implemented are declared as pure virtual.
+            The functions that have to be implemented are declared as pure virtual.
           The reason is that they have to be declared accordingly with the robot
           kinematics but they should be a RobotBase members functions, in order
           to be called in the isMoving() member function. Without any surprise,
@@ -35,7 +35,7 @@
             This class is mostly an interface. As for definition, it should
           contain only virtual member function and no member elements. The
           functions provided are all virtual, allowing some user to change them
-          accordingly with the robot type. The memeber function isMoving()
+          accordingly with the robot type. The member function isMoving()
           should not be modified, as it represents a coherent developing of the
           computation. However, if a user wants to costumize it, there is this
           possibility.
@@ -75,7 +75,7 @@
 class RobotBase {
 public:
 
-  RobotBase()=default;    //  Initialize all memeber to their default value i.e.
+  RobotBase()=default;    //  Initialize all member to their default value i.e.
                           //  what is inside the {}
 
   virtual ~RobotBase()=default;
@@ -95,7 +95,7 @@ protected:
   //  This function contains all the computations related to the robot kinematic
   virtual void PerformMotion() const=0;
 
-  //  This function computed the encoders reading and create a posture from the
+  //  This function compute the encoders reading and create a posture from the
   //  computed data, to make it possible to check the computations consistency.
   virtual void ComputeOdometry() const=0;
 
@@ -118,7 +118,7 @@ protected:
   //  The twist received from the controller
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
 
-  //  A merker containing all the robot position, in order to display the path
+  //  A marker containing all the robot position, in order to display the path
   //  that has been generated.
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
 
@@ -128,7 +128,7 @@ protected:
   ros::Duration timeElapsed;
 
 
-  // jointstate for control the robot model posture and configuaration
+  // Jointstate for control the robot model posture and configuration
   sensor_msgs::JointState actuations;
 
 
@@ -137,7 +137,7 @@ private:
   // Timer callback
   void TimerCallback(const ros::TimerEvent&);
 
-  //Node handle
+  // Node handle
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
   //  The frame rate of this node
@@ -203,7 +203,7 @@ void RobotBase::isMoving()
       //  First compute the input for the robot actuators
       ComputeInput() ;
 
-      //  Then compute the matematical integration (displacement)
+      //  Then compute the mathematical integration (displacement)
       //  that the robot performed due to the input
       PerformMotion() ;
 
