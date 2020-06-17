@@ -32,11 +32,41 @@
           displacement is added to the current value so all the coordinates are
           updated.
 
-            Morover, in this file it is computed the odometry. Starting from the
-          current value of phi angles of the two fixed wheels, the elementary
-          rotation of the two wheels between two instants of time are computed
-          taking into account the wheel resolution. In this way, the discretized
-          input is obtained and, through it, the odometry coordinates are updated.
+            Morover, in this file it is computed the odometry. The aim is to
+          include in this file the possibility to simuate a real robot. A real
+          robot has some kind of uncertaintis due to assembly and geometrical
+          errors. As a result, the simulation should output the encoders values
+          that are sigthly different of the real angles (depending on the
+          amount of errors). In other words the simulation should take into
+          account:
+          1) The encoders' Resolution
+          2) The error in the wheel radius
+          3) An error in the track gauge
+          To achieve this goal (In the Function ComputeOdometry()) the following
+          explain the passges.
+
+            Starting from the current value of phi angles of the two fixed
+          wheels, the elementary rotations of the two wheels between two
+          instants of time are computed. With this info, the input is computed
+          as a dispacement caused by the wheels rotations. Once the "virtual
+          input" or desired input is computed, it is applied to the model,
+          taking into account the errors. This will lead to some sigthly
+          different wheels rotations angles. These rotations are summed up with
+          a vector containg the previus rotations (starting from zero) into
+          another vector, which contains the wheels angles for the real model.
+          This allows to have te comulative error due to models imperfections.
+
+            The last mentioned vector (currentRealAngles) contains the values
+          of the wheels angles of the real model. In these last values the
+          encoder resolution is taken into account. The angles are converted in
+          dots in each encoder. The number of dots is floored in order to
+          simulatie the reading of an ecoder. Comparing the current reading with
+          the previus reading the rotation is obtained (as elapesd dots).
+
+            Finally odometry applies using the values readed from the encoders
+          and the ideal model.
+
+            The robot has two values which are
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -239,14 +269,13 @@ void Robot_2_0::ComputeOdometry() const
   // Compute input discretized
   const Eigen::Vector2d inputFromReadings = S_odom.block<2,2>(4,0).inverse()*rotationFromEncoders ;
 
-  //  Now perform the usual computation using a the implemented model 
+  //  Now perform the usual computation using a the implemented model
   q_odom = q_odom + S_odom*inputFromReadings;
 
   // Update
   previusIdealAngles = currentIdealAngles ;
   previusReading = currentReading ;
   previusRealAngles = currentRealAngles;
-
 
 }
 
