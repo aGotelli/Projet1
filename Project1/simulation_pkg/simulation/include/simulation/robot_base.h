@@ -141,7 +141,7 @@ private:
   ros::NodeHandle nh_glob;                    //  No need of default initialization
 
   //  The frame rate of this node
-  ros::Rate robotFrameRate {500};
+  ros::Rate robotFrameRate {150};
 
   //                    Publisher and subscriber definition
 
