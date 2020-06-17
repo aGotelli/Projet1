@@ -24,6 +24,7 @@ This file aim to explain how to move inside this project. It should be read befo
 * [Compute Twist](#S-Compute)
 * [How to Use](#S-HowTo)
 * [Catkin Build](#S-Build)
+* [PyQtGraph](#S-PyQtGraph)
 
 
 
@@ -39,7 +40,8 @@ there is to know before using them.
 
 * [The structure of this project](#Ri-structure)
 * [The simulation meta package](#Ri-simulation)
-* [The estimator package](#Ri-estimator)
+* [The estimator meta package](#Ri-estimator)
+* [The plotting package](#Ri-plotting)
 
 ## <a name="Ri-structure"></a>The structure of this project
   The project is divided into two main sections: the simulation and the estimator. For each of the two packages
@@ -103,6 +105,28 @@ For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Senso
 ![Projet1](images/saving_and_display.png)
 
   The components of this last UML are discussed in this document, see [Interfaces](#S-Interfaces).
+
+
+## <a name="Ri-estimator"></a>The estimator meta package
+
+This meta package contains all the needed tools to implement an Kalman Filter based estimator. It contains
+two packages: the estimator and the estimator_messages package.
+
+### <a name="Ri-estimator"></a>The estimator_messages package
+
+This package contains all the messages that are needed in order to simply publish messages containing
+information about the estimation, such as the measurements, for example. Here again, the reason for
+divide the package are the same as before. (see [simulation_messages package](#S-simulation) )
+
+### <a name="Ri-estimator"></a>The estimator package
+
+WORK IN PROGRESS
+
+## <a name="Ri-plotting"></a>The plotting package
+
+This last package contains a python script and a related interface as launch file.
+The script simply loops into the rosbag corresponding to the desired file to be loaded.
+Then it plots the result in some PyQtGraph windows. (see [PyQtGraph](#S-PyQtGraph) )
 
 
 
@@ -521,3 +545,46 @@ No big deal, just delete everything in the workspace (except for the src) and th
 
         cd ~/WorkSpaces/catkin_ws/
         catkin build
+
+
+
+
+
+
+
+
+# <a name="S-PyQtGraph"></a>Catkin PyQtGraph
+
+PyQtGraph is an easy and intuitive interface. It is also said to be more interactive and fluid compared
+to MatPlot, it also works with python3. The package has to be installed because it is not build-in in Ubuntu.
+
+To help the user in the installation, a tested procedure is reported below:
+
+The first step is the suggestion to create a folder in the home named "program_sources" (or another desired name).
+Once inside the created folder the package has to be downloaded
+        git clone https://github.com/pyqtgraph/pyqtgraph.git
+
+The package is now downloaded in the computer and needs a setup.
+##### First, run the following:
+        python3 -m pyqtgraph.examples
+
+A window should open, in contains a list of examples on the left and the related code on the right.
+The examples provide all the needed insight to create custom plots and multiple windows.
+However, if it doesn't work, that's because the package is in your computer but not installed.
+##### The problem should result in the following error:
+
+        user@user:~$ python3 -m pyqtgraph.examples
+        /usr/bin/python3: Error while finding module specification for 'pyqtgraph.examples' (ModuleNotFoundError: No module named 'pyqtgraph')
+
+##### The solution is to simply run a pip installation
+        sudo pip install pyqtgraph
+
+To test the package now run the command:
+        python3 -m pyqtgraph.examples
+
+If it doesn't work, that's because PyQt5 is missing. It is thus needed to install it.
+##### Run the following
+        sudo pip install pyqt5
+
+
+At this point there are not any missing dependencies, and the package will open.
