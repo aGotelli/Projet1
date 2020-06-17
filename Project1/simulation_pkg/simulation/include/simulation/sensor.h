@@ -137,6 +137,7 @@ public:
  // Function to update the transformation matrix
  void UpdateTransform(const geometry_msgs::Pose& robotPosture) const;
 
+ // Function to update the transformation matrix
  void UpdateTransform(const Eigen::Vector3d& X) const;
 
  // Function to check the status of the sensors
@@ -203,6 +204,9 @@ public:
 
 
 void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
+//  This function is to be implemented in the simulation part, where the
+//  sensor works beside the robot, which publish its pose as a
+//  geometry_msgs::Pose
 {
   //  First convert from quaternion to Euler Angles
   const utility::EulerAngles eulers = utility::ToEulerAngles( robotPosture.orientation ) ;
@@ -214,6 +218,9 @@ void Sensor::UpdateTransform(const geometry_msgs::Pose& robotPosture) const
 }
 
 void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
+//  This function is to be implemented in the estimator, where the sensor
+//  properties are taken into account. In fact, in the context of an estimator,
+//  the robot position is expressed as a state vector
 {
 
   oTm <<  cos( X(2) ), -sin( X(2) ), X(0)  ,
@@ -223,6 +230,9 @@ void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
 }
 
 const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
+//  This fnction is to be called every time there is the need of computing
+//  the homogeneous coordinates of the lines around the sensor. However it
+//  must require to have called UpdateTransform before
 {
   //  First, with the knowledge of the robot position obtain the sensor position
   const auto sensorPosition = this->AbsolutePosition() ;
@@ -254,6 +264,8 @@ const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
 
 
 const Eigen::VectorXd Sensor::ComputeDistances(const Eigen::MatrixXd& linesAround ) const
+//  This function is to be called every time there is the need to comput the distances
+//  from the sensor to the lines around it.
 {
   //  Compute the sensor position w.r.t. the reference frame
   const Eigen::Vector3d oHCoord = oTm*HCoord;
@@ -264,8 +276,9 @@ const Eigen::VectorXd Sensor::ComputeDistances(const Eigen::MatrixXd& linesAroun
 
 
 void Sensor::CheckStatus() const
+//  This function is to be called when this class is implemented in a simulation
+//  context. In fact, the only output is a yes or no for the sensor status
 {
-
   //  Update the sensor status using the knowledge of the computed distances.
   if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
       state = true;
@@ -277,6 +290,8 @@ void Sensor::CheckStatus() const
 
 
 const Measurement Sensor::getMeasurement() const
+//  This function is to be called when dealing with estimation. In fact it
+//  returns the homogeneous coordinates of the line closest to the sensor
 {
 
   //  Obtain the lines around the sensor
@@ -322,50 +337,39 @@ const Measurement Sensor::getMeasurement() const
 
 
 void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
+//  This function is to be called when dealing with estimation. In fact it
+//  adds into the vector of measurements the closest "horizontal" and "vertical"
+//  linse. In this way it is possible to have two measurements when the sensor
+//  crosses an intersection of lines. It will be the estimator itself, with the
+//  coherence test, to make a decision if to take both or only one line.
 {
 
   //  Obtain the lines around the sensor
   const Eigen::MatrixXd linesAround = this->EvaluateLinesAround();
 
   //  Obatin the vector contain the distances among the lines
-  const Eigen::VectorXd distances = this->ComputeDistances( linesAround );
+  const Eigen::VectorXd distances = this->ComputeDistances( linesAround ).cwiseAbs();
 
-  const double minimum = distances.cwiseAbs().minCoeff();
-
-  const Eigen::VectorXd ratio = distances.cwiseAbs()/distances.cwiseAbs().minCoeff();
-  ROS_INFO_STREAM("sensor pos : " << oTm*HCoord );
-  ROS_INFO_STREAM("distances  : " << distances );
-  ROS_INFO_STREAM("ratio      : " << ratio );
-  //  Check if the distance from the line on the left is less then the half of line thickness
-  if( ratio[0] <= 2 ) {  //  Left line detected
+  //  Compare the distances for the two "vertical" lines
+  //    left              rigth
+  if( distances[0] < distances[1] ) { //  The left line is closer
     measurements.push_back( Measurement(-linesAround(2, 0),
                                         utility::LINETYPE::VERTICAL, this ) );
-    ROS_INFO_STREAM(" Left line ");
 
-  }
-
-  //  Check if the distance from the line on the right is less then the half of line thickness
-  if( ratio[1] <= 2 ) {  //  Right line detected
+  } else {                            //  The right line is closer
     measurements.push_back( Measurement(-linesAround(2, 1),
                                         utility::LINETYPE::VERTICAL, this ) );
-    ROS_INFO_STREAM(" Right line ");
-
   }
 
-  //  Check if the distance from the line under the sensor is less then the half of line thickness
-  if( ratio[2] <= 2 ) {  //  Bottom line detected
+  //  Compare the distances for the two "horizontal" lines
+  //    bottom          upper 
+  if( distances[2] < distances[3] ) { //  The bottom line is closer
     measurements.push_back( Measurement(-linesAround(2, 2),
                                         utility::LINETYPE::HORIZONTAL, this ) );
-    ROS_INFO_STREAM(" Bottom line ");
 
-  }
-
-  //  Check if the distance from the line above the sensor is less then the half of line thickness
-  if( ratio[3] <= 2 ) {  //  Upper line detected
+  } else {                            //  The upper line is closer
     measurements.push_back( Measurement(-linesAround(2, 3),
                                         utility::LINETYPE::HORIZONTAL, this ) );
-    ROS_INFO_STREAM(" Upper line ");
-
   }
 
 }
