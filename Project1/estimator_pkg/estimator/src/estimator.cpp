@@ -62,15 +62,15 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
   //  Received sensrs status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
-    // robotSensors.sens1().getMeasurement( measurements ) ;
-    measurements.push_back( robotSensors.sens1().getMeasurement() );
+    robotSensors.sens1().getMeasurement( measurements ) ;
+    // measurements.push_back( robotSensors.sens1().getMeasurement() );
 
   }
 
   if( state->sens2 ) {
     robotSensors.sens2().UpdateTransform( X );
-    // robotSensors.sens2().getMeasurement( measurements );
-    measurements.push_back( robotSensors.sens2().getMeasurement() );
+    robotSensors.sens2().getMeasurement( measurements );
+    // measurements.push_back( robotSensors.sens2().getMeasurement() );
 
   }
 
@@ -218,6 +218,12 @@ int main(int argc, char** argv)
     // Update propagation error matrix
     kalman.Propagation(P, A, B);
 
+    ros::Time previousTime;
+    ros::Time currentTime;
+    ros::Duration timeElapsed;
+
+    previousTime = ros::Time::now();
+
     // Check for any measurements
     for(const auto& measurement : measurements ) {
 
@@ -255,7 +261,7 @@ int main(int argc, char** argv)
         kalman.Estimation(P, X, C, innov) ;
 
         //  Than publish the newly measurement
-        shareMeasurements.publish( Accepted( measurement ) ) ;
+        shareMeasurements.publish( Accepted( measurement, dMaha ) ) ;
 
         //  Publish result for the Mahalanobis distance
         std_msgs::Float32 currentDist;
@@ -272,10 +278,19 @@ int main(int argc, char** argv)
 
     //ROS_INFO_STREAM("Covariance matrix : " << P );
 
+    currentTime = ros::Time::now();
+    timeElapsed = currentTime - previousTime;
+    previousTime = currentTime;
+
+    // ROS_INFO_STREAM("currentTime  : " << currentTime.toSec() );
+    // ROS_INFO_STREAM("previousTime : " << previousTime.toSec() );
+    // ROS_INFO_STREAM("timeElapsed  : " << timeElapsed.toSec() );
+    // ROS_INFO_STREAM("v : " << input[0] << ", w : " << input[1] );
+
     //  Publish velocities
     geometry_msgs::Twist vel;
-    vel.linear.x = input[0];
-    vel.angular.z = input[1];
+    vel.linear.x = input[0]/timeElapsed.toSec() ;
+    vel.angular.z = input[1]/timeElapsed.toSec() ;
     pubInput.publish( vel );
 
 

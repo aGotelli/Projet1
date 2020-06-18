@@ -17,7 +17,7 @@
 
   <arg name="estimator_freq" default="$(eval arg('speed_factor')*150/arg('subsample_rate') )"  />
 
-  <param name="use_sim_time" value="true" />
+<!--  <param name="use_sim_time" value="true" /> -->
 
 
   <rosparam command="load" file="$(find data)/$(arg take_from_folder)/$(arg file_name).yaml" />

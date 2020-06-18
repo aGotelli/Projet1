@@ -24,6 +24,7 @@ This file aim to explain how to move inside this project. It should be read befo
 * [Compute Twist](#S-Compute)
 * [How to Use](#S-HowTo)
 * [Catkin Build](#S-Build)
+* [PyQtGraph](#S-PyQtGraph)
 
 
 
@@ -39,17 +40,19 @@ there is to know before using them.
 
 * [The structure of this project](#Ri-structure)
 * [The simulation meta package](#Ri-simulation)
-* [The estimator package](#Ri-estimator)
+* [The estimator meta package](#Ri-estimator)
+* [The plotting package](#Ri-plotting)
 
 ## <a name="Ri-structure"></a>The structure of this project
-  The project is divided into two main part: the simulation and the estimator. For each of the two packages
+  The project is divided into two main sections: the simulation and the estimator. For each of the two packages
 an interface is provided, and the user should only use this last one to change the parameters. On virtually,
 there is no need to change anything in the code to use this application. As a result, anyone with a basic
 knowledge of YAML file can use this package. (see [Launch File](#S-Launch) ).
 
-  The project can be dived into three main parts: the simulation meta package and the estimator and data packages.
-This last packages exists to be used as storage unit for the file that are generated. In this way, there is no
-risk of having to find files around the project.
+  The project has four packages: the simulation meta package and the estimator, data and plotting packages.
+The data package exists to be used as storage unit for the file that are generated. In this way, there is no
+risk of having to find files around the project.The plotting package is to take the desired file form the
+data package, which contains the processed data, and plot the results.
 
   The simulation package is the first to be discussed, with all its components.
 ## <a name="Ri-simulation"></a>The simulation meta package
@@ -102,6 +105,28 @@ For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Senso
 ![Projet1](images/saving_and_display.png)
 
   The components of this last UML are discussed in this document, see [Interfaces](#S-Interfaces).
+
+
+## <a name="Ri-estimator"></a>The estimator meta package
+
+This meta package contains all the needed tools to implement an Kalman Filter based estimator. It contains
+two packages: the estimator and the estimator_messages package.
+
+### <a name="Ri-estimator"></a>The estimator_messages package
+
+This package contains all the messages that are needed in order to simply publish messages containing
+information about the estimation, such as the measurements, for example. Here again, the reason for
+divide the package are the same as before. (see [simulation_messages package](#S-simulation) )
+
+### <a name="Ri-estimator"></a>The estimator package
+
+WORK IN PROGRESS
+
+## <a name="Ri-plotting"></a>The plotting package
+
+This last package contains a python script and a related interface as launch file.
+The script simply loops into the rosbag corresponding to the desired file to be loaded.
+Then it plots the result in some PyQtGraph windows. (see [PyQtGraph](#S-PyQtGraph) )
 
 
 
@@ -230,9 +255,8 @@ the generalized coordinates of the robot. This computation allows to:
   * Obtain the changes in the configuration vector from the last iteration
   * Apply the changes to the current configuration vector
 
-  Moreover, in this file it is computed the odometry. Starting from the current value of the phi angles of the two fixed
-wheels, the elementary rotations between two iterations are computed taking into account the encoder resolution.
-In this way, the discretized input is obtained and, through it, the odometry coordinates are updated.
+  Moreover, in this file it is computed the odometry. The procedure is well explained in the related file. The
+reader is encouraged to read it from there.
 
 
 
@@ -335,8 +359,13 @@ header file.
 ### <a name="Ri-sensor.h"></a>sensor.h
   The header file for the sensors contains the definition of the class Sensor and RobotSensors. This last one is useful,
 as it provides a tool to ensure that, for any reason, the sensors have two different instances of the world. The Sensor
-class, provides all the functions needed to check the sensor status and obtain it absolute positions. As the procedure is
-carefully explained in the code, the reader is encouraged in reading it from there.
+class, provides all the functions needed to check the sensor status and obtain it absolute positions. Moreover, it
+provides some tools needed in the estimation. As the procedure is carefully explained in the code, the reader is
+encouraged in reading it from there.
+
+The reason to embed functions for the two sections (simulation and estimation ) comes out of a practical point of view.
+In fact, the sensor behavior is quite the same; instead of defining two similar classes, it is less error prone to
+use the same classes with some sightly different functions.
 
 
 
@@ -516,3 +545,47 @@ No big deal, just delete everything in the workspace (except for the src) and th
 
         cd ~/WorkSpaces/catkin_ws/
         catkin build
+
+
+
+
+
+
+
+
+# <a name="S-PyQtGraph"></a>Catkin PyQtGraph
+
+PyQtGraph is an easy and intuitive interface. It is also said to be more interactive and fluid compared
+to MatPlot, it also works with python3. The package has to be installed because it is not build-in in Ubuntu.
+
+To help the user in the installation, a tested procedure is reported below:
+
+The first step is the suggestion to create a folder in the home named "program_sources" (or another desired name).
+Once inside the created folder the package has to be downloaded
+        git clone https://github.com/pyqtgraph/pyqtgraph.git
+
+The package is now downloaded in the computer and needs a setup.
+##### First, run the following:
+        python3 -m pyqtgraph.examples
+
+A window should open, in contains a list of examples on the left and the related code on the right.
+The examples provide all the needed insight to create custom plots and multiple windows.
+However, if it doesn't work, that's because the package is in your computer but not installed.
+##### The problem should result in the following error:
+
+        user@user:~$ python3 -m pyqtgraph.examples
+        /usr/bin/python3: Error while finding module specification for 'pyqtgraph.examples' (ModuleNotFoundError: No module named 'pyqtgraph')
+
+##### The solution is to simply run a pip installation
+        sudo pip install pyqtgraph
+
+To test the package now run the command:
+
+        python3 -m pyqtgraph.examples
+
+If it doesn't work, that's because PyQt5 is missing. It is thus needed to install it.
+##### Run the following
+        sudo pip install pyqt5
+
+
+At this point there are not any missing dependencies, and the package will open.
