@@ -350,30 +350,55 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd distances = this->ComputeDistances( linesAround ).cwiseAbs();
 
-  //  Compare the distances for the two "vertical" lines
-  //    left              rigth
-  if( distances[0] < distances[1] ) { //  The left line is closer
-    measurements.push_back( Measurement(-linesAround(2, 0),
-                                        utility::LINETYPE::VERTICAL, this ) );
+  const double minimum = distances.cwiseAbs().minCoeff();
 
-  } else {                            //  The right line is closer
-    measurements.push_back( Measurement(-linesAround(2, 1),
-                                        utility::LINETYPE::VERTICAL, this ) );
-  }
+  if ( (minimum = distances[0]) || (minimum = distances[1])){
 
-  //  Compare the distances for the two "horizontal" lines
-  //    bottom          upper 
-  if( distances[2] < distances[3] ) { //  The bottom line is closer
-    measurements.push_back( Measurement(-linesAround(2, 2),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
+    //  Compare the distances for the two "vertical" lines
+    //    left              rigth
+    if( distances[0] < distances[1] ) { //  The left line is closer
+      measurements.push_back( Measurement(-linesAround(2, 0),
+                                          utility::LINETYPE::VERTICAL, this ) );
 
-  } else {                            //  The upper line is closer
-    measurements.push_back( Measurement(-linesAround(2, 3),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
+    } else {                            //  The right line is closer
+      measurements.push_back( Measurement(-linesAround(2, 1),
+                                          utility::LINETYPE::VERTICAL, this ) );
+    }
+
+    //  Compare the distances for the two "horizontal" lines
+    //    Bottom          Upper
+    if( distances[2] < distances[3] ) { //  The bottom line is closer
+      measurements.push_back( Measurement(-linesAround(2, 2),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+
+    } else {                            //  The upper line is closer
+      measurements.push_back( Measurement(-linesAround(2, 3),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+    }
+
+  } else {
+
+    if( distances[2] < distances[3] ) { //  The bottom line is closer
+      measurements.push_back( Measurement(-linesAround(2, 2),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+
+    } else {                            //  The upper line is closer
+      measurements.push_back( Measurement(-linesAround(2, 3),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+    }
+
+    if( distances[0] < distances[1] ) { //  The left line is closer
+      measurements.push_back( Measurement(-linesAround(2, 0),
+                                          utility::LINETYPE::VERTICAL, this ) );
+
+    } else {                            //  The right line is closer
+      measurements.push_back( Measurement(-linesAround(2, 1),
+                                          utility::LINETYPE::VERTICAL, this ) );
+    }
+
   }
 
 }
-
 
 
 const utility::Pose2D Sensor::AbsolutePosition() const
