@@ -279,9 +279,22 @@ void Sensor::CheckStatus() const
 //  This function is to be called when this class is implemented in a simulation
 //  context. In fact, the only output is a yes or no for the sensor status
 {
+  //  Take the distances from the sensor to the lines around
+  Eigen::VectorXd distances = this->ComputeDistances().cwiseAbs();
+
+  //          linesAround << leftLine, rightLine, bottomLine, upperLine ;
+
   //  Update the sensor status using the knowledge of the computed distances.
-  if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
-      state = true;
+  if( distances.minCoeff() <= world.LineThickness()/2 ) {
+
+//====================================~ TEMP ~==================================================
+    if( distances[0] <= 0.05 && distances[2] <= 0.05  ||  //  left-bottom corner
+        distances[1] <= 0.05 && distances[2] <= 0.05  ||  //  right bottom corner
+        distances[0] <= 0.05 && distances[3] <= 0.05  ||  //  left upper corner
+        distances[1] <= 0.05 && distances[3] <= 0.05      //  right upper corner
+      ) { state = false; } else { state = true; }
+//====================================~ TEMP ~==================================================
+
   } else {
       state = false;
   }
@@ -449,6 +462,24 @@ void RobotSensors::AddSensor(const Sensor& newSensor)
 
 }
 
+/*
+void Sensor::CheckStatus() const
+//  This function is to be called when this class is implemented in a simulation
+//  context. In fact, the only output is a yes or no for the sensor status
+{
+  //  Update the sensor status using the knowledge of the computed distances.
+  if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
+
+      state = true;
+  } else {
+      state = false;
+  }
+
+}
+
+
+
+*/
 
 
 #endif //SENSOR_H
