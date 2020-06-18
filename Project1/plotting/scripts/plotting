@@ -394,7 +394,7 @@ if __name__ == '__main__':
 
 
     #   Create the first window with paths and distances
-    win1 = pg.TableWidget()
+    win1 = pg.TableWidget(sortable=False)
     win1.show()
     win1.resize(500,500)
     win1.setWindowTitle('Table of Parameters')
