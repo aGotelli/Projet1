@@ -29,6 +29,12 @@ if __name__ == '__main__':
     ySpacing = parameters['sensor']['y_spacing']
     lineThickness = parameters['sensor']['line_thickness']
 
+     #   Obatin robot parameters
+    wheelRadius = parameters['robot_2_0']['wheel_radius']
+    frontAxle = parameters['robot_2_0']['a']
+    wheelRadiusError = parameters['robot_2_0']['wheel_1_error']
+    trackGaugeError = parameters['robot_2_0']['track_gauge_error']
+
     #   Obtain estimator setting
     sigmaTuning = parameters['estimator']['sigma_tuning']
     threshold  = parameters['estimator']['threshold']
@@ -229,19 +235,19 @@ if __name__ == '__main__':
     app = QtGui.QApplication([])
 
 
-    #  Create the fourth window with velocities
-    win4 = pg.GraphicsWindow(title="Velocities")
-    win4.resize(1000,600)
-    win4.setWindowTitle('Velocities')
+    #  Create the fifth window with velocities
+    win5 = pg.GraphicsWindow(title="Velocities")
+    win5.resize(1000,600)
+    win5.setWindowTitle('Velocities')
 
-    p12 = win4.addPlot(title="Linear Velocity")
+    p12 = win5.addPlot(title="Linear Velocity")
     p12.plot( estm_time, linear, pen=(255,0,0), name="linear vel")
     p12.setLabel('left', "linear vel")
     p12.setLabel('bottom', "time", units='s')
 
-    win4.nextRow()
+    win5.nextRow()
 
-    p13 = win4.addPlot(title="Angular Velocity")
+    p13 = win5.addPlot(title="Angular Velocity")
     p13.plot( estm_time, angular, pen=(255,0,0), name="angular vel")
     p13.setLabel('left', "angular vel")
     p13.setLabel('bottom', "time", units='s')
@@ -249,26 +255,26 @@ if __name__ == '__main__':
 
 
 
-    #  Create the third window with standard deviations
-    win3 = pg.GraphicsWindow(title="Standard deviations of x, y and theta")
-    win3.resize(1000,600)
-    win3.setWindowTitle('Standard deviations of x, y and theta')
+    #  Create the fourth window with standard deviations
+    win4 = pg.GraphicsWindow(title="Standard deviations of x, y and theta")
+    win4.resize(1000,600)
+    win4.setWindowTitle('Standard deviations of x, y and theta')
 
-    p9 = win3.addPlot(title="Standard deviation of x")
+    p9 = win4.addPlot(title="Standard deviation of x")
     p9.plot(estm_time, cov_x, pen=(255,0,0), name="sigma X")
     p9.setLabel('left', "sigma x")
     p9.setLabel('bottom', "time", units='s')
 
-    win3.nextRow()
+    win4.nextRow()
 
-    p10 = win3.addPlot(title="Standard deviation of y")
+    p10 = win4.addPlot(title="Standard deviation of y")
     p10.plot(estm_time, cov_y, pen=(255,0,0), name="sigma Y")
     p10.setLabel('left', "sigma y")
     p10.setLabel('bottom', "time", units='s')
 
-    win3.nextRow()
+    win4.nextRow()
 
-    p11 = win3.addPlot(title="Standard deviation of theta")
+    p11 = win4.addPlot(title="Standard deviation of theta")
     p11.plot(estm_time, cov_theta, pen=(255,0,0), name="sigma Theta")
     p11.setLabel('left', "sigma theta")
     p11.setLabel('bottom', "time", units='s')
@@ -276,13 +282,13 @@ if __name__ == '__main__':
 
 
 
-    #   Create the second window with the errors
-    win2 = pg.GraphicsWindow(title="Errors along x, y and in heading")
-    win2.resize(1000,600)
-    win2.setWindowTitle('Errors along x, y and in heading')
+    #   Create the third window with the errors
+    win3 = pg.GraphicsWindow(title="Errors along x, y and in heading")
+    win3.resize(1000,600)
+    win3.setWindowTitle('Errors along x, y and in heading')
 
 
-    p3 = win2.addPlot(title="Error in x")
+    p3 = win3.addPlot(title="Error in x")
     p3.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
     p3.setLabel('left', "x", units='m')
     p3.setLabel('bottom', "time", units='s')
@@ -290,7 +296,7 @@ if __name__ == '__main__':
     #lr_1.setZValue(-0.01)
     p3.addItem(lr_1)
 
-    p4 = win2.addPlot(title="Zoom on selected region")
+    p4 = win3.addPlot(title="Zoom on selected region")
     p4.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
     def updatePlot():
         p4.setXRange(*lr_1.getRegion(), padding=0)
@@ -300,9 +306,9 @@ if __name__ == '__main__':
     p4.sigXRangeChanged.connect(updateRegion)
     updatePlot()
 
-    win2.nextRow()
+    win3.nextRow()
 
-    p5 = win2.addPlot(title="Error in y")
+    p5 = win3.addPlot(title="Error in y")
     p5.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
     p5.setLabel('left', "y", units='m')
     p5.setLabel('bottom', "time", units='s')
@@ -310,7 +316,7 @@ if __name__ == '__main__':
     #lr.setZValue(-10)
     p5.addItem(lr_2)
 
-    p6 = win2.addPlot(title="Zoom on selected region")
+    p6 = win3.addPlot(title="Zoom on selected region")
     p6.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
     def updatePlot():
         p6.setXRange(*lr_2.getRegion(), padding=0)
@@ -320,9 +326,9 @@ if __name__ == '__main__':
     p6.sigXRangeChanged.connect(updateRegion)
     updatePlot()
 
-    win2.nextRow()
+    win3.nextRow()
 
-    p7 = win2.addPlot(title="Error in theta")
+    p7 = win3.addPlot(title="Error in theta")
     p7.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
     p7.setLabel('left', "theta", units='rad')
     p7.setLabel('bottom', "time", units='s')
@@ -330,7 +336,7 @@ if __name__ == '__main__':
     #lr.setZValue(-10)
     p7.addItem(lr_3)
 
-    p8 = win2.addPlot(title="Zoom on selected region")
+    p8 = win3.addPlot(title="Zoom on selected region")
     p8.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
     def updatePlot():
         p8.setXRange(*lr_3.getRegion(), padding=0)
@@ -344,17 +350,17 @@ if __name__ == '__main__':
 
 
 
-    #   Create the first window with paths and distances
-    win1 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
-    win1.resize(1000,600)
-    win1.setWindowTitle('Trajectories, measurements and distances')
+    #   Create the second window with paths and distances
+    win2 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
+    win2.resize(1000,600)
+    win2.setWindowTitle('Trajectories, measurements and distances')
 
     #   Enable antialiasing for prettier plots
     pg.setConfigOptions(antialias=True)
 
     #   Create first plot containing the trajectories of robot, odometry
     #   and estimator
-    p1 = win1.addPlot(title="Trajectories")
+    p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
     p1.plot(x_real, y_real, pen=pg.mkPen('r', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('g', width=4), name="Odometry path")
@@ -380,13 +386,41 @@ if __name__ == '__main__':
     p1.showGrid(x=True, y=True)
 
     #   Create a second plot with the Mahalanobis distances
-    p2 = win1.addPlot(title="Mahalanobis distances")
+    p2 = win2.addPlot(title="Mahalanobis distances")
     p2.plot([time_dist[0], time_dist[-1]], [threshold, threshold], pen=(255,0,0), name="Threshold")
     p2.plot(time_dist, mh_dist, pen=None, symbol='o', name="Mahalanobis distance")
     p2.setLabel('left', "x", units='undimensional distances')
     p2.setLabel('bottom', "time", units='s')
 
 
+    #   Create the first window with paths and distances
+    win1 = pg.TableWidget()
+    win1.show()
+    win1.resize(500,500)
+    win1.setWindowTitle('Table of Parameters')
+
+
+    data = np.array([
+        #('File Name',   sys.argv[1]),
+        ('Sigma Tuning',   sigmaTuning),
+        ('Threshold',   threshold),
+        ('Wheel radius',  wheelRadius),
+        ('Wheel radius error',   wheelRadiusError),
+        ('Track gauge', 2*frontAxle),
+        ('Track gauge error',   trackGaugeError),
+        ('Real initial position x', x_real[0]),
+        ('Real initial position y', y_real[0]),
+        ('Real initial position theta', theta_real[0]),
+        ('Estimated initial position x',x_estm[0]),
+        ('Estimated initial position y',y_estm[0]),
+        ('Estimated initial position theta', theta_estim[0]),
+        ('Initial covariance value x', cov_x[0]),
+        ('Initial covariance value y', cov_y[0]),
+        ('Initial covariance value theta', cov_theta[0]),
+        ], dtype=[('Parameter', object), ('Value', float)])
+
+
+    win1.setData(data)
 
 
 
