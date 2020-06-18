@@ -368,8 +368,8 @@ if __name__ == '__main__':
     #   and estimator
     p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
-    p1.plot(x_real, y_real, pen=pg.mkPen('r', width=4), name="Real path")
-    p1.plot(x_odom, y_odom, pen=pg.mkPen('g', width=4), name="Odometry path")
+    p1.plot(x_real, y_real, pen=pg.mkPen('g', width=4), name="Real path")
+    p1.plot(x_odom, y_odom, pen=pg.mkPen('r', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
     p1.plot(sx, sy, pen=None, symbol='o')
 
