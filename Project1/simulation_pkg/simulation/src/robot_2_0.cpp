@@ -40,11 +40,6 @@
 #include <simulation/sensor.h>
 
 
-
-
-
-
-
 int main (int argc, char** argv)
 {
 
@@ -60,7 +55,7 @@ int main (int argc, char** argv)
     nh_loc.param("y_init", yInit, 0.0);
     nh_loc.param("theta_init", thetaInit, 0.0);
 
-    //  Transform theta in radians
+    //  Transform theta in radiants
     thetaInit *= M_PI/180;
 
     //  Robot parameters
@@ -79,14 +74,13 @@ int main (int argc, char** argv)
     nh_loc.param("encoders_resolution", encodersResolution, (double)1.0) ;
 
 
-
-
+    //  Robot errors
     double wheel1Error;                           //  [percentage]
     double trackGaugeError;                       //  [percentage]
     nh_loc.param("wheel_1_error", wheel1Error, 1.00) ;
     nh_loc.param("track_gauge_error", trackGaugeError, 1.00) ;
 
-    //  Check that the passed arguments are correct and meaningfull
+    //  Check that the passed arguments are correct and meaningful
     if( frontAxle < 0 ||
         wheelRadius < 0 ||
         trailingOffSet < 0 ||

@@ -82,7 +82,6 @@ if __name__ == '__main__':
     yInit = parameters['robot_2_0']['y_init']
     thetaInit = parameters['robot_2_0']['theta_init']
 
-
     #   Obtain estimator setting
     sigmaTuning = parameters['estimator']['sigma_tuning']
     threshold  = parameters['estimator']['threshold']
@@ -209,7 +208,7 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-    #   Extract relevant data by removing motionless parts).
+    #   Extract relevant data by removing motionless parts
     del x_real[0: startIndex]
     del y_real[0: startIndex]
     del theta_real[0: startIndex]
@@ -241,7 +240,7 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-    #   Extract relevant data by removing motionless parts).
+    #   Extract relevant data by removing motionless parts
     del x_estm[0: startIndex]
     del y_estm[0: startIndex]
     del theta_estim[0: startIndex]
@@ -286,6 +285,7 @@ if __name__ == '__main__':
 
 
     #  Create the fifth window with velocities
+
 #    win5 = pg.GraphicsWindow(title="Velocities")
 #    win5.resize(1000,600)
 #    win5.setWindowTitle('Velocities')
@@ -328,6 +328,7 @@ if __name__ == '__main__':
     p11.plot(estm_time, cov_theta, pen=(255,0,0), name="sigma Theta")
     p11.setLabel('left', "sigma theta")
     p11.setLabel('bottom', "time", units='s')
+
 
 
 
@@ -397,9 +398,6 @@ if __name__ == '__main__':
 #    updatePlot()
 
 
-
-
-
     #   Create the second window with paths and distances
     win2 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
     win2.resize(1000,600)
@@ -412,6 +410,7 @@ if __name__ == '__main__':
     #   and estimator
     p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
+
     p1.plot(x_real, y_real, pen=pg.mkPen('g', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('r', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
@@ -446,6 +445,7 @@ if __name__ == '__main__':
     #   Create the first window with paths and distances
     win1 = pg.TableWidget(sortable=False)
     win1.show()
+
     win1.resize(320,650)
     win1.setWindowTitle('Table of Parameters')
 

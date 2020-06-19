@@ -18,8 +18,8 @@
  *
  * Description
             This file cointains all the functions and methods implemented to define the kinematic
-          of the robot. All the computations used the generalized coordinates as it is a powerful
-          structure, perfectly suitable for type of calculations. In this way the robot file
+          of the robot. All the computations use the generalized coordinates as it is a powerful
+          structure, perfectly suitable for type of calculations. In this way, the robot file
           can remain light and easy to read throught. All the "complexities" are here.
 
             To avoid memory leaks, the use of smart pointers is strongly recommended. They are
@@ -119,7 +119,7 @@ namespace robot_2_0 {
 
   //  Move Operator
   GeneralizedCoordinates& GeneralizedCoordinates::operator=(GeneralizedCoordinates&& other) noexcept
-  //  Function that should not throw any exception. Using std::swap allows having smooth and safe
+  //  Function that should not throw any exception. Using std::swap allows to have smooth and safe
   //  moving operation, enjoy the strong guarantee.
   {
     std::swap(x, other.x);

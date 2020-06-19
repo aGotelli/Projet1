@@ -1,6 +1,6 @@
 /**
  * \file compute twist
- * \brief Adapter component for translate the joint button state into a command
+ * \brief Adapter component to translate the joint button state into a command
  * \author Bianca Lento & Andrea Gotelli
  * \version 0.1
  * \date 28/05/2020
@@ -18,7 +18,7 @@
         and will output a feasible twist for the robot. As it is an adapter
         component, it will be as short as possible in terms of code length.
 
-          In this version, the Andrea's joystic is the only one implemented.
+          In this version, the Andrea's joystick is the only one implemented.
  *
  */
 
@@ -93,11 +93,11 @@ int main (int argc, char** argv)
 
   ros::NodeHandle nh_glob;
 
-  
+
   // Declare your node's subscriptions and service clients
   ros::Subscriber joystickState = nh_glob.subscribe<sensor_msgs::Joy>("/joy", 1, JoystickStateUpdate) ;
 
-  // Declare you publishers and service servers
+  // Declare your publishers and service servers
   ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1) ;
 
 

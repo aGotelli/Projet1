@@ -35,6 +35,9 @@ agotelli@ProBook:~$ python3 -m pyqtgraph.examples
 So let's install it:
 sudo pip install pyqtgraph
 
+if pip is not included in your computer, install it:
+sudo apt install python-pip
+
 
 then run again:
 python3 -m pyqtgraph.examples

@@ -14,8 +14,8 @@
  *    ° /TwistToRobot
  *
  * Description
-          This node will take the status of the controller, i.e. the keyboard,
-          and will output a feasible twist for the robot. As it is an adapeter
+            This node will take the status of the controller, i.e. the keyboard,
+          and will output a feasible twist for the robot. As it is an adapter
           component, it will be as short as possible in terms of code length.
 
  */
@@ -38,7 +38,7 @@ std::map<char, std::vector<double>> motion
   {'a', {0, 1}},
   {'d', {0, -1}},
   {'x', {0, 0}},
-  //  Adding compatability with AZERTY
+  //  Adding compatibility with AZERTY
   {'z', {1, 0}},
   {'q', {0, 1}}
 
@@ -57,11 +57,11 @@ std::map<char, std::vector<double>> speed
 const char* msg = R"(
 Reading from the keyboard and Publishing to Twist!
 ---------------------------------------------------
-Moving around:      | Moving around (AZERTY)
-    w               |         z
-a   s   d           |     q   s   d
-                    |
-                    
+ Moving around:      | Moving around (AZERTY)
+     w               |         z
+ a    s    d         |     q   s   d
+                     |
+
               Stop the robot:
                     x
 
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh_glob;
 
-  // Declare you publishers and service servers
+  // Declare your publishers and service servers
   ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1);
 
   //  Show how to use the keyboard
@@ -165,7 +165,6 @@ int main(int argc, char** argv)
 
     // Otherwise, quit the simulation ( CTRL C )
     else if ( key == '\x03' ) { break; }
-
 
 
     // Update the Twist message

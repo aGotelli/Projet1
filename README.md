@@ -579,6 +579,10 @@ However, if it doesn't work, that's because the package is in your computer but 
 ##### The solution is to simply run a pip installation
         sudo pip install pyqtgraph
 
+If pip is not included in your computer, install it running:
+
+      sudo apt install python-pip
+
 To test the package now run the command:
 
         python3 -m pyqtgraph.examples
