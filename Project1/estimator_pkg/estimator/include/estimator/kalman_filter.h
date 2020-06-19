@@ -191,27 +191,58 @@ geometry_msgs::Pose PostureError(const geometry_msgs::Pose& realPosture, const g
 }
 
 
-estimator_messages::Measurement Accepted(const Measurement& measurement, const double dMaha)
+estimator_messages::Measurement Accepted(const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
-  estimator_messages::Measurement accepted;
+  estimator_messages::Measurement measurement;
+
+  //  Set the state of the measurement
+  measurement.accepted = true;
 
   //  Indicate the index of the line
-  accepted.line_index.data = measurement.lineIndex;
+  measurement.line_index = _measurement.lineIndex;
 
   //  Include the position
-  accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
-  accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
+  measurement.pose.position.x = _measurement.activeSensor->AbsolutePosition().x ;
+  measurement.pose.position.y = _measurement.activeSensor->AbsolutePosition().y ;
 
   //  Set the Mahalanobis distance of the measurement
-  accepted.distance = dMaha ;
+  measurement.distance = dMaha ;
   //  Filtering based on the type
-  if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
-    accepted.line_type.data = "HORIZONTAL" ;
+  if( _measurement.lineType == utility::LINETYPE::HORIZONTAL )
+    measurement.line_type = "HORIZONTAL" ;
   else
-    accepted.line_type.data = "VERTICAL" ;
+    measurement.line_type = "VERTICAL" ;
 
-  return accepted;
+  return measurement;
+}
+
+
+
+estimator_messages::Measurement Rejected(const Measurement& _measurement, const double dMaha)
+{
+  //  Create a message to publish the current measurement
+  estimator_messages::Measurement measurement;
+
+  //  Set the state of the measurement
+  measurement.accepted = false;
+
+  //  Indicate the index of the line
+  measurement.line_index = _measurement.lineIndex;
+
+  //  Include the position
+  measurement.pose.position.x = _measurement.activeSensor->AbsolutePosition().x ;
+  measurement.pose.position.y = _measurement.activeSensor->AbsolutePosition().y ;
+
+  //  Set the Mahalanobis distance of the measurement
+  measurement.distance = dMaha ;
+  //  Filtering based on the type
+  if( _measurement.lineType == utility::LINETYPE::HORIZONTAL )
+    measurement.line_type = "HORIZONTAL" ;
+  else
+    measurement.line_type = "VERTICAL" ;
+
+  return measurement;
 }
 
 

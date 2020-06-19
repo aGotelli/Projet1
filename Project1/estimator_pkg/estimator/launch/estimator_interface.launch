@@ -4,10 +4,10 @@
   <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="long_03s" />
+  <arg name="save_as"           value="P_inclined_04s" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="long" />
+  <arg name="file_name"         value="P_inclined" />
 
   <!-- Select the folder containig the desired simulation file -->
   <arg name="take_from_folder"  value="recorded_data"   />
@@ -23,7 +23,7 @@
   <arg name="subsample_rate"  value="1" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
-  <arg name="sigma_tuning"  value="0.03"   />
+  <arg name="sigma_tuning"  value="0.04"   />
 
   <arg name="sigma_x"       value="0.008"   />  <!--  [m]    -->
   <arg name="sigma_y"       value="0.008"   />  <!--  [m]    -->

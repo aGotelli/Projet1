@@ -202,6 +202,8 @@ int main(int argc, char** argv)
 
   ros::Rate estimatorRate( frequency );
 
+  ros::Duration(2.0).sleep();
+
   while( ros::ok() ) {
 
     ros::spinOnce();
@@ -228,11 +230,6 @@ int main(int argc, char** argv)
     ros::Duration timeElapsed;
 
     previousTime = ros::Time::now();
-
-//====================================~ TEMP ~========================================
-    //  Avoid repeating same order in the measurements
-    //std::random_shuffle(measurements.begin(), measurements.end());
-//====================================~ TEMP ~========================================
 
     // Check for any measurements
     for(const auto& measurement : measurements ) {
@@ -273,10 +270,15 @@ int main(int argc, char** argv)
         //  Than publish the newly measurement
         shareMeasurements.publish( Accepted( measurement, dMaha ) ) ;
 
-        //  Publish result for the Mahalanobis distance
-        std_msgs::Float32 currentDist;
-        currentDist.data = dMaha;
-        Mahalanobis.publish( currentDist );
+      } else {
+
+        //  Than publish the newly measurement
+        shareMeasurements.publish( Rejected( measurement, dMaha ) ) ;
+
+        // //  Publish result for the Mahalanobis distance
+        // std_msgs::Float32 currentDist;
+        // currentDist.data = dMaha;
+        // Mahalanobis.publish( currentDist );
 
       }
 
@@ -285,17 +287,6 @@ int main(int argc, char** argv)
 
     //  Publish estimated posture and standard deviations
     estPosture.publish( Estimation(X, P) );
-
-    //ROS_INFO_STREAM("Covariance matrix : " << P );
-
-    currentTime = ros::Time::now();
-    timeElapsed = currentTime - previousTime;
-    previousTime = currentTime;
-
-    // ROS_INFO_STREAM("currentTime  : " << currentTime.toSec() );
-    // ROS_INFO_STREAM("previousTime : " << previousTime.toSec() );
-    // ROS_INFO_STREAM("timeElapsed  : " << timeElapsed.toSec() );
-    // ROS_INFO_STREAM("v : " << input[0] << ", w : " << input[1] );
 
     //  Publish velocities
     geometry_msgs::Twist vel;
