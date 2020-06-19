@@ -1,0 +1,17 @@
+estimator: {estimator_frequency: 150, sigma_tuning: 0.033, threshold: 3.8415}
+file_handler: {topics_to_save: Mahalanobis EstimatedPosture Velocities Measurements
+    RobotPosture RobotOdometry EstimationError}
+robot_2_0: {a: 0.2, actuator_max_speed: 10.0, b: 0.4, c: 0.1, encoders_resolution: 120,
+  theta_init: 45.0, track_gauge_error: 1.0, wheel_1_error: 1.01, wheel_radius: 0.05,
+  x_init: 0.2, y_init: 0.2}
+rosdistro: 'melodic
+
+  '
+roslaunch:
+  uris: {host_probook__38377: 'http://ProBook:38377/'}
+rosversion: '1.14.5
+
+  '
+run_id: eb3b17b6-b186-11ea-934e-f4066972bee2
+sensor: {line_thickness: 0.005, x1_pos: 0.0, x2_pos: 0.0, x_spacing: 0.2, y1_pos: -0.1,
+  y2_pos: 0.1, y_spacing: 0.2}
