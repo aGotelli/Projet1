@@ -8,6 +8,10 @@
   <arg name="threshold"     default="0.0"   />
   <arg name="sigma_tuning"  default="0.0"   />
 
+  <arg name="sigma_x"       default="0.0"   />
+  <arg name="sigma_y"       default="0.0"   />
+  <arg name="sigma_theta"   default="0.0"   />
+
   <arg name="speed_factor"    default="1" />
   <arg name="subsample_rate"  default="1" />
 
@@ -36,9 +40,12 @@
   </node>
 
   <node pkg="estimator" type="estimator_estimator" name="estimator" output="screen">
-    <param name="threshold"                       value="$(arg threshold)"    />
-    <param name="sigma_tuning"                    value="$(arg sigma_tuning)" />
-    <param name="estimator_frequency" type="int"  value="$(arg estimator_freq)"      />
+    <param name="threshold"                       value="$(arg threshold)"      />
+    <param name="sigma_tuning"                    value="$(arg sigma_tuning)"   />
+    <param name="estimator_frequency" type="int"  value="$(arg estimator_freq)" />
+    <param name="sigma_x"                         value="$(arg sigma_x)"        />
+    <param name="sigma_y"                         value="$(arg sigma_y)"        />
+    <param name="sigma_theta"                     value="$(arg sigma_theta)"    />
   </node>
 
   <!-- The node to save all the needed data -->

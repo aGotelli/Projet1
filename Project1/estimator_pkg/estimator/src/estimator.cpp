@@ -129,6 +129,11 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
   nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
 
+  double sigmaX, sigmaY, sigmaTheta;
+  nh_loc.param("sigma_x", sigmaX, 0.0);
+  nh_loc.param("sigma_y", sigmaY, 0.0);
+  nh_loc.param("sigma_theta", sigmaTheta, 0.0);
+
   ROS_INFO_STREAM("Initial position : " << xInit << ", " << yInit << ", " << thetaInit );
 
   // Robot parameters
@@ -185,7 +190,7 @@ int main(int argc, char** argv)
   const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
-  KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning);
+  KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning, sigmaX, sigmaY, sigmaTheta*M_PI/180);
 
 
   //  Declaration of the kalman filter matrices (better to have them here)
@@ -223,6 +228,11 @@ int main(int argc, char** argv)
     ros::Duration timeElapsed;
 
     previousTime = ros::Time::now();
+
+//====================================~ TEMP ~========================================
+    //  Avoid repeating same order in the measurements
+    //std::random_shuffle(measurements.begin(), measurements.end());
+//====================================~ TEMP ~========================================
 
     // Check for any measurements
     for(const auto& measurement : measurements ) {

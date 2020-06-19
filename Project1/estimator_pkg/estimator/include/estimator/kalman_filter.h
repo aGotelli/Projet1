@@ -34,10 +34,14 @@
 
 class KalmanFilter {
 public:
-  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning) :
+  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning,
+                const double _sigmaX, const double _sigmaY, const double _sigmaTheta) :
                   jointToCartesian(_jointToCartesian),
                   sigmaMeasurement(_sigmaMeasurement),
-                  sigmaTuning(_sigmaTuning)
+                  sigmaTuning(_sigmaTuning),
+                  sigmaX(_sigmaX),
+                  sigmaY(_sigmaY),
+                  sigmaTheta(_sigmaTheta)
                   {
                     ROS_INFO_STREAM("Qwheels                            : " << Qwheels );
                     ROS_INFO_STREAM("Qbeta                              : " << Qbeta );
@@ -60,7 +64,7 @@ public:
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
 
   //  Compute the Mahalanobis distance given the current covariace matrix
-  inline double ComputeMahalanobis(double innov,
+  inline double ComputeMahalanobis(const double innov,
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
                                     {
@@ -72,9 +76,9 @@ public:
 private:
 
   //  Uncertainties on the robot initial posture
-  const double sigmaX     { 0.008f };
-  const double sigmaY     { 0.008f };
-  const double sigmaTheta { 3*M_PI/180 };
+  const double sigmaX     { 0.00f };
+  const double sigmaY     { 0.00f };
+  const double sigmaTheta { 0.00f };
 
   //  Uncertainty on the measurement
   const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
@@ -200,7 +204,7 @@ estimator_messages::Measurement Accepted(const Measurement& measurement, const d
   accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
 
   //  Set the Mahalanobis distance of the measurement
-  accepted.distance = dMaha ; 
+  accepted.distance = dMaha ;
   //  Filtering based on the type
   if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
     accepted.line_type.data = "HORIZONTAL" ;
