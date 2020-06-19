@@ -18,7 +18,7 @@
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
   <arg name="wheel_1_error"       value="1.01"  />    <!-- [percentage] -->
-  <arg name="track_gauge_error"   value="1.0"  />    <!-- [percentage] -->
+  <arg name="track_gauge_error"   value="1.01"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -29,8 +29,8 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="0.2" />  <!-- meters -->
-  <arg name="y_init"      value="0.2" />  <!-- meters -->
+  <arg name="x_init"      value="-2.2" />  <!-- meters -->
+  <arg name="y_init"      value="-2.2" />  <!-- meters -->
   <arg name="theta_init"  value="45.0" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
@@ -45,8 +45,8 @@
   simulation frequency the dispacement is 0.0033 i.e. 3.33 mm.
   In other words, it is strongly recommended to use a line thikness
   proportionated at the robot parameters.  [all the parameters are in meters]-->
-  <arg name="x_spacing"       value="0.5"     />
-  <arg name="y_spacing"       value="0.5"     />
+  <arg name="x_spacing"       value="0.25"     />
+  <arg name="y_spacing"       value="0.25"     />
   <arg name="line_thickness"  value="0.005"   />
 
 
@@ -61,14 +61,9 @@
 
 
   <!-- Specify the file name and the folder where to save the files needed to
-<<<<<<< HEAD:Project1/simulation_pkg/simulation/launch/simulation_interface.launch
-  reacreate the simulation -->
-  <arg name="file_name"   value="long" />
-=======
   recreate the simulation -->
-  <arg name="file_name"   value="one_loop" />
->>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554:Project1/simulation_pkg/simulation/launch/interface.launch
-  <arg name="folder_name" value="recorded_data" />
+  <arg name="file_name"   value="little_loop" />
+  <arg name="folder_name" value="with_errors" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick
@@ -78,7 +73,7 @@
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
   <arg name="use_joystick"  value="true" />
-  <arg name="joystick_tag"  value="js1"   />
+  <arg name="joystick_tag"  value="js0"   />
 
 
   <arg name="record" value="true" />
