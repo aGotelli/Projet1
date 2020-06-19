@@ -29,9 +29,9 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="2.0" />  <!-- meters -->
-  <arg name="y_init"      value="0.0" />  <!-- meters -->
-  <arg name="theta_init"  value="0.0" />  <!-- grad -->
+  <arg name="x_init"      value="0.2" />  <!-- meters -->
+  <arg name="y_init"      value="0.2" />  <!-- meters -->
+  <arg name="theta_init"  value="45.0" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
   y_spacing represent the offset of the lines along x and y respectively.
@@ -62,7 +62,7 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   reacreate the simulation -->
-  <arg name="file_name"   value="one_loop" />
+  <arg name="file_name"   value="long" />
   <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is awailabe, it is possible to use it to control the

@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="one_loop_sigma03" />
+  <arg name="file_name"         value="P_inclined_04s" />
 
   <!-- Select the folder containig the desired estimation file -->
   <arg name="take_from_folder"  value="processed_data"   />

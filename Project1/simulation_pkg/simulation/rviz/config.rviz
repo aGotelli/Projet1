@@ -180,7 +180,7 @@ Visualization Manager:
       Marker Topic: /estimator_output
       Name: Marker
       Namespaces:
-        RobotShape: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -211,25 +211,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.370173454284668
+      Distance: 18.275789260864258
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.6710503101348877
-        Y: -0.16956597566604614
-        Z: -0.26605767011642456
+        X: 1.3305082321166992
+        Y: -0.1955205202102661
+        Z: -0.2967788577079773
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0853976011276245
+      Pitch: 1.4403972625732422
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.838578224182129
+      Yaw: 4.733578681945801
     Saved: ~
 Window Geometry:
   Displays:
