@@ -1,5 +1,48 @@
 #!/usr/bin/env python
 
+"""
+ * \file plotting
+ * \brief Plots the data storaged in a rosbag and in a yaml files with same name
+ * \author Bianca Lento & Andrea Gotelli
+ * \version 0.1
+ * \date 19/06/2020
+ *
+ * \param[in]
+ *
+ * Subscribes to: <BR>
+ *    °
+ *
+ * Publishes to: <BR>
+ *    ° /
+ *
+ * Description
+            This file takes the data from a rosbag and a yaml file with the same name
+        and plots the results in some graph. The aim is to make clear the behaviour of
+        the estimator throught various plots. The language that has been chosen is
+        python as it is the best when dealing with data analisys.
+
+            Moreover, the toolbox of PyQtGraph has been chose as it guarantees
+        fluid but very accurate plots. It is not built-in in Ubuntu, so it needs to
+        be installed following the proper tutorial (see the README file).
+
+            In the beginning of this script, with the filename (and related path)
+        passed as argument, the relevant data of the yaml file are loaded.
+        Additionally, some ranged loops takes all the desired messages from the
+        rosbag of interest. The choice was to define a specific loop for every
+        topic of interest. One could say that it is possible to take different
+        topic from a single loop. However, this single loop will be executed several
+        times, one for each topic, so the two approach take the same amount of time.
+
+            Once all the messages have been saved in the program, the motionless
+        parts will be deleted, in order to focus the attention only in the results
+        when the robot is moving.
+
+            Once the data is prepared, the Qt Console is started and the plot
+        are displayed. 
+
+ *
+"""
+
 # modules
 # ROS stuff and multithreading
 import rospy
@@ -118,11 +161,13 @@ if __name__ == '__main__':
         if meas.line_type.data == 'HORIZONTAL':
 
             if meas.line_index.data != prev_h:
+                prev_v = -1000
                 pos = [[meas.pose.position.x - xSpacing/2, meas.pose.position.x + xSpacing/2], [meas.line_index.data, meas.line_index.data]]
                 lines_detected.append(pos)
                 prev_h = meas.line_index.data
         else:
             if meas.line_index.data != prev_v:
+                prev_h = -1000
                 pos = [[meas.line_index.data, meas.line_index.data], [meas.pose.position.y - ySpacing/2, meas.pose.position.y + ySpacing/2]]
                 lines_detected.append(pos)
                 prev_v = meas.line_index.data
@@ -147,7 +192,6 @@ if __name__ == '__main__':
     #   No need of the bag file anymore
     bag.close()
 
-    print( len( lines_detected ))
 
 #################################~  PREPOCESS DATA ~###################################
 
