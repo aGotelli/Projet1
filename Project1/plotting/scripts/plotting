@@ -132,6 +132,7 @@ if __name__ == '__main__':
     x_err = []
     y_err = []
     theta_err = []
+    time_err = []
     for topic, error, t in bag.read_messages(topics=['/EstimationError']):
         x_err.append( error.position.x )
         y_err.append( error.position.y )
@@ -139,6 +140,7 @@ if __name__ == '__main__':
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion( orientation_list )
         theta_err.append( yaw )
+        time_err.append( t.to_sec() )
 
 
     #   Obtain an estimation of the path odometry based
@@ -151,17 +153,33 @@ if __name__ == '__main__':
 
     #   Obtain information about the measurements
     class Measurement:
-        def __init__(self, time, mh_dist, color, position):
-            self.time = time
-            self.mh_dist = mh_dist
-            self.color = color
-            self.position = position
+        def __init__(self, time, mh_dist, status, x, y):
+            self.time = float(time)
+            self.mh_dist = float(mh_dist)
+            self.accepted = bool( status )
+            self.x = float( x )
+            self.y = float( y )
 
     processedMeasurements = []
+    acp_meas_time = []
+    rjt_meas_time = []
+    acp_mh_dist = []
+    rjt_mh_dist = []
+    acp_x_meas = []
+    acp_y_meas = []
+    rjt_x_meas = []
+    rjt_y_meas = []
+    accepted = []
     lines_detected = []
     prev_h = -1000
     prev_v = -1000
     for topic, meas, t in bag.read_messages(topics=['/Measurements']):
+
+        processedMeasurements.append( Measurement(  t.to_sec(),
+                                                    meas.distance,
+                                                    meas.accepted,
+                                                    meas.pose.position.x,
+                                                    meas.pose.position.y) )
 
         if meas.accepted:
 
@@ -179,15 +197,16 @@ if __name__ == '__main__':
                     lines_detected.append(pos)
                     prev_v = meas.line_index
 
-            processedMeasurements.append( Measurement(  t.to_sec(),
-                                                        meas.distance,
-                                                        'b',
-                                                        [meas.pose.position.x, meas.pose.position.y]) )
+            acp_meas_time.append( t.to_sec() )
+            acp_mh_dist.append( meas.distance )
+            acp_x_meas.append( meas.pose.position.x )
+            acp_y_meas.append( meas.pose.position.y )
+
         else:
-            processedMeasurements.append( Measurement(  t.to_sec(),
-                                                        meas.distance,
-                                                        'r',
-                                                        [meas.pose.position.x, meas.pose.position.y]) )
+            rjt_meas_time.append( t.to_sec() )
+            rjt_mh_dist.append( meas.distance )
+            rjt_x_meas.append( meas.pose.position.x )
+            rjt_y_meas.append( meas.pose.position.y )
 
 
     #   Obtain the Mahalanobis distances
@@ -226,12 +245,7 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-<<<<<<< HEAD
-
-    #   Extract relevant data by removing motionless parts).
-=======
     #   Extract relevant data by removing motionless parts
->>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     del x_real[0: startIndex]
     del y_real[0: startIndex]
     del theta_real[0: startIndex]
@@ -265,16 +279,15 @@ if __name__ == '__main__':
 
     stopIndex = i
 
-<<<<<<< HEAD
-
-    #   Extract relevant data by removing motionless parts).
-=======
     #   Extract relevant data by removing motionless parts
->>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     del x_estm[0: startIndex]
     del y_estm[0: startIndex]
     del theta_estim[0: startIndex]
-    del processedMeasurements[0: startIndex]
+#    del processedMeasurements[0: startIndex]
+#    del meas_time[0: startIndex]
+#    del mh_dist[0: startIndex]
+#    del x_meas[0: startIndex]
+#    del y_meas[0: startIndex]
 #    del cov_x[0: startIndex]
 #    del cov_y[0: startIndex]
 #    del cov_theta[0: startIndex]
@@ -289,7 +302,11 @@ if __name__ == '__main__':
     del x_estm[stopIndex: -1]
     del y_estm[stopIndex: -1]
     del theta_estim[stopIndex: -1]
-    del processedMeasurements[stopIndex: -1]
+#    del processedMeasurements[stopIndex: -1]
+#    del meas_time[stopIndex: -1]
+#    del mh_dist[stopIndex: -1]
+#    del x_meas[stopIndex: -1]
+#    del y_meas[stopIndex: -1]
 #    del cov_x[stopIndex: -1]
 #    del cov_y[stopIndex: -1]
 #    del cov_theta[stopIndex: -1]
@@ -310,16 +327,30 @@ if __name__ == '__main__':
     estm_time1 = np.asarray(estm_time1)
     estm_time1 = estm_time1 - estm_time1[0]
 
+    acp_meas_time = np.asarray(acp_meas_time)
+    acp_meas_time = acp_meas_time - acp_meas_time[0]
+
+
+    time_err = np.asarray(time_err)
+    time_err = time_err - time_err[0]
+
+    if(len(rjt_meas_time) > 0):
+        rjt_meas_time = np.asarray(rjt_meas_time)
+        rjt_meas_time = rjt_meas_time - rjt_meas_time[0]
+
 #    time_mes = np.asarray(time_mes)
 #    time_mes = time_mes - time_mes[0]
 
 
-    for i in range( len( processedMeasurements )):
-        processedMeasurements[i].time = processedMeasurements[i].time - processedMeasurements[0].time
 
+    initial = processedMeasurements[0].time
+
+    for meas in processedMeasurements:
+        meas.time = meas.time - initial
 
 
 #################################~  PLOTTING DATA ~###################################
+
 
 
     #   Start the console
@@ -374,7 +405,6 @@ if __name__ == '__main__':
 
 
 
-<<<<<<< HEAD
     #   Create the third window with the errors
     win3 = pg.GraphicsWindow(title="Errors along x, y and in heading")
     win3.resize(1000,600)
@@ -384,7 +414,7 @@ if __name__ == '__main__':
     p3 = win3.addPlot(title="Error in x")
     p3.addLegend()
     p3.plot(estm_time1,  3*np.sqrt(cov_x), pen=(255,0,0), name="+-3 sigmaX")
-    p3.plot(estm_time1, x_err, pen=(0,0,255), name="Error X")
+    p3.plot(time_err, x_err, pen=(0,0,255), name="Error X")
     p3.plot(estm_time1,  -3*np.sqrt(cov_x), pen=(255,0,0))
     p3.setLabel('left', "x", units='m')
     p3.setLabel('bottom', "time", units='s')
@@ -394,7 +424,7 @@ if __name__ == '__main__':
 
     p4 = win3.addPlot(title="Zoom on selected region")
     p4.plot(estm_time1,  3*np.sqrt(cov_x), pen=(255,0,0), name="+-3 sigmaX")
-    p4.plot(estm_time1, x_err, pen=(0,0,255), name="Error X")
+    p4.plot(time_err, x_err, pen=(0,0,255), name="Error X")
     p4.plot(estm_time1,  -3*np.sqrt(cov_x), pen=(255,0,0))
     def updatePlot():
         p4.setXRange(*lr_1.getRegion(), padding=0)
@@ -409,7 +439,7 @@ if __name__ == '__main__':
     p5 = win3.addPlot(title="Error in y")
     p5.addLegend()
     p5.plot(estm_time1,  3*np.sqrt(cov_y), pen=(255,0,0), name="+-3 sigmaY")
-    p5.plot(estm_time1, y_err, pen=(0,0,255), name="Error Y")
+    p5.plot(time_err, y_err, pen=(0,0,255), name="Error Y")
     p5.plot(estm_time1,  -3*np.sqrt(cov_y), pen=(255,0,0))
     p5.setLabel('left', "y", units='m')
     p5.setLabel('bottom', "time", units='s')
@@ -419,7 +449,7 @@ if __name__ == '__main__':
 
     p6 = win3.addPlot(title="Zoom on selected region")
     p6.plot(estm_time1,  3*np.sqrt(cov_y), pen=(255,0,0), name="+-3 sigmaY")
-    p6.plot(estm_time1, y_err, pen=(0,0,255), name="Error Y")
+    p6.plot(time_err, y_err, pen=(0,0,255), name="Error Y")
     p6.plot(estm_time1,  -3*np.sqrt(cov_y), pen=(255,0,0))
     def updatePlot():
         p6.setXRange(*lr_2.getRegion(), padding=0)
@@ -433,9 +463,9 @@ if __name__ == '__main__':
 
     p7 = win3.addPlot(title="Error in theta")
     p7.addLegend()
-    p7.plot(estm_time1,  3*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
-    p7.plot(estm_time1, theta_err, pen=(0,0,255), name="Error theta")
-    p7.plot(estm_time1,  -3*np.sqrt(cov_theta), pen=(255,0,0))
+    p7.plot(estm_time1,  (3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
+    p7.plot(time_err, theta_err, pen=(0,0,255), name="Error theta")
+    p7.plot(estm_time1,  -(3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0))
     p7.setLabel('left', "theta", units='rad')
     p7.setLabel('bottom', "time", units='s')
     lr_3 = pg.LinearRegionItem([0,2])
@@ -443,9 +473,9 @@ if __name__ == '__main__':
     p7.addItem(lr_3)
 
     p8 = win3.addPlot(title="Zoom on selected region")
-    p8.plot(estm_time1,  3*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
-    p8.plot(estm_time1, theta_err, pen=(0,0,255), name="Error theta")
-    p8.plot(estm_time1,  -3*np.sqrt(cov_theta), pen=(255,0,0))
+    p8.plot(estm_time1,  (3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
+    p8.plot(time_err, theta_err, pen=(0,0,255), name="Error theta")
+    p8.plot(estm_time1,  -(3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0))
     def updatePlot():
         p8.setXRange(*lr_3.getRegion(), padding=0)
     def updateRegion():
@@ -453,72 +483,6 @@ if __name__ == '__main__':
     lr_3.sigRegionChanged.connect(updatePlot)
     p8.sigXRangeChanged.connect(updateRegion)
     updatePlot()
-=======
-
-#    #   Create the third window with the errors
-#    win3 = pg.GraphicsWindow(title="Errors along x, y and in heading")
-#    win3.resize(1000,600)
-#    win3.setWindowTitle('Errors along x, y and in heading')
-
-
-#    p3 = win3.addPlot(title="Error in x")
-#    p3.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
-#    p3.setLabel('left', "x", units='m')
-#    p3.setLabel('bottom', "time", units='s')
-#    lr_1 = pg.LinearRegionItem([0,5])
-#    #lr_1.setZValue(-0.01)
-#    p3.addItem(lr_1)
-
-#    p4 = win3.addPlot(title="Zoom on selected region")
-#    p4.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
-#    def updatePlot():
-#        p4.setXRange(*lr_1.getRegion(), padding=0)
-#    def updateRegion():
-#        lr_1.setRegion(p4.getViewBox().viewRange()[0])
-#    lr_1.sigRegionChanged.connect(updatePlot)
-#    p4.sigXRangeChanged.connect(updateRegion)
-#    updatePlot()
-#
-#    win3.nextRow()
-#
-#    p5 = win3.addPlot(title="Error in y")
-#    p5.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
-#    p5.setLabel('left', "y", units='m')
-#    p5.setLabel('bottom', "time", units='s')
-#    lr_2 = pg.LinearRegionItem([0,5])
-#    #lr.setZValue(-10)
-#    p5.addItem(lr_2)
-#
-#    p6 = win3.addPlot(title="Zoom on selected region")
-#    p6.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
-#    def updatePlot():
-#        p6.setXRange(*lr_2.getRegion(), padding=0)
-#    def updateRegion():
-#        lr_2.setRegion(p6.getViewBox().viewRange()[0])
-#    lr_2.sigRegionChanged.connect(updatePlot)
-#    p6.sigXRangeChanged.connect(updateRegion)
-#    updatePlot()
-#
-#    win3.nextRow()
-#
-#    p7 = win3.addPlot(title="Error in theta")
-#    p7.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
-#    p7.setLabel('left', "theta", units='rad')
-#    p7.setLabel('bottom', "time", units='s')
-#    lr_3 = pg.LinearRegionItem([5,10])
-#    #lr.setZValue(-10)
-#    p7.addItem(lr_3)
-#
-#    p8 = win3.addPlot(title="Zoom on selected region")
-#    p8.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
-#    def updatePlot():
-#        p8.setXRange(*lr_3.getRegion(), padding=0)
-#    def updateRegion():
-#        lr_3.setRegion(p8.getViewBox().viewRange()[0])
-#    lr_3.sigRegionChanged.connect(updatePlot)
-#    p8.sigXRangeChanged.connect(updateRegion)
-#    updatePlot()
->>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
 
 
     #   Create the second window with paths and distances
@@ -538,8 +502,15 @@ if __name__ == '__main__':
     p1.plot(x_odom, y_odom, pen=pg.mkPen('r', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
 
-    for measures in processedMeasurements:
-        p1.plot(measures.position[0], measures.position[1], pen=None, )
+
+
+    for measurement in processedMeasurements:
+        if measurement.accepted == True:
+            p1.plot([measurement.x, measurement.x], [measurement.y, measurement.y], pen=None, symbolBrush=(0.0, 0.0, 255), symbol='o')
+        else:
+            p1.plot([measurement.x, measurement.x], [measurement.y, measurement.y], pen=None, symbolBrush=(255, 0.0, 0.0), symbol='o', symbolSize=6)
+
+
 
 
     l = lines_detected[0]
@@ -565,25 +536,24 @@ if __name__ == '__main__':
     #   Create a second plot with the Mahalanobis distances
     p2 = win2.addPlot(title="Mahalanobis distances")
     p2.setLogMode(False, True)
-    p2.plot([time_dist[0], time_dist[-1]], [threshold, threshold], pen=pg.mkPen('r', width=2), name="Threshold")
-
-    for measurement in processedMeasurements:
-        p2.plot(measurement.time, measurement.mh_dist, pen=None, symbol='o')
+    p2.plot([processedMeasurements[0].time , processedMeasurements[-1].time], [threshold, threshold], pen=pg.mkPen('r', width=2), name="Threshold")
 
     p2.setLabel('left', "x", units='undimensional distances')
     p2.setLabel('bottom', "time", units='s')
+
+
+    for measurement in processedMeasurements:
+        if measurement.accepted == True:
+            p2.plot([measurement.time, measurement.time], [measurement.mh_dist, measurement.mh_dist], pen=None, symbolBrush=(0.0, 0.0, 255), symbol='o')
+        else:
+            p2.plot([measurement.time, measurement.time], [measurement.mh_dist, measurement.mh_dist], pen=None, symbolBrush=(255, 0.0, 0.0), symbol='o')
 
 
 
     #   Create the first window with paths and distances
     win1 = pg.TableWidget(sortable=False)
     win1.show()
-<<<<<<< HEAD
     win1.resize(430,650)
-=======
-
-    win1.resize(320,650)
->>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     win1.setWindowTitle('Table of Parameters')
 
 
@@ -597,7 +567,7 @@ if __name__ == '__main__':
         ('Track gauge',             2*frontAxle,                "[m]"),
         ('Initial position x',      xInit,                      "[m]"),
         ('Initial position y',      yInit,                      "[m]"),
-        ('Initial position theta',  thetaInit,                  "[m]"),
+        ('Initial position theta',  thetaInit,                  "[grad]"),
         ('ODOMETRY PARAMETERS',     0.0,                        ""),
         ('wheel_1_error',           (wheelRadiusError-1)*100,   "[%]"),
         ('track_gauge_error',       (trackGaugeError-1)*100,    "[%]"),
