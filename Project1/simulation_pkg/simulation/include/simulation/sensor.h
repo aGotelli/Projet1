@@ -93,7 +93,7 @@
  *
  */
 
-
+#include <algorithm>
 
 // ROS
 #include <ros/ros.h>
@@ -277,9 +277,24 @@ void Sensor::CheckStatus() const
 //  This function is to be called when this class is implemented in a simulation
 //  context. In fact, the only output is a yes or no for the sensor status
 {
+  //  Take the distances from the sensor to the lines around
+  Eigen::VectorXd distances = this->ComputeDistances().cwiseAbs();
+
+  //          linesAround << leftLine, rightLine, bottomLine, upperLine ;
+
+  const double cm = 0.02 ;
+
   //  Update the sensor status using the knowledge of the computed distances.
-  if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
-      state = true;
+  if( distances.minCoeff() <= world.LineThickness()/2 ) {
+
+//====================================~ TEMP ~==================================================
+    if( distances[0] <= cm && distances[2] <= cm  ||  //  left-bottom corner
+        distances[1] <= cm && distances[2] <= cm  ||  //  right bottom corner
+        distances[0] <= cm && distances[3] <= cm  ||  //  left upper corner
+        distances[1] <= cm && distances[3] <= cm      //  right upper corner
+      ) { state = false; } else { state = true; }
+//====================================~ TEMP ~==================================================
+
   } else {
       state = false;
   }
@@ -347,10 +362,6 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd distances = this->ComputeDistances( linesAround ).cwiseAbs();
 
-  const double minimum = distances.cwiseAbs().minCoeff();
-
-  if ( (minimum = distances[0]) || (minimum = distances[1])){
-
     //  Compare the distances for the two "vertical" lines
     //    left              rigth
     if( distances[0] < distances[1] ) { //  The left line is closer
@@ -373,30 +384,8 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
                                           utility::LINETYPE::HORIZONTAL, this ) );
     }
 
-  } else {
-
-    if( distances[2] < distances[3] ) { //  The bottom line is closer
-      measurements.push_back( Measurement(-linesAround(2, 2),
-                                          utility::LINETYPE::HORIZONTAL, this ) );
-
-    } else {                            //  The upper line is closer
-      measurements.push_back( Measurement(-linesAround(2, 3),
-                                          utility::LINETYPE::HORIZONTAL, this ) );
-    }
-
-    if( distances[0] < distances[1] ) { //  The left line is closer
-      measurements.push_back( Measurement(-linesAround(2, 0),
-                                          utility::LINETYPE::VERTICAL, this ) );
-
-    } else {                            //  The right line is closer
-      measurements.push_back( Measurement(-linesAround(2, 1),
-                                          utility::LINETYPE::VERTICAL, this ) );
-    }
-
-  }
 
 }
-
 
 
 const utility::Pose2D Sensor::AbsolutePosition() const
@@ -451,6 +440,96 @@ void RobotSensors::AddSensor(const Sensor& newSensor)
 
 }
 
+
+/*
+void Sensor::CheckStatus() const
+//  This function is to be called when this class is implemented in a simulation
+//  context. In fact, the only output is a yes or no for the sensor status
+{
+  //  Update the sensor status using the knowledge of the computed distances.
+  if( this->ComputeDistances().cwiseAbs().minCoeff() <= world.LineThickness()/2 ) {
+
+      state = true;
+  } else {
+      state = false;
+  }
+
+}
+
+
+
+*/
+
+
+/*
+
+void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
+//  This function is to be called when dealing with estimation. In fact it
+//  adds into the vector of measurements the closest "horizontal" and "vertical"
+//  linse. In this way it is possible to have two measurements when the sensor
+//  crosses an intersection of lines. It will be the estimator itself, with the
+//  coherence test, to make a decision if to take both or only one line.
+{
+
+  //  Obtain the lines around the sensor
+  const Eigen::MatrixXd linesAround = this->EvaluateLinesAround();
+
+  //  Obatin the vector contain the distances among the lines
+  const Eigen::VectorXd distances = this->ComputeDistances( linesAround ).cwiseAbs();
+
+  const double minimum = distances.cwiseAbs().minCoeff();
+
+  if ( (minimum == std::abs(distances[0])) || (minimum == std::abs(distances[1]))){
+
+    //  Compare the distances for the two "vertical" lines
+    //    left              rigth
+    if( distances[0] < distances[1] ) { //  The left line is closer
+      measurements.push_back( Measurement(-linesAround(2, 0),
+                                          utility::LINETYPE::VERTICAL, this ) );
+
+    } else {                            //  The right line is closer
+      measurements.push_back( Measurement(-linesAround(2, 1),
+                                          utility::LINETYPE::VERTICAL, this ) );
+    }
+
+    //  Compare the distances for the two "horizontal" lines
+    //    Bottom          Upper
+    if( distances[2] < distances[3] ) { //  The bottom line is closer
+      measurements.push_back( Measurement(-linesAround(2, 2),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+
+    } else {                            //  The upper line is closer
+      measurements.push_back( Measurement(-linesAround(2, 3),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+    }
+
+  } else {
+
+    if( distances[2] < distances[3] ) { //  The bottom line is closer
+      measurements.push_back( Measurement(-linesAround(2, 2),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+
+    } else {                            //  The upper line is closer
+      measurements.push_back( Measurement(-linesAround(2, 3),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+    }
+
+    if( distances[0] < distances[1] ) { //  The left line is closer
+      measurements.push_back( Measurement(-linesAround(2, 0),
+                                          utility::LINETYPE::VERTICAL, this ) );
+
+    } else {                            //  The right line is closer
+      measurements.push_back( Measurement(-linesAround(2, 1),
+                                          utility::LINETYPE::VERTICAL, this ) );
+    }
+
+  }
+
+}
+
+
+
+*/
 
 
 

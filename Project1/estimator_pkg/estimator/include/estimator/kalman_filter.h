@@ -187,7 +187,7 @@ geometry_msgs::Pose PostureError(const geometry_msgs::Pose& realPosture, const g
 }
 
 
-estimator_messages::Measurement Accepted(const Measurement& measurement)
+estimator_messages::Measurement Accepted(const Measurement& measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
   estimator_messages::Measurement accepted;
@@ -199,6 +199,8 @@ estimator_messages::Measurement Accepted(const Measurement& measurement)
   accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
   accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
 
+  //  Set the Mahalanobis distance of the measurement
+  accepted.distance = dMaha ; 
   //  Filtering based on the type
   if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
     accepted.line_type.data = "HORIZONTAL" ;
