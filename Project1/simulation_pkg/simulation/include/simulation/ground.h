@@ -16,7 +16,7 @@
  *    °
  *
  * Description
-            This files contains the functions to generate e tiled floor. The floor is generated
+            This files contains the functions to generate the tiled floor. The floor is generated
           using chunk of size 5x5 meters. They consist of a white parallelepiped of the chunk
           size. Some lines are generated representing the separations line among the tiles.
 
@@ -240,7 +240,7 @@ private:
 
 void WorldGenerator::InitWorld()
 {
-  //  Initialize the world with a chink in every quadrants
+  //  Initialize the world with a chunk in every quadrants
   chunks.push_back( Generation( utility::Pose2D( chunkSize.x/2, chunkSize.y/2 ), chunkSize, world) ) ;
 
   chunks.push_back( Generation( utility::Pose2D( -chunkSize.x/2, chunkSize.y/2 ), chunkSize, world) ) ;

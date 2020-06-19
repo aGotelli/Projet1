@@ -1,9 +1,9 @@
 /**
- * \file
- * \brief
- * \author
- * \version 0.1
- * \date
+ * \file file handler
+ * \brief save data
+ * \author Bianca Lento & Andrea Gotelli
+ * \version 0.3
+ * \date 14/06/2020
  *
  * \param[in]
  *
@@ -16,9 +16,9 @@
  * Description
             The aim of this file is to save all the recorded data in the proper folder. Moreover,
           as the architecture is versatile and some parameters can be changed, based on the specification
-          of the project, all the informations regarding this, are also saved.
+          of the project, all the information regarding this, are also saved.
 
-            This nodes works by taking some informations from the user:
+            This nodes works by taking some information from the user:
           1) If they want to save the parameters
           2) Which topics must be saved
 
@@ -26,46 +26,45 @@
           if the topics and parameters are inside some group, the node must be putted in the same group.
 
             In the case where the simulation is not in a group the node can handle this case.
-          However the user is encouraged to use the namespaces i.e. the groups properly.
-          This will lead to a clearer and more understandable architecture for the simulation.
-          In fact, the group allow grouping together components that work on the same task or concept.
+          However, the user is encouraged to use the namespaces i.e. the groups properly as
+          this will lead to a clearer and more understandable architecture for the simulation.
+          In fact, the group allows to put together components that work on the same task or concept.
 
-
-            This file has a build-in method to avoid to overwrite and existing file, causing to loose some
+            This file has a build-in method to avoid to overwrite an existing file, causing the loss of
           precious data. However, it is recommended to use a file name without spaces and that does not end
           with a number. Even if this node will work, the name of the file will be strongly modified.
 
-            This node has also a build in method to ensure the existence of the folder where to storage the
+            This node has also a build-in method to ensure the existence of the folder where to storage the
           files. If the folder does not exist then it is created in the path given. However if the path is
-          not correct the node is shut down and simulation goes on WITHOUT SAVING ANY FILE.
+          not correct, the node will be shutted down and simulation will go on WITHOUT SAVING ANY FILE.
 
             To check that the file is not already present in the folder, the function std::find_if is used. However,
           sometimes, it is not quite easy to understand how it works.
 
-            The function std::find_if takes three arguments: a beginning iterator, and ending iterator and a predicate.
-          The first parameter, the beginning iterator tells the functin where to start to search using the predicate.
+            The function std::find_if takes three arguments: a beginning iterator, an ending iterator and a predicate.
+          The first one, the beginning iterator, tells the function where to start to search using the predicate as the
           On the other hand, the ending iterator tells where to stop. As said, the search corresponds to the use of a
-          predicate. The predicate is a function that outputs true or false depending on the inputs. In other words,
-          std::find_if simply start feeding the predicate with the elements founded from the beginning to the end. It
-          returns the iterator corresponding to the position of the element for which the predicate returns true, or the
-          end iterator if no element has been found.
+          predicate, that is a function that outputs true or false depending on the inputs. In other words, std::find_if
+          simply starts feeding the predicate with the elements founded from the beginning to the end. It returns the
+          iterator corresponding to the position of the element for which the predicate returns true, or the end iterator
+          if no element has been found.
 
-            In this case the predicate should find a file, with boost::filesystem it is possible to iterate in a folder
-          files like in the elements of a std::vector, by using the class recursive_directory_iterator.
-          In fact, the function std::find_if takes the beginning of the folder and iterates untill the end. The predicate
+            In this case the predicate should find a file using boost::filesystem that makes possible to iterate files
+          in a folder as they are like the elements of a std::vector,  by using the class recursive_directory_iterator.
+          The function std::find_if takes the beginning of the folder and iterates until the end. The predicate
           consists in a function :
 
           bool IsEqual(const boost::filesystem::directory_entry& folderFile,
                                             const boost::filesystem::path& fileName)
 
             It takes two arguments, a directory_entry that basically is a file contained in the folder, and the fileName
-          which must be ensure of being unique. This function is not suitable for being a predicate, in fact a predicate
-          takes only the file founded iterating in the folder. For this reason, the predicate is made from this function,
-          but with the use of boost::bind. IN fact, the fileName does not change in the iteration.
+          which must be unique. This function is not suitable for being a predicate because generally it takes only the
+          file founded iterating in the folder. For this reason, the predicate is made from this function, but using the
+          boost::bind, as the fileName does not change in the iteration.
 
           boost::bind(IsEqual, _1, fileName)
 
-            It returns a pointer to a function that has the body of IsEqual but takes only one arguments. This is used
+            It returns a pointer to a function that has the body of IsEqual but takes only one argument. This is used
           as predicate for the std::find_if function.
  *
  */
@@ -103,7 +102,7 @@ void AddSuffix(boost::filesystem::path& _fileName)
     //  Take the last character
     char last = fileName.back();
 
-    //  Chef if it ends with a letter
+    //  Check if it ends with a letter
     if( isalpha(last) ) {
         // In the case it ends with a letter, just add 1 to the name
         fileName = fileName + "1" ;
@@ -174,7 +173,7 @@ int main (int argc, char** argv)
 
   ros::NodeHandle nh_glob, nh_loc("~");
 
-  //  Check the user choice of saving the parameters
+  //  Check the user's choice of saving the parameters
   bool saveParams;
   nh_loc.param<bool>("save_params", saveParams, true );
 
@@ -212,7 +211,7 @@ int main (int argc, char** argv)
   }
 
 
-  //  Check if the folder is actually a directory and it exist.
+  //  Check if the folder is actually a directory and it exists.
   //  In the case is does not than create a folder
   if( !boost::filesystem::is_directory(folderPath) ) {
     ROS_WARN_STREAM(ros::this_node::getName() << " The target folder does not exist ! A folder is created at " << origin.string() );
@@ -221,12 +220,8 @@ int main (int argc, char** argv)
     ROS_INFO_STREAM("found the path : " << folderPath ) ;
   }
 
-
   //  Check if the file already exists in the folder
   FindFile(folderPath, fileName );
-
-
-
 
   //  Obtain the namespace
   std::string group = ros::this_node::getNamespace() ;
@@ -234,7 +229,6 @@ int main (int argc, char** argv)
   //  If the simulation is not defined in a namespace then the group is incorrect
   if( group == "/" )
     group = "";
-
 
   //  Save all the parameters ( if required )
   if( saveParams ) {
@@ -261,12 +255,14 @@ int main (int argc, char** argv)
 
       //  Check status of the group
       if( !group.empty() ) {
+
           //  Insert the correct suffix
           topisToSave.insert( pos + 1, (group + "/") );
 
           //  Find new position
           pos = topisToSave.find( " ", pos + group.size() );
       } else {
+
           //  Insert the correct suffix
           topisToSave.insert( pos + 1,  "/" );
 

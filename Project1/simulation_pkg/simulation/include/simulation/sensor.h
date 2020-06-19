@@ -17,10 +17,10 @@
  *    °
  *
  * Description
-            This file contains all the needed functons to simulate the sensors.
+            This file contains all the needed functions to simulate the sensors.
           The intended approach is geometrical. The sensor is expressed in
           homogeneous coordinates in the robot frame. The knowledge about the
-          robot position is expressed in terms of the homogeneus transform from
+          robot position is expressed in terms of the homogeneous transform from
           the reference frame (frame O indicated "o") to the moving platform
           frame (frame M indicated "m").
 
@@ -45,12 +45,12 @@
           only the nomenclature fails. In fact, the names in that case should
           be switched. However, the computation holds. It is the only thing
           that matters here. The aim is just to check in a "boolean way" and
-          there is no need of determing which line is under the sensor.
+          there is no need of determining which line is under the sensor.
 
             Once the expression of the lines around the sensor are known:
           "vertical" line x = left or x = right
           "horizontal" line y = down or y = up
-          They are expressed in homogeneus coordinates. A line in homogeneus
+          They are expressed in homogeneous coordinates. A line in homogeneous
           coordinates has the expression: ax + by + c = 0. In a vector form it
           can be expressed as:
 
@@ -58,7 +58,7 @@
                                 [a  b   c]| y | = 0
                                           | 1 |
 
-            Once the line expression in homogeneus coordinates is computed, the
+            Once the line expression in homogeneous coordinates is computed, the
           distance from the sensor to these lines is the result of their dot
           product. In fact, the dot product between a point and a line is the
           length of the segment that is normal to the line and passes throught
@@ -75,20 +75,20 @@
           the measurement comes from the minumum of the absolute values of these
           distances. The Eigen::MatrixBase has some member function which help.
 
-            The memeber function cwiseAbs() returns a vector containing
-          the absolute value of the object calling. The other member function
+            The member function cwiseAbs() returns a vector containing the
+          absolute value of the object calling. The other member function
           minCoeff() returns the minimum among the coefficients of the object
           calling. The minimum will be zero only when the sensor is exactly
-          on the line. This last situation is quite unlikely to happen.
-          So the distance is compared to a threshold (non-zero).
+          on the line. As this last situation is quite unlikely to happen,
+          the distance is compared to a threshold (non-zero).
 
             Moreover, in a practical application, all the lines have a finite
           thickness. In order to be consistent, if the line has a thickness
           of 1 cm, then the status of the sensor should output a measurement
           if its distance from the line is less then half the thickness.
 
-            To avoid repetition of code, the class Sensor contains memeber
-          function that will be useful when dealing with the estimator. The reason
+            To avoid repetition of code, the class Sensor contains member
+          functions that will be useful when dealing with the estimator. The reason
           to have included them here is for avoiding repetition of code.
  *
  */
@@ -109,9 +109,7 @@
 
 class Measurement;
 
-
-
-//Definition of Sensor class
+// Definition of Sensor class
 class Sensor {
 public:
  Sensor()=default;
@@ -130,7 +128,7 @@ public:
  // Get the current sensor status
  inline const bool GetState() const { return state; }
 
- // Access the sensor position in homogeneus coordinates
+ // Access the sensor position in homogeneous coordinates
  inline const Eigen::Vector3d& Coord() const { return HCoord; }
 
 
@@ -144,7 +142,7 @@ public:
  void CheckStatus() const;
 
  // Return the type of line that the sensor is close to
- [[deprecated("Use the function which takes the measurements vector, it allows measuring multiple lines when the sensor is over an intersection")]]
+ [[deprecated("Use the function which takes the measurements vector, it allows to measure multiple lines when the sensor is over an intersection")]]
  const Measurement getMeasurement() const;
  void getMeasurement(std::vector<Measurement>& measurements) const;
 
@@ -170,13 +168,13 @@ private:
   //  Compute distances among the lines
   const Eigen::VectorXd ComputeDistances(const Eigen::MatrixXd& worldLines ) const;
 
-  // Sensor position in homogeneus coordinates
+  // Sensor position in homogeneous coordinates
   const Eigen::Vector3d HCoord {0.1, 0.0, 1.0};
 
   //  Sensor has its own istance of the world
   const World world;
 
-  //  Homogeneus transform from robot to reference frame
+  //  Homogeneous transform from robot to reference frame
   mutable Eigen::Matrix3d oTm { Eigen::MatrixBase<Eigen::Matrix3d>::Identity() } ;
 
   //  The measurement
@@ -230,8 +228,8 @@ void Sensor::UpdateTransform(const Eigen::Vector3d& X) const
 }
 
 const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
-//  This fnction is to be called every time there is the need of computing
-//  the homogeneous coordinates of the lines around the sensor. However it
+//  This function is to be called every time there is the need of computing
+//  the homogeneous coordinates of the lines around the sensor. However, it
 //  must require to have called UpdateTransform before
 {
   //  First, with the knowledge of the robot position obtain the sensor position
@@ -246,12 +244,12 @@ const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
   const double up    = down + world.YSpacing() ;
 
   //  For a "vertical" line x = a -> x - a = 0.
-  //  that is in homogeneus coordinates 1*x + 0*y -a*c = 0
+  //  that is in homogeneous coordinates 1*x + 0*y -a*c = 0
   const Eigen::Vector3d leftLine(1.0f, 0.0f, -left);
   const Eigen::Vector3d rightLine(1.0f, 0.0f, -right);
 
   //  For a "horizontal" line y = b -> y - b = 0.
-  //  that is in homogeneus coordinates 0*x + 1*y -b*c = 0
+  //  that is in homogeneous coordinates 0*x + 1*y -b*c = 0
   const Eigen::Vector3d bottomLine(0.0f, 1.0f, -down);
   const Eigen::Vector3d upperLine(0.0f, 1.0f, -up);
 
@@ -264,7 +262,7 @@ const Eigen::MatrixXd Sensor::EvaluateLinesAround() const
 
 
 const Eigen::VectorXd Sensor::ComputeDistances(const Eigen::MatrixXd& linesAround ) const
-//  This function is to be called every time there is the need to comput the distances
+//  This function is to be called every time there is the need to compute the distances
 //  from the sensor to the lines around it.
 {
   //  Compute the sensor position w.r.t. the reference frame
@@ -346,7 +344,6 @@ const Measurement Sensor::getMeasurement() const
 
   }
 
-
 }
 
 
@@ -365,35 +362,37 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
   //  Obatin the vector contain the distances among the lines
   const Eigen::VectorXd distances = this->ComputeDistances( linesAround ).cwiseAbs();
 
-  //  Compare the distances for the two "vertical" lines
-  //    left              rigth
-  if( distances[0] < distances[1] ) { //  The left line is closer
-    measurements.push_back( Measurement(-linesAround(2, 0),
-                                        utility::LINETYPE::VERTICAL, this ) );
+    //  Compare the distances for the two "vertical" lines
+    //    left              rigth
+    if( distances[0] < distances[1] ) { //  The left line is closer
+      measurements.push_back( Measurement(-linesAround(2, 0),
+                                          utility::LINETYPE::VERTICAL, this ) );
 
-  } else {                            //  The right line is closer
-    measurements.push_back( Measurement(-linesAround(2, 1),
-                                        utility::LINETYPE::VERTICAL, this ) );
-  }
+    } else {                            //  The right line is closer
+      measurements.push_back( Measurement(-linesAround(2, 1),
+                                          utility::LINETYPE::VERTICAL, this ) );
+    }
 
-  //  Compare the distances for the two "horizontal" lines
-  //    Bottom          Upper
-  if( distances[2] < distances[3] ) { //  The bottom line is closer
-    measurements.push_back( Measurement(-linesAround(2, 2),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
+    //  Compare the distances for the two "horizontal" lines
+    //    Bottom          Upper
+    if( distances[2] < distances[3] ) { //  The bottom line is closer
+      measurements.push_back( Measurement(-linesAround(2, 2),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
 
-  } else {                            //  The upper line is closer
-    measurements.push_back( Measurement(-linesAround(2, 3),
-                                        utility::LINETYPE::HORIZONTAL, this ) );
-  }
+    } else {                            //  The upper line is closer
+      measurements.push_back( Measurement(-linesAround(2, 3),
+                                          utility::LINETYPE::HORIZONTAL, this ) );
+    }
+
 
 }
 
 
 const utility::Pose2D Sensor::AbsolutePosition() const
+//  This function returns the absolute position of the sensor. However it
+//  requires the execution of the function UpdateTransform() before calling
 {
   const Eigen::Vector3d oHCoord = oTm*HCoord;
-  //ROS_INFO_STREAM("sensor is in : " << oHCoord );
 
   return utility::Pose2D( oHCoord[0], oHCoord[1] ) ;
 }
@@ -419,6 +418,9 @@ private:
 
 
 void RobotSensors::AddSensor(const Sensor& newSensor)
+//   This function is to be used when adding a sensor to the robot. It
+//   ensures that all the sensors have the same instance of the world. In fact, if,
+//   for some reasons, a sensor has a different instance, its outputs will be inconsistent
 {
   if( sensors.empty() ) {
     //  Directly add the new member
@@ -430,13 +432,14 @@ void RobotSensors::AddSensor(const Sensor& newSensor)
       else{
           //  If the two instances are not the same, the simualtion results
           //  are inconsistent. The node is shutted down while trowing an error.
-          ROS_ERROR_STREAM("Two different istances of the world detected. The node" << ros::this_node::getName() << "is shutted down");
+          ROS_ERROR_STREAM("Two different instances of the world detected. The node" << ros::this_node::getName() << "is shutted down");
           ros::shutdown();
       }
   }
 
 
 }
+
 
 /*
 void Sensor::CheckStatus() const
@@ -527,6 +530,7 @@ void Sensor::getMeasurement(std::vector<Measurement>& measurements) const
 
 
 */
+
 
 
 #endif //SENSOR_H

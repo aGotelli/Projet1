@@ -19,9 +19,9 @@
  * Description
             This file contains all the functions related to the simulation of the
           robot motion. The aim is to get information regarding the robot position
-          and velocity and regarding.
+          and velocity.
 
-            First the input is computed from the twist message, and the max speed
+            First, the input is computed from the twist message and the max speed
           of the wheels is ensured to both. Then with the knowledge of the input,
           the matrix which represents the kinematic model is updated and used to
           obtain the derivative of the generalized robot coordinates.
@@ -32,18 +32,18 @@
           displacement is added to the current value so all the coordinates are
           updated.
 
-            Morover, in this file it is computed the odometry. The aim is to
-          include in this file the possibility to simuate a real robot. A real
-          robot has some kind of uncertaintis due to assembly and geometrical
+            Moreover, in this file it is computed the odometry. The aim is to
+          include in this file the possibility to simulate a real robot, that
+          has some kind of uncertaintis due to assembly and geometrical
           errors. As a result, the simulation should output the encoders values
           that are sigthly different of the real angles (depending on the
-          amount of errors). In other words the simulation should take into
+          amount of errors). In other words, the simulation should take into
           account:
-          1) The encoders' Resolution
+          1) The encoders' resolution
           2) The error in the wheel radius
-          3) An error in the track gauge
+          3) The error in the track gauge
           To achieve this goal (In the Function ComputeOdometry()) the following
-          explain the passges.
+          part explains all the passages.
 
             Starting from the current value of phi angles of the two fixed
           wheels, the elementary rotations of the two wheels between two
@@ -60,13 +60,11 @@
           of the wheels angles of the real model. In these last values the
           encoder resolution is taken into account. The angles are converted in
           dots in each encoder. The number of dots is floored in order to
-          simulatie the reading of an ecoder. Comparing the current reading with
+          simulate the reading of an ecoder. Comparing the current reading with
           the previus reading the rotation is obtained (as elapesd dots).
 
             Finally odometry applies using the values readed from the encoders
           and the ideal model.
-
-            The robot has two values which are
 
           Several coiches have been made following the advices of the
           Guidelines: https://github.com/isocpp/CppCoreGuidelines
@@ -132,9 +130,10 @@ public:
   // message and the dots of the fixed wheels
   void PrepareMessages() override;
 
-  // Function to update the J matrix elements
+  // Function to update the S matrix elements
   void UpdateMatrix() const;
 
+  // Function to update the S_odom matrix elements
   void UpdateOdomMatrix() const;
 
   // Function to control the max value of the velocities
@@ -160,7 +159,7 @@ private:
 
 
   private:
-    //  the resolution of the encoder
+    //  Resolution of the encoder
     const double resolution{360} ;   //  [dots/revolution]
 
   };
@@ -199,7 +198,7 @@ private:
   mutable Eigen::Vector2d currentIdealAngles{0, 0};
 
   //  Declaration of the real angles (from a model which accounts for errors
-  //  in the robot assably). Here, again, in between two iterations.
+  //  in the robot assembly). Here, again, in between two iterations.
   mutable Eigen::Vector2d previusRealAngles{0, 0};
   mutable Eigen::Vector2d currentRealAngles{0, 0};
 
@@ -233,7 +232,7 @@ void Robot_2_0::PerformMotion() const
 }
 
 
-// compute odometry with error in wheel radius and track gauge
+// Compute odometry with error in wheel radius and track gauge
 void Robot_2_0::ComputeOdometry() const
 {
   UpdateOdomMatrix();
@@ -269,7 +268,7 @@ void Robot_2_0::ComputeOdometry() const
   // Compute input discretized
   const Eigen::Vector2d inputFromReadings = S_odom.block<2,2>(4,0).inverse()*rotationFromEncoders ;
 
-  //  Now perform the usual computation using a the implemented model
+  //  Now perform the usual computation using the implemented model
   q_odom = q_odom + S_odom*inputFromReadings;
 
   // Update

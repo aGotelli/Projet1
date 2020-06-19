@@ -142,7 +142,7 @@
      </visual>
    </link>
 
-   <!-- Definition of the sensor one -->
+   <!-- Definition of the sensor two -->
    <link name="sensor_2">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />

@@ -82,7 +82,6 @@ if __name__ == '__main__':
     yInit = parameters['robot_2_0']['y_init']
     thetaInit = parameters['robot_2_0']['theta_init']
 
-
     #   Obtain estimator setting
     sigmaTuning = parameters['estimator']['sigma_tuning']
     threshold  = parameters['estimator']['threshold']
@@ -227,8 +226,12 @@ if __name__ == '__main__':
 
     stopIndex = i
 
+<<<<<<< HEAD
 
     #   Extract relevant data by removing motionless parts).
+=======
+    #   Extract relevant data by removing motionless parts
+>>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     del x_real[0: startIndex]
     del y_real[0: startIndex]
     del theta_real[0: startIndex]
@@ -262,8 +265,12 @@ if __name__ == '__main__':
 
     stopIndex = i
 
+<<<<<<< HEAD
 
     #   Extract relevant data by removing motionless parts).
+=======
+    #   Extract relevant data by removing motionless parts
+>>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     del x_estm[0: startIndex]
     del y_estm[0: startIndex]
     del theta_estim[0: startIndex]
@@ -320,6 +327,7 @@ if __name__ == '__main__':
 
 
     #  Create the fifth window with velocities
+
 #    win5 = pg.GraphicsWindow(title="Velocities")
 #    win5.resize(1000,600)
 #    win5.setWindowTitle('Velocities')
@@ -366,6 +374,7 @@ if __name__ == '__main__':
 
 
 
+<<<<<<< HEAD
     #   Create the third window with the errors
     win3 = pg.GraphicsWindow(title="Errors along x, y and in heading")
     win3.resize(1000,600)
@@ -444,9 +453,72 @@ if __name__ == '__main__':
     lr_3.sigRegionChanged.connect(updatePlot)
     p8.sigXRangeChanged.connect(updateRegion)
     updatePlot()
+=======
+
+#    #   Create the third window with the errors
+#    win3 = pg.GraphicsWindow(title="Errors along x, y and in heading")
+#    win3.resize(1000,600)
+#    win3.setWindowTitle('Errors along x, y and in heading')
 
 
+#    p3 = win3.addPlot(title="Error in x")
+#    p3.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
+#    p3.setLabel('left', "x", units='m')
+#    p3.setLabel('bottom', "time", units='s')
+#    lr_1 = pg.LinearRegionItem([0,5])
+#    #lr_1.setZValue(-0.01)
+#    p3.addItem(lr_1)
 
+#    p4 = win3.addPlot(title="Zoom on selected region")
+#    p4.plot(estm_time, x_err, pen=(255,0,0), name="Error X")
+#    def updatePlot():
+#        p4.setXRange(*lr_1.getRegion(), padding=0)
+#    def updateRegion():
+#        lr_1.setRegion(p4.getViewBox().viewRange()[0])
+#    lr_1.sigRegionChanged.connect(updatePlot)
+#    p4.sigXRangeChanged.connect(updateRegion)
+#    updatePlot()
+#
+#    win3.nextRow()
+#
+#    p5 = win3.addPlot(title="Error in y")
+#    p5.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
+#    p5.setLabel('left', "y", units='m')
+#    p5.setLabel('bottom', "time", units='s')
+#    lr_2 = pg.LinearRegionItem([0,5])
+#    #lr.setZValue(-10)
+#    p5.addItem(lr_2)
+#
+#    p6 = win3.addPlot(title="Zoom on selected region")
+#    p6.plot(estm_time, y_err, pen=(255,0,0), name="Error Y")
+#    def updatePlot():
+#        p6.setXRange(*lr_2.getRegion(), padding=0)
+#    def updateRegion():
+#        lr_2.setRegion(p6.getViewBox().viewRange()[0])
+#    lr_2.sigRegionChanged.connect(updatePlot)
+#    p6.sigXRangeChanged.connect(updateRegion)
+#    updatePlot()
+#
+#    win3.nextRow()
+#
+#    p7 = win3.addPlot(title="Error in theta")
+#    p7.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
+#    p7.setLabel('left', "theta", units='rad')
+#    p7.setLabel('bottom', "time", units='s')
+#    lr_3 = pg.LinearRegionItem([5,10])
+#    #lr.setZValue(-10)
+#    p7.addItem(lr_3)
+#
+#    p8 = win3.addPlot(title="Zoom on selected region")
+#    p8.plot(estm_time, theta_err, pen=(255,0,0), name="Error theta")
+#    def updatePlot():
+#        p8.setXRange(*lr_3.getRegion(), padding=0)
+#    def updateRegion():
+#        lr_3.setRegion(p8.getViewBox().viewRange()[0])
+#    lr_3.sigRegionChanged.connect(updatePlot)
+#    p8.sigXRangeChanged.connect(updateRegion)
+#    updatePlot()
+>>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
 
 
     #   Create the second window with paths and distances
@@ -461,6 +533,7 @@ if __name__ == '__main__':
     #   and estimator
     p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
+
     p1.plot(x_real, y_real, pen=pg.mkPen('g', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('r', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
@@ -505,7 +578,12 @@ if __name__ == '__main__':
     #   Create the first window with paths and distances
     win1 = pg.TableWidget(sortable=False)
     win1.show()
+<<<<<<< HEAD
     win1.resize(430,650)
+=======
+
+    win1.resize(320,650)
+>>>>>>> 076059d397a50a849f9b3c5fd82f4cc2f2c5c554
     win1.setWindowTitle('Table of Parameters')
 
 

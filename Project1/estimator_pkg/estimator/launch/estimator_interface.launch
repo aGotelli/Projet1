@@ -1,6 +1,6 @@
 <launch>
 
-  <!-- Select the folder where you want to put the estimator outputs file -->
+  <!-- Select the folder where the user wants to put the estimator outputs file -->
   <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
@@ -17,7 +17,7 @@
   accordingly.                                                               -->
   <arg name="speed_factor"    value="1" />
 
-  <!-- This parameter allows to run the estimator at a frequency nth times lower
+  <!-- This parameter allows to run the estimator at a frequency n-th times lower
   than the simulation frequency. In this way it is possible to test the
   simulation in worst conditions.                                            -->
   <arg name="subsample_rate"  value="1" />
