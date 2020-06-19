@@ -62,24 +62,28 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
   //  Received sensrs status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
-    robotSensors.sens1().getMeasurement( measurements ) ;
-    // measurements.push_back( robotSensors.sens1().getMeasurement() );
+    //robotSensors.sens1().getMeasurement( measurements ) ;
+    measurements.push_back( robotSensors.sens1().getMeasurement() );
 
   }
 
   if( state->sens2 ) {
     robotSensors.sens2().UpdateTransform( X );
-    robotSensors.sens2().getMeasurement( measurements );
-    // measurements.push_back( robotSensors.sens2().getMeasurement() );
+    //robotSensors.sens2().getMeasurement( measurements );
+    measurements.push_back( robotSensors.sens2().getMeasurement() );
 
   }
 
 }
 
 geometry_msgs::Pose realPosture;
+bool received = false;
 void RealPostureReceived(const geometry_msgs::Pose::ConstPtr& _realPosture)
 {
   realPosture = (*_realPosture);
+
+  if( !received)
+    received = true;
 }
 
 
@@ -129,12 +133,17 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
   nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
 
+  double xScost, yScost, thetaRot;
+  nh_loc.param("x_scost", xScost, 0.0);
+  nh_loc.param("y_scost", yScost, 0.0);
+  nh_loc.param("theta_rot", thetaRot, 0.0);
+
   double sigmaX, sigmaY, sigmaTheta;
   nh_loc.param("sigma_x", sigmaX, 0.0);
   nh_loc.param("sigma_y", sigmaY, 0.0);
   nh_loc.param("sigma_theta", sigmaTheta, 0.0);
 
-  ROS_INFO_STREAM("Initial position : " << xInit << ", " << yInit << ", " << thetaInit );
+  ROS_INFO_STREAM("Initial position : " << xInit + xScost << ", " << yInit + yScost<< ", " << thetaInit + thetaRot);
 
   // Robot parameters
   double wheelRadius, a;
@@ -158,7 +167,7 @@ int main(int argc, char** argv)
 
   // Declare your node's subscriptions and service clients
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 10, IRSensorsReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
 
   //  This last subscriber is not part of the estimator itself, but allows to do a simple comparison with the real posture
   ros::Subscriber obtainRealPosture = nh_glob.subscribe<geometry_msgs::Pose>("/RobotPosture", 1, RealPostureReceived);
@@ -175,9 +184,9 @@ int main(int argc, char** argv)
 
 
   //  State vector
-  X <<        xInit         ,
-              yInit         ,
-        thetaInit*M_PI/180  ;
+  X <<        xInit+xScost              ,
+              yInit+yScost              ,
+        (thetaInit+thetaRot)*M_PI/180   ;
 
 
   //   Joint to cartesian matrix
@@ -296,7 +305,8 @@ int main(int argc, char** argv)
 
 
     // Publish the message with the error in the posture
-    errorStreamer.publish( PostureError(realPosture, Estimation(X, P) ) ) ;
+    if( received)
+      errorStreamer.publish( PostureError(realPosture, Estimation(X, P) ) ) ;
 
     //  Update before next iteration
     previousReading = currentReading ;
