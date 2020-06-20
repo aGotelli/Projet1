@@ -23,7 +23,7 @@
   <arg name="subsample_rate"  value="2" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
-  <arg name="sigma_tuning"  value="0.057"   />
+  <arg name="sigma_tuning"  value="0.3"   />
 
   <!-- Assuming of being able to positioning the robot with a +- 2cm precision
         And with an orientation uncertainty of +-5 grad                      -->

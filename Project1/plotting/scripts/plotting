@@ -271,9 +271,6 @@ if __name__ == '__main__':
 
     #   For comparing the two postures, the last estimated posture is compared to the
     #   current (and real) robot posture
-
-    print('real pose size ', len(realPosture))
-    print('estm pose size ', len(estimatedPosture))
     starting = 0
     errorPose = []
     for pose in realPosture:
@@ -287,7 +284,6 @@ if __name__ == '__main__':
                 break
         starting = index -1
 
-    print('error pose size ', len(errorPose))
 #################################~  PLOTTING DATA ~###################################
 
 
