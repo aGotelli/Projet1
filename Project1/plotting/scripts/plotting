@@ -83,9 +83,15 @@ if __name__ == '__main__':
     yInit               =   parameters['robot_2_0']['y_init']
     thetaInit           =   parameters['robot_2_0']['theta_init']
 
+
     #   Obtain estimator setting
     sigmaTuning         =   parameters['estimator']['sigma_tuning']
     threshold           =   parameters['estimator']['threshold']
+    xScost              =   parameters['estimator']['x_scost']
+    yScost              =   parameters['estimator']['y_scost']
+    thetaRot            =   parameters['estimator']['theta_rot']
+
+
 
     #   Open the required bag file
     bag = rosbag.Bag( sys.argv[1] + '.bag' )
@@ -105,7 +111,6 @@ if __name__ == '__main__':
         orientation_q = robot.orientation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-        theta_real.append( yaw )
         realPosture.append( Pose( robot.position.x, robot.position.y, yaw, t.to_sec() ) )
 
 
@@ -373,8 +378,10 @@ if __name__ == '__main__':
     p4.plot(time_estm,  3*np.sqrt(x_var), pen=(255,0,0), name="+-3 sigmaX")
     p4.plot(time_error, x_error, pen=(0,0,255), name="Error X")
     p4.plot(time_estm,  -3*np.sqrt(x_var), pen=(255,0,0))
+    p4.setLabel('left', "y", units='m')
     def updatePlot():
         p4.setXRange(*lr_1.getRegion(), padding=0)
+        p4.setYRange(-0.03, 0.03)
     def updateRegion():
         lr_1.setRegion(p4.getViewBox().viewRange()[0])
     lr_1.sigRegionChanged.connect(updatePlot)
@@ -398,8 +405,10 @@ if __name__ == '__main__':
     p6.plot(time_estm,  3*np.sqrt(y_var), pen=(255,0,0), name="+-3 sigmaY")
     p6.plot(time_error, y_error, pen=(0,0,255), name="Error Y")
     p6.plot(time_estm,  -3*np.sqrt(y_var), pen=(255,0,0))
+    p6.setLabel('left', "y", units='m')
     def updatePlot():
         p6.setXRange(*lr_2.getRegion(), padding=0)
+        p6.setYRange(-0.03, 0.03)
     def updateRegion():
         lr_2.setRegion(p6.getViewBox().viewRange()[0])
     lr_2.sigRegionChanged.connect(updatePlot)
@@ -423,8 +432,10 @@ if __name__ == '__main__':
     p8.plot(time_estm,  (3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0), name="+-3 sigmaTheta")
     p8.plot(time_error, theta_error, pen=(0,0,255), name="Error theta")
     p8.plot(time_estm,  -(3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0))
+    p8.setLabel('left', "y", units='grad')
     def updatePlot():
         p8.setXRange(*lr_3.getRegion(), padding=0)
+        p8.setYRange(-5, 5)
     def updateRegion():
         lr_3.setRegion(p8.getViewBox().viewRange()[0])
     lr_3.sigRegionChanged.connect(updatePlot)
@@ -528,14 +539,13 @@ if __name__ == '__main__':
         ('ESTIMATOR PARAMETERS',    0.0,                        ""),
         ('sigma_tuning',            sigmaTuning,                ""),
         ('Threshold',               threshold,                  ""),
-        ('Initial position x',      x_estm[0],                  "[m]"),
-        ('Initial position y',      y_estm[0],                  "[m]"),
-        ('Initial position theta',  theta_estm[0]*180/np.pi,   "[grad]")
+        ('Initial position x',      xInit + xScost,             "[m]"),
+        ('Initial position y',      yInit + yScost,             "[m]"),
+        ('Initial position theta',  thetaInit + thetaRot,       "[grad]")
         ], dtype=[('Parameter', object), ('Value', float), ('Units', object)])
 
 
     win1.setData(data)
-
 
 
 
