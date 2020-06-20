@@ -68,76 +68,87 @@ if __name__ == '__main__':
         parameters = yaml.load( setting )
 
     #   Obatin world parameters
-    xSpacing            =   parameters['sensor']['x_spacing']
-    ySpacing            =   parameters['sensor']['y_spacing']
-    lineThickness       =   parameters['sensor']['line_thickness']
+    xSpacing = parameters['sensor']['x_spacing']
+    ySpacing = parameters['sensor']['y_spacing']
+    lineThickness = parameters['sensor']['line_thickness']
 
      #   Obatin robot parameters
-    wheelRadius         =   parameters['robot_2_0']['wheel_radius']
-    frontAxle           =   parameters['robot_2_0']['a']
-    wheelRadiusError    =   parameters['robot_2_0']['wheel_1_error']
-    trackGaugeError     =   parameters['robot_2_0']['track_gauge_error']
-    encodersResolution  =   parameters['robot_2_0']['encoders_resolution']
-
-    xInit               =   parameters['robot_2_0']['x_init']
-    yInit               =   parameters['robot_2_0']['y_init']
-    thetaInit           =   parameters['robot_2_0']['theta_init']
+    wheelRadius = parameters['robot_2_0']['wheel_radius']
+    frontAxle = parameters['robot_2_0']['a']
+    wheelRadiusError = parameters['robot_2_0']['wheel_1_error']
+    trackGaugeError = parameters['robot_2_0']['track_gauge_error']
+    encodersResolution = parameters['robot_2_0']['encoders_resolution']
+    xInit = parameters['robot_2_0']['x_init']
+    yInit = parameters['robot_2_0']['y_init']
+    thetaInit = parameters['robot_2_0']['theta_init']
 
     #   Obtain estimator setting
-    sigmaTuning         =   parameters['estimator']['sigma_tuning']
-    threshold           =   parameters['estimator']['threshold']
+    sigmaTuning = parameters['estimator']['sigma_tuning']
+    threshold  = parameters['estimator']['threshold']
 
     #   Open the required bag file
     bag = rosbag.Bag( sys.argv[1] + '.bag' )
 
 
     #   Obatin the real path that the robot has followed
-    class Pose:
-        def __init__(self, x, y, theta, time):
-            self.x = x
-            self.y = y
-            self.theta = theta
-            self.time = time
-
-
-    realPosture = []
+    x_real = []
+    y_real = []
+    theta_real = []
+    sim_time = []
     for topic, robot, t in bag.read_messages(topics=['/RobotPosture']):
+        x_real.append( robot.position.x )
+        y_real.append( robot.position.y )
         orientation_q = robot.orientation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
         theta_real.append( yaw )
-        realPosture.append( Pose( robot.position.x, robot.position.y, yaw, t.to_sec() ) )
-
+        sim_time.append( t.to_sec() )
 
 
     #   Obtain the path that the estimator has computed
-    class Estim:
-        def __init__(self, x, y, theta, time, x_var, y_var, theta_var):
-            self.x = x
-            self.y = y
-            self.theta = theta
-            self.time = time
-            self.x_var = x_var
-            self.y_var = y_var
-            self.theta_var = theta_var
-
-
-    estimatedPosture = []
+    x_estm = []
+    y_estm = []
+    theta_estim = []
+    cov_x = []
+    cov_y = []
+    cov_theta = []
+    estm_time = []
+    estm_time1 = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
+        x_estm.append( estm.pose.position.x )
+        y_estm.append( estm.pose.position.y )
         orientation_q = estm.pose.orientation
         orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-        estimatedPosture.append( Estim( estm.pose.position.x,  estm.pose.position.y, yaw, t.to_sec(), estm.covariance[6*0 + 0], estm.covariance[6*1 + 1], estm.covariance[6*5 + 5] ) )
+        theta_estim.append( yaw )
+        cov_x.append( estm.covariance[6*0 + 0] )
+        cov_y.append( estm.covariance[6*1 + 1] )
+        cov_theta.append( estm.covariance[6*5 + 5] )
+        estm_time.append( t.to_sec() )
+        estm_time1.append( t.to_sec() )
 
+
+    #   Obtain the error in the estimation
+    x_err = []
+    y_err = []
+    theta_err = []
+    time_err = []
+    for topic, error, t in bag.read_messages(topics=['/EstimationError']):
+        x_err.append( error.position.x )
+        y_err.append( error.position.y )
+        orientation_q = error.orientation
+        orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
+        (roll, pitch, yaw) = euler_from_quaternion( orientation_list )
+        theta_err.append( yaw )
+        time_err.append( t.to_sec() )
 
 
     #   Obtain an estimation of the path odometry based
-    odometryPosture = []
+    x_odom = []
+    y_odom = []
     for topic, odom, t in bag.read_messages(topics=['/RobotOdometry']):
-        orientation_q = odom.pose.pose.orientation
-        orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
-        (roll, pitch, yaw) = euler_from_quaternion( orientation_list )
-        odometryPosture.append( Pose(odom.pose.pose.position.x, odom.pose.pose.position.y, yaw, t.to_sec()))
+        x_odom.append( odom.pose.pose.position.x )
+        y_odom.append( odom.pose.pose.position.y )
 
 
     #   Obtain information about the measurements
@@ -150,6 +161,15 @@ if __name__ == '__main__':
             self.y = float( y )
 
     processedMeasurements = []
+    acp_meas_time = []
+    rjt_meas_time = []
+    acp_mh_dist = []
+    rjt_mh_dist = []
+    acp_x_meas = []
+    acp_y_meas = []
+    rjt_x_meas = []
+    rjt_y_meas = []
+    accepted = []
     lines_detected = []
     prev_h = -1000
     prev_v = -1000
@@ -177,6 +197,24 @@ if __name__ == '__main__':
                     lines_detected.append(pos)
                     prev_v = meas.line_index
 
+            acp_meas_time.append( t.to_sec() )
+            acp_mh_dist.append( meas.distance )
+            acp_x_meas.append( meas.pose.position.x )
+            acp_y_meas.append( meas.pose.position.y )
+
+        else:
+            rjt_meas_time.append( t.to_sec() )
+            rjt_mh_dist.append( meas.distance )
+            rjt_x_meas.append( meas.pose.position.x )
+            rjt_y_meas.append( meas.pose.position.y )
+
+
+    #   Obtain the Mahalanobis distances
+#    mh_dist = []
+#    time_dist = []
+#    for topic, dist, t in bag.read_messages(topics=['/Mahalanobis']):
+#        mh_dist.append( dist.data )
+#        time_dist.append( t.to_sec() )
 
 
     #   Obtain the input velocities
@@ -194,95 +232,123 @@ if __name__ == '__main__':
 #################################~  PREPOCESS DATA ~###################################
 
     #   Skip motionless initial part if any
-    nbSamples = len( np.asarray( realPosture ) )
+    nbSamples = len( np.asarray( x_real ) )
     i = 0
-    while (i<nbSamples) and (realPosture[i].x-realPosture[i+1].x==0) and (realPosture[i].x-realPosture[i+1].x==0):
+    while (i<nbSamples) and (x_real[i]-x_real[i+1]==0) and (y_real[i]-y_real[i+1]==0):
         i = i+1
 
     startIndex = i
     #   Skip motionless final part if any
     i = -1
-    while (i> -nbSamples) and (realPosture[i].x-realPosture[i-1].x==0) and (realPosture[i].x-realPosture[i-1].x==0):
+    while (i> -nbSamples) and (x_real[i]-x_real[i-1]==0) and (y_real[i]-y_real[i-1]==0):
         i = i-1
 
     stopIndex = i
 
     #   Extract relevant data by removing motionless parts
-    del realPosture[0: startIndex]
-    del realPosture[stopIndex: -1]
+    del x_real[0: startIndex]
+    del y_real[0: startIndex]
+    del theta_real[0: startIndex]
+    del sim_time[0: startIndex]
+
+    del x_real[stopIndex: -1]
+    del y_real[stopIndex: -1]
+    del theta_real[stopIndex: -1]
+    del sim_time[stopIndex: -1]
+
+
+
+    #   Normalize the seconds counters
+    sim_time = np.asarray(sim_time)
+    sim_time = sim_time - sim_time[0]
 
 
 
     #   Skip motionless initial part if any
-    nbSamples = len( np.asarray( estimatedPosture ) )
+    nbSamples = len( np.asarray( x_estm ) ) -1
     i = 0
-    while (i<nbSamples) and (estimatedPosture[i].x-estimatedPosture[i+1].x==0) and (estimatedPosture[i].x-estimatedPosture[i+1].x==0):
+    while (i<nbSamples) and (x_estm[i]-x_estm[i+1]==0) and (y_estm[i]-y_estm[i+1]==0):
         i = i+1
 
     startIndex = i
     #   Skip motionless final part if any
     i = -1
-    while (i> -nbSamples) and (estimatedPosture[i].x-estimatedPosture[i-1].x==0) and (estimatedPosture[i].x-estimatedPosture[i-1].x==0):
+
+    while (i> -nbSamples) and (x_estm[i]-x_estm[i-1]==0) and (y_estm[i]-y_estm[i-1]==0):
         i = i-1
 
     stopIndex = i
 
     #   Extract relevant data by removing motionless parts
+    del x_estm[0: startIndex]
+    del y_estm[0: startIndex]
+    del theta_estim[0: startIndex]
+#    del processedMeasurements[0: startIndex]
+#    del meas_time[0: startIndex]
+#    del mh_dist[0: startIndex]
+#    del x_meas[0: startIndex]
+#    del y_meas[0: startIndex]
+#    del cov_x[0: startIndex]
+#    del cov_y[0: startIndex]
+#    del cov_theta[0: startIndex]
+#    del x_err[0: startIndex]
+#    del y_err[0: startIndex]
+#    del theta_err[0: startIndex]
+    del estm_time[0: startIndex]
     del linear[0: startIndex]
     del angular[0: startIndex]
 
+
+    del x_estm[stopIndex: -1]
+    del y_estm[stopIndex: -1]
+    del theta_estim[stopIndex: -1]
+#    del processedMeasurements[stopIndex: -1]
+#    del meas_time[stopIndex: -1]
+#    del mh_dist[stopIndex: -1]
+#    del x_meas[stopIndex: -1]
+#    del y_meas[stopIndex: -1]
+#    del cov_x[stopIndex: -1]
+#    del cov_y[stopIndex: -1]
+#    del cov_theta[stopIndex: -1]
+#    del x_err[stopIndex: -1]
+#    del y_err[stopIndex: -1]
+#    del theta_err[stopIndex: -1]
+    del estm_time[stopIndex: -1]
     del linear[stopIndex: -1]
     del angular[stopIndex: -1]
 
-    del estimatedPosture[0: startIndex]
-    del estimatedPosture[stopIndex: -1]
+    #   Normalize the seconds counters
+#    time_dist = np.asarray(time_dist)
+#    time_dist = time_dist - time_dist[0]
 
-    del odometryPosture[0: startIndex]
-    del odometryPosture[stopIndex: -1]
+    estm_time = np.asarray(estm_time)
+    estm_time = estm_time - estm_time[0]
+
+    estm_time1 = np.asarray(estm_time1)
+    estm_time1 = estm_time1 - estm_time1[0]
+
+    acp_meas_time = np.asarray(acp_meas_time)
+    acp_meas_time = acp_meas_time - acp_meas_time[0]
+
+
+    time_err = np.asarray(time_err)
+    time_err = time_err - time_err[0]
+
+    if(len(rjt_meas_time) > 0):
+        rjt_meas_time = np.asarray(rjt_meas_time)
+        rjt_meas_time = rjt_meas_time - rjt_meas_time[0]
+
+#    time_mes = np.asarray(time_mes)
+#    time_mes = time_mes - time_mes[0]
 
 
 
-    # Normalize measurement time
     initial = processedMeasurements[0].time
+
     for meas in processedMeasurements:
         meas.time = meas.time - initial
 
-    # Normalize real time
-    initial = realPosture[0].time
-    for realpose in realPosture:
-        realpose.time = realpose.time - initial
 
-    # Normalize estimated time
-    initial = estimatedPosture[0].time
-    for estmpose in estimatedPosture:
-        estmpose.time = estmpose.time - initial
-
-    # Normalize odometry time
-    initial = odometryPosture[0].time
-    for odompose in odometryPosture:
-        odompose.time = odompose.time - initial
-
-
-
-    #   For comparing the two postures, the last estimated posture is compared to the
-    #   current (and real) robot posture
-
-    print('real pose size ', len(realPosture))
-    print('estm pose size ', len(estimatedPosture))
-    starting = 0
-    errorPose = []
-    for pose in realPosture:
-        for index in range(starting,  len(estimatedPosture)):
-            if estimatedPosture[index].time > pose.time:
-                errorPose.append( Pose( pose.x - estimatedPosture[index - 1].x,
-                                        pose.y - estimatedPosture[index - 1].y,
-                                        pose.theta - estimatedPosture[index - 1].theta,
-                                        estimatedPosture[index - 1].time))
-
-                break
-        starting = index -1
-
-    print('error pose size ', len(errorPose))
 #################################~  PLOTTING DATA ~###################################
 
 
@@ -317,29 +383,22 @@ if __name__ == '__main__':
     win4.resize(1000,600)
     win4.setWindowTitle('Standard deviations of x, y and theta')
 
-    x_var = [estm.x_var for estm in estimatedPosture]
-    y_var = [estm.y_var for estm in estimatedPosture]
-    theta_var = [estm.theta_var for estm in estimatedPosture]
-    time_estm = [estm.time for estm in estimatedPosture]
-
-
-
     p9 = win4.addPlot(title="Standard deviation of x")
-    p9.plot(time_estm, np.sqrt(x_var), pen=(255,0,0), name="sigma X")
+    p9.plot(estm_time1, np.sqrt(cov_x), pen=(255,0,0), name="sigma X")
     p9.setLabel('left', "sigma x", units='m')
     p9.setLabel('bottom', "time", units='s')
 
     win4.nextRow()
 
     p10 = win4.addPlot(title="Standard deviation of y")
-    p10.plot(time_estm, np.sqrt(y_var), pen=(255,0,0), name="sigma Y")
+    p10.plot(estm_time1, np.sqrt(cov_y), pen=(255,0,0), name="sigma Y")
     p10.setLabel('left', "sigma y", units='m')
     p10.setLabel('bottom', "time", units='s')
 
     win4.nextRow()
 
     p11 = win4.addPlot(title="Standard deviation of theta")
-    p11.plot(time_estm, np.sqrt(theta_var)*180/np.pi, pen=(255,0,0), name="sigma Theta")
+    p11.plot(estm_time1, np.sqrt(cov_theta)*180/np.pi, pen=(255,0,0), name="sigma Theta")
     p11.setLabel('left', "sigma theta", units='')
     p11.setLabel('bottom', "time", units='s')
 
@@ -352,17 +411,11 @@ if __name__ == '__main__':
     win3.setWindowTitle('Errors along x, y and in heading')
 
 
-
-    x_error = [error.x for error in errorPose]
-    y_error = [error.y for error in errorPose]
-    theta_error = [error.theta for error in errorPose]
-    time_error = [error.time for error in errorPose]
-
     p3 = win3.addPlot(title="Error in x")
     p3.addLegend()
-    p3.plot(time_estm,  3*np.sqrt(x_var), pen=(255,0,0), name="+-3 sigmaX")
-    p3.plot(time_error, x_error, pen=(0,0,255), name="Error X")
-    p3.plot(time_estm,  -3*np.sqrt(x_var), pen=(255,0,0))
+    p3.plot(estm_time1,  3*np.sqrt(cov_x), pen=(255,0,0), name="+-3 sigmaX")
+    p3.plot(time_err, x_err, pen=(0,0,255), name="Error X")
+    p3.plot(estm_time1,  -3*np.sqrt(cov_x), pen=(255,0,0))
     p3.setLabel('left', "x", units='m')
     p3.setLabel('bottom', "time", units='s')
     lr_1 = pg.LinearRegionItem([0,2])
@@ -370,9 +423,9 @@ if __name__ == '__main__':
     p3.addItem(lr_1)
 
     p4 = win3.addPlot(title="Zoom on selected region")
-    p4.plot(time_estm,  3*np.sqrt(x_var), pen=(255,0,0), name="+-3 sigmaX")
-    p4.plot(time_error, x_error, pen=(0,0,255), name="Error X")
-    p4.plot(time_estm,  -3*np.sqrt(x_var), pen=(255,0,0))
+    p4.plot(estm_time1,  3*np.sqrt(cov_x), pen=(255,0,0), name="+-3 sigmaX")
+    p4.plot(time_err, x_err, pen=(0,0,255), name="Error X")
+    p4.plot(estm_time1,  -3*np.sqrt(cov_x), pen=(255,0,0))
     def updatePlot():
         p4.setXRange(*lr_1.getRegion(), padding=0)
     def updateRegion():
@@ -385,9 +438,9 @@ if __name__ == '__main__':
 
     p5 = win3.addPlot(title="Error in y")
     p5.addLegend()
-    p5.plot(time_estm,  3*np.sqrt(y_var), pen=(255,0,0), name="+-3 sigmaY")
-    p5.plot(time_error, y_error, pen=(0,0,255), name="Error Y")
-    p5.plot(time_estm,  -3*np.sqrt(y_var), pen=(255,0,0))
+    p5.plot(estm_time1,  3*np.sqrt(cov_y), pen=(255,0,0), name="+-3 sigmaY")
+    p5.plot(time_err, y_err, pen=(0,0,255), name="Error Y")
+    p5.plot(estm_time1,  -3*np.sqrt(cov_y), pen=(255,0,0))
     p5.setLabel('left', "y", units='m')
     p5.setLabel('bottom', "time", units='s')
     lr_2 = pg.LinearRegionItem([0,2])
@@ -395,9 +448,9 @@ if __name__ == '__main__':
     p5.addItem(lr_2)
 
     p6 = win3.addPlot(title="Zoom on selected region")
-    p6.plot(time_estm,  3*np.sqrt(y_var), pen=(255,0,0), name="+-3 sigmaY")
-    p6.plot(time_error, y_error, pen=(0,0,255), name="Error Y")
-    p6.plot(time_estm,  -3*np.sqrt(y_var), pen=(255,0,0))
+    p6.plot(estm_time1,  3*np.sqrt(cov_y), pen=(255,0,0), name="+-3 sigmaY")
+    p6.plot(time_err, y_err, pen=(0,0,255), name="Error Y")
+    p6.plot(estm_time1,  -3*np.sqrt(cov_y), pen=(255,0,0))
     def updatePlot():
         p6.setXRange(*lr_2.getRegion(), padding=0)
     def updateRegion():
@@ -410,9 +463,9 @@ if __name__ == '__main__':
 
     p7 = win3.addPlot(title="Error in theta")
     p7.addLegend()
-    p7.plot(time_estm,  (3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0), name="+-3 sigmaTheta")
-    p7.plot(time_error, theta_error, pen=(0,0,255), name="Error theta")
-    p7.plot(time_estm,  -(3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0))
+    p7.plot(estm_time1,  (3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
+    p7.plot(time_err, theta_err, pen=(0,0,255), name="Error theta")
+    p7.plot(estm_time1,  -(3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0))
     p7.setLabel('left', "theta", units='rad')
     p7.setLabel('bottom', "time", units='s')
     lr_3 = pg.LinearRegionItem([0,2])
@@ -420,9 +473,9 @@ if __name__ == '__main__':
     p7.addItem(lr_3)
 
     p8 = win3.addPlot(title="Zoom on selected region")
-    p8.plot(time_estm,  (3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0), name="+-3 sigmaTheta")
-    p8.plot(time_error, theta_error, pen=(0,0,255), name="Error theta")
-    p8.plot(time_estm,  -(3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0))
+    p8.plot(estm_time1,  (3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0), name="+-3 sigmaTheta")
+    p8.plot(time_err, theta_err, pen=(0,0,255), name="Error theta")
+    p8.plot(estm_time1,  -(3*180/np.pi)*np.sqrt(cov_theta), pen=(255,0,0))
     def updatePlot():
         p8.setXRange(*lr_3.getRegion(), padding=0)
     def updateRegion():
@@ -430,6 +483,7 @@ if __name__ == '__main__':
     lr_3.sigRegionChanged.connect(updatePlot)
     p8.sigXRangeChanged.connect(updateRegion)
     updatePlot()
+
 
     #   Create the second window with paths and distances
     win2 = pg.GraphicsWindow(title="Trajectories, measurements and distances")
@@ -444,28 +498,19 @@ if __name__ == '__main__':
     p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
 
-    x_real = [real.x for real in realPosture]
-    y_real = [real.y for real in realPosture]
-
-    x_odom = [odom.x for odom in odometryPosture]
-    y_odom = [odom.y for odom in odometryPosture]
-
-    x_estm = [estm.x for estm in estimatedPosture]
-    y_estm = [estm.y for estm in estimatedPosture]
-
     p1.plot(x_real, y_real, pen=pg.mkPen('g', width=4), name="Real path")
     p1.plot(x_odom, y_odom, pen=pg.mkPen('r', width=4), name="Odometry path")
     p1.plot(x_estm, y_estm, pen=pg.mkPen('b', width=4), name="Estimated path")
 
 
-    red = pg.mkBrush('r')
-    blue = pg.mkBrush('b')
-    brushes = [blue if m.accepted else red for m in processedMeasurements]
-    sizes = [10 if m.accepted else 5 for m in processedMeasurements]
-    x_meas = [m.x for m in processedMeasurements]
-    y_meas = [m.y for m in processedMeasurements]
 
-    p1.plot(x_meas, y_meas, pen=None, symbolSize=sizes, symbolBrush=brushes)
+    for measurement in processedMeasurements:
+        if measurement.accepted == True:
+            p1.plot([measurement.x, measurement.x], [measurement.y, measurement.y], pen=None, symbolBrush=(0.0, 0.0, 255), symbol='o')
+        else:
+            p1.plot([measurement.x, measurement.x], [measurement.y, measurement.y], pen=None, symbolBrush=(255, 0.0, 0.0), symbol='o', symbolSize=6)
+
+
 
 
     l = lines_detected[0]
@@ -497,10 +542,12 @@ if __name__ == '__main__':
     p2.setLabel('bottom', "time", units='s')
 
 
-    t_meas= [m.time for m in processedMeasurements]
-    mh_dist = [m.mh_dist for m in processedMeasurements]
+    for measurement in processedMeasurements:
+        if measurement.accepted == True:
+            p2.plot([measurement.time, measurement.time], [measurement.mh_dist, measurement.mh_dist], pen=None, symbolBrush=(0.0, 0.0, 255), symbol='o')
+        else:
+            p2.plot([measurement.time, measurement.time], [measurement.mh_dist, measurement.mh_dist], pen=None, symbolBrush=(255, 0.0, 0.0), symbol='o')
 
-    p2.plot(t_meas, mh_dist, pen=None, symbolSize=sizes, symbolBrush=brushes)
 
 
     #   Create the first window with paths and distances
@@ -530,7 +577,7 @@ if __name__ == '__main__':
         ('Threshold',               threshold,                  ""),
         ('Initial position x',      x_estm[0],                  "[m]"),
         ('Initial position y',      y_estm[0],                  "[m]"),
-        ('Initial position theta',  theta_estm[0]*180/np.pi,   "[grad]")
+        ('Initial position theta',  theta_estim[0]*180/np.pi,   "[grad]")
         ], dtype=[('Parameter', object), ('Value', float), ('Units', object)])
 
 

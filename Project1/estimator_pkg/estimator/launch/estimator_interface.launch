@@ -4,7 +4,7 @@
   <arg name="save_into_folder"  value="processed_errors"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="little_loop_wronginit" />
+  <arg name="save_as"           value="little_loop_half" />
 
   <!-- Select the simulation files to be loaded -->
   <arg name="file_name"         value="little_loop" />
@@ -20,7 +20,7 @@
   <!-- This parameter allows to run the estimator at a frequency n-th times lower
   than the simulation frequency. In this way it is possible to test the
   simulation in worst conditions.                                            -->
-  <arg name="subsample_rate"  value="1" />
+  <arg name="subsample_rate"  value="2" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
   <arg name="sigma_tuning"  value="0.057"   />

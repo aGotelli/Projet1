@@ -76,18 +76,6 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 
 }
 
-geometry_msgs::Pose realPosture;
-bool received = false;
-void RealPostureReceived(const geometry_msgs::Pose::ConstPtr& _realPosture)
-{
-  realPosture = (*_realPosture);
-
-  if( !received)
-    received = true;
-}
-
-
-
 
 int main(int argc, char** argv)
 {
@@ -169,17 +157,11 @@ int main(int argc, char** argv)
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
   ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
 
-  //  This last subscriber is not part of the estimator itself, but allows to do a simple comparison with the real posture
-  ros::Subscriber obtainRealPosture = nh_glob.subscribe<geometry_msgs::Pose>("/RobotPosture", 1, RealPostureReceived);
-
   // Declare you publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
   ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/Velocities", 1);
-
-  //  This last publisher is not part of the estimator itself, but allows to do a simple comparison with the real posture
-  ros::Publisher errorStreamer = nh_glob.advertise<geometry_msgs::Pose>("/EstimationError", 1);
 
 
 
@@ -284,11 +266,6 @@ int main(int argc, char** argv)
         //  Than publish the newly measurement
         shareMeasurements.publish( Rejected( measurement, dMaha ) ) ;
 
-        // //  Publish result for the Mahalanobis distance
-        // std_msgs::Float32 currentDist;
-        // currentDist.data = dMaha;
-        // Mahalanobis.publish( currentDist );
-
       }
 
 
@@ -303,10 +280,6 @@ int main(int argc, char** argv)
     vel.angular.z = input[1]/timeElapsed.toSec() ;
     pubInput.publish( vel );
 
-
-    // Publish the message with the error in the posture
-    if( received)
-      errorStreamer.publish( PostureError(realPosture, Estimation(X, P) ) ) ;
 
     //  Update before next iteration
     previousReading = currentReading ;
