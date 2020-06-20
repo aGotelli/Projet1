@@ -6,15 +6,49 @@
  * \date 10/06/2020
  *
  * \param[in]
+ * ° threshold
+ * ° /robot_2_0/encoders_resolution
+ * ° sigma_tuning
+ * ° estimator_frequency
+ * ° /sensor/x_spacing
+ * ° /sensor/y_spacing
+ * ° /sensor/line_thickness
+ * ° /robot_2_0/x_init
+ * ° /robot_2_0/y_init
+ * ° /robot_2_0/theta_init
+ * ° x_scost
+ * ° y_scost
+ * ° theta_rot
+ * ° sigma_x
+ * ° sigma_y
+ * ° sigma_theta
+ * ° /robot_2_0/wheel_radius
+ * ° /robot_2_0/a
+ * ° /sensor/x1_pos
+ * ° /sensor/y1_pos
+ * ° /sensor/x2_pos
+ * ° /sensor/y2_pos
  *
  * Subscribes to: <BR>
  *    ° simulation/EncodersReading
  *    ° simulation/IRSensorsStatus
  *
  * Publishes to: <BR>
- *    ° /
+ *    ° /Mahalanobis
+ *    ° /EstimatedPosture
+ *    ° /Measurements
+ *    ° /Velocities
  *
  * Description
+            The aim of this file is to perform the estimation. Starting from the
+          values of the elementary rotations and the state of the sensors, the
+          input is calculated. With this and the state vector, the evolution
+          model is computed and the matrices that represent the filter are updated.
+          After updating also the propagation error matrix, the Mahalanobis distance
+          is computed and the filter checks if the measurement is acceptable or not.
+
+            Once, it gets all the measurements, it performs the estimation per se.
+          
 
  *
  */
@@ -59,7 +93,7 @@ Eigen::Vector3d X;
 void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 {
 
-  //  Received sensrs status
+  //  Received sensors status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
     //robotSensors.sens1().getMeasurement( measurements ) ;
@@ -83,6 +117,18 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh_glob, nh_loc("~");
 
+  //  Global world parameters
+  double xSpacing, ySpacing, lineThickness;					// [m]
+  nh_glob.param("/sensor/x_spacing", xSpacing, 1.0) ;
+  nh_glob.param("/sensor/y_spacing", ySpacing, 1.0) ;
+  nh_glob.param("/sensor/line_thickness", lineThickness, 0.005) ;
+
+  ROS_INFO_STREAM("World parameters : " << xSpacing << ", " << ySpacing << ", " << lineThickness );
+
+  //	Create the world object
+  const World world(xSpacing, ySpacing, lineThickness);
+
+  // Filter parameters
   double threshold;
   nh_loc.param("threshold", threshold, 0.0 );
   //  Forgetting to set the threshold is a big mistake, the penality is regetting all the measurements
@@ -97,6 +143,13 @@ int main(int argc, char** argv)
   nh_loc.param("sigma_tuning", sigmaTuning, sqrt(pow(2/encodersResolution*M_PI, 2)/12));
   //  Default only takes into account the encoders resolution, with a perfect an high freq. model
 
+  double sigmaX, sigmaY, sigmaTheta;
+  nh_loc.param("sigma_x", sigmaX, 0.0);
+  nh_loc.param("sigma_y", sigmaY, 0.0);
+  nh_loc.param("sigma_theta", sigmaTheta, 0.0);
+
+  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
+
   ROS_INFO_STREAM("Sigma tuning  : " << sigmaTuning );
 
   int frequency;
@@ -104,16 +157,6 @@ int main(int argc, char** argv)
 
   ROS_INFO_STREAM("Estimator frequency : " << frequency );
 
-  //  Global world parameters
-	double xSpacing, ySpacing, lineThickness;					// [m]
-	nh_glob.param("/sensor/x_spacing", xSpacing, 1.0) ;
-	nh_glob.param("/sensor/y_spacing", ySpacing, 1.0) ;
-	nh_glob.param("/sensor/line_thickness", lineThickness, 0.005) ;
-
-  ROS_INFO_STREAM("World parameters : " << xSpacing << ", " << ySpacing << ", " << lineThickness );
-
-	//	Create the world object
-	const World world(xSpacing, ySpacing, lineThickness);
 
   // Initial pose
   double xInit, yInit, thetaInit;
@@ -121,15 +164,12 @@ int main(int argc, char** argv)
   nh_glob.param("/robot_2_0/y_init", yInit, 0.0);
   nh_glob.param("/robot_2_0/theta_init", thetaInit, 0.0);
 
+  // Error in initial position
   double xScost, yScost, thetaRot;
   nh_loc.param("x_scost", xScost, 0.0);
   nh_loc.param("y_scost", yScost, 0.0);
   nh_loc.param("theta_rot", thetaRot, 0.0);
 
-  double sigmaX, sigmaY, sigmaTheta;
-  nh_loc.param("sigma_x", sigmaX, 0.0);
-  nh_loc.param("sigma_y", sigmaY, 0.0);
-  nh_loc.param("sigma_theta", sigmaTheta, 0.0);
 
   ROS_INFO_STREAM("Initial position : " << xInit + xScost << ", " << yInit + yScost<< ", " << thetaInit + thetaRot);
 
@@ -157,7 +197,7 @@ int main(int argc, char** argv)
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
   ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
 
-  // Declare you publishers and service servers
+  // Declare your publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
@@ -177,14 +217,12 @@ int main(int argc, char** argv)
                        wheelRadius/trackGauge  , -wheelRadius/trackGauge  ;
 
 
-  // Filter parameters
-  const double sigmaMeasurement = sqrt(pow(lineThickness, 2)/12);
 
   //  Initialize the Kalman filter with the parameters
   KalmanFilter kalman(jointToCartesian, sigmaMeasurement, sigmaTuning, sigmaX, sigmaY, sigmaTheta*M_PI/180);
 
 
-  //  Declaration of the kalman filter matrices (better to have them here)
+  //  Declaration of the kalman filter matrices
   Eigen::Matrix3d A;
   Eigen::MatrixXd B(3,2);
   Eigen::Matrix3d P = kalman.Pinit();
@@ -208,10 +246,8 @@ int main(int argc, char** argv)
     // Compute evolution model
     EvolutionModel(X, input);
 
-
     // Update matrix A and B
     UpdateMatrix(X, input, A, B);
-
 
     // Update propagation error matrix
     kalman.Propagation(P, A, B);
@@ -231,6 +267,7 @@ int main(int argc, char** argv)
       //  First filter the type of line
       if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
 
+        // Compute matrix C
         C << 0, 1,  measurement.activeSensor->RelativePosition().x*cos(X(2)) - measurement.activeSensor->RelativePosition().y*sin(X(2)) ;
 
         const double Y = measurement.lineIndex ;
@@ -242,6 +279,7 @@ int main(int argc, char** argv)
 
       } else {  //  In this case the line detected is "vertical"
 
+        // Compute matrix C
         C << 1, 0, - measurement.activeSensor->RelativePosition().x*sin(X(2)) - measurement.activeSensor->RelativePosition().y*cos(X(2)) ;
 
         const double Y =   measurement.lineIndex ;
@@ -253,6 +291,7 @@ int main(int argc, char** argv)
 
       }
 
+      // Check if the measurement should be accepted
       if( dMaha <= threshold ) {
 
         //  Only if we referred to a good line, update
@@ -268,7 +307,6 @@ int main(int argc, char** argv)
 
       }
 
-
     }
 
     //  Publish estimated posture and standard deviations
@@ -280,7 +318,6 @@ int main(int argc, char** argv)
     vel.angular.z = input[1]/timeElapsed.toSec() ;
     pubInput.publish( vel );
 
-
     //  Update before next iteration
     previousReading = currentReading ;
 
@@ -290,10 +327,6 @@ int main(int argc, char** argv)
     //  Wait remaining time
     estimatorRate.sleep();
   }
-
-
-
-
 
 
   return 0;

@@ -17,14 +17,21 @@
  *    ° /
  *
  * Description
+          In this file there are defined all the function needed from the estimator
+        to compute the estimated position and check if a measurement should be
+        accepted or rejected based on the comparison between the Mahalanobis distance
+        and the threshold.
 
+          Moreover, it contains all the inizialization of the matrix and some parameters
+        as they have always the same construction. In order to update them, some functions
+        are implemented.
  *
  */
 #include <geometry_msgs/PoseWithCovariance.h>
 
 #include <cmath>
 #include <iostream>
-#include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
+#include <eigen3/Eigen/Dense>  //  useful for matrix vectors operations
 #include "simulation/utility.h"
 #include "simulation/sensor.h"
 #include "simulation/world.h"
@@ -68,7 +75,6 @@ public:
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
                                     {
-                                      //  Compute the Mahalanobis distance using the usual formula
                                       return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ;
                                     }
 
@@ -83,7 +89,7 @@ private:
   //  Uncertainty on the measurement
   const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
 
-  //  Inversely proportional on how accurate the model is
+  //  Inversely proportional of the accurancy of the model
   const double sigmaTuning { 0.0 };  //  Default 0.0 not a good idea
 
   const Eigen::Matrix2d jointToCartesian;
@@ -94,7 +100,7 @@ private:
   //  The covariance matrix for the input
   const Eigen::Matrix2d Qbeta { jointToCartesian*Qwheels*jointToCartesian.transpose() };
 
-  //  The covariance matrix of...
+  //  The covariance matrix set to zero
   const Eigen::Matrix3d Qalpha { Eigen::MatrixXd::Zero(3, 3) };
 
   //  The covariance on the measurement
@@ -175,22 +181,8 @@ geometry_msgs::PoseWithCovariance Estimation(const Eigen::Vector3d& X, const Eig
   return estimatedPosture;
 }
 
-//  Publish estimated posture and standard deviations
-geometry_msgs::Pose PostureError(const geometry_msgs::Pose& realPosture, const geometry_msgs::PoseWithCovariance& estimatedPosture)
-{
-  geometry_msgs::Pose postureError;
 
-  postureError.position.x    = realPosture.position.x    - estimatedPosture.pose.position.x     ;
-  postureError.position.y    = realPosture.position.y    - estimatedPosture.pose.position.y     ;
-  postureError.orientation.x = realPosture.orientation.x - estimatedPosture.pose.orientation.x  ;
-  postureError.orientation.y = realPosture.orientation.y - estimatedPosture.pose.orientation.y  ;
-  postureError.orientation.z = realPosture.orientation.z - estimatedPosture.pose.orientation.z  ;
-  postureError.orientation.w = realPosture.orientation.w - estimatedPosture.pose.orientation.w  ;
-
-  return postureError;
-}
-
-
+// Publish measurements accepted
 estimator_messages::Measurement Accepted(const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
@@ -218,7 +210,7 @@ estimator_messages::Measurement Accepted(const Measurement& _measurement, const 
 }
 
 
-
+// Publish measurements rejected
 estimator_messages::Measurement Rejected(const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
@@ -244,10 +236,6 @@ estimator_messages::Measurement Rejected(const Measurement& _measurement, const 
 
   return measurement;
 }
-
-
-
-
 
 
 
