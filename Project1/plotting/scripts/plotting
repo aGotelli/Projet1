@@ -496,15 +496,11 @@ if __name__ == '__main__':
     #   Create a PlotDataItem to be displayed in the lagend
     acp = pg.PlotDataItem([0], [0], pen=None, symbolSize=10, symbolBrush=pg.mkBrush('b'))
     rjt = pg.PlotDataItem([0], [0], pen=None, symbolSize=5, symbolBrush=pg.mkBrush('r'))
+    stm = pg.PlotDataItem([0], [0], pen=pg.mkPen('y', width=3, style=QtCore.Qt.DashLine))
     p1.legend.addItem(acp, "Accepted measurement")
     p1.legend.addItem(rjt, "Rejected measurement")
+    p1.legend.addItem(stm, "Estimated line")
 
-
-
-
-
-    l = lines_detected[0]
-    p1.plot(l[0], l[1], pen=pg.mkPen('y', width=3, style=QtCore.Qt.DashLine), name="Estimated line")
 
     for line in lines_detected:
         p1.plot(line[0], line[1], pen=pg.mkPen('y', width=3, style=QtCore.Qt.DashLine))
