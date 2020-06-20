@@ -361,6 +361,11 @@ if __name__ == '__main__':
 
     p3 = win3.addPlot(title="Error in x")
     p3.addLegend()
+
+    #   Change Background for readability
+    p3.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p3.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
     p3.plot(time_estm,  3*np.sqrt(x_var), pen=(255,0,0), name="+-3 sigmaX")
     p3.plot(time_error, x_error, pen=(0,0,255), name="Error X")
     p3.plot(time_estm,  -3*np.sqrt(x_var), pen=(255,0,0))
@@ -388,6 +393,11 @@ if __name__ == '__main__':
 
     p5 = win3.addPlot(title="Error in y")
     p5.addLegend()
+
+    #   Change Background for readability
+    p5.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p5.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
     p5.plot(time_estm,  3*np.sqrt(y_var), pen=(255,0,0), name="+-3 sigmaY")
     p5.plot(time_error, y_error, pen=(0,0,255), name="Error Y")
     p5.plot(time_estm,  -3*np.sqrt(y_var), pen=(255,0,0))
@@ -415,6 +425,11 @@ if __name__ == '__main__':
 
     p7 = win3.addPlot(title="Error in theta")
     p7.addLegend()
+
+    #   Change Background for readability
+    p7.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p7.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
     p7.plot(time_estm,  (3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0), name="+-3 sigmaTheta")
     p7.plot(time_error, theta_error, pen=(0,0,255), name="Error theta")
     p7.plot(time_estm,  -(3*180/np.pi)*np.sqrt(theta_var), pen=(255,0,0))
@@ -451,6 +466,10 @@ if __name__ == '__main__':
     p1 = win2.addPlot(title="Trajectories")
     p1.addLegend()
 
+    #   Change Background for readability
+    p1.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p1.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
     x_real = [real.x for real in realPosture]
     y_real = [real.y for real in realPosture]
 
@@ -473,6 +492,15 @@ if __name__ == '__main__':
     y_meas = [m.y for m in processedMeasurements]
 
     p1.plot(x_meas, y_meas, pen=None, symbolSize=sizes, symbolBrush=brushes)
+
+    #   Create a PlotDataItem to be displayed in the lagend
+    acp = pg.PlotDataItem([0], [0], pen=None, symbolSize=10, symbolBrush=pg.mkBrush('b'))
+    rjt = pg.PlotDataItem([0], [0], pen=None, symbolSize=5, symbolBrush=pg.mkBrush('r'))
+    p1.legend.addItem(acp, "Accepted measurement")
+    p1.legend.addItem(rjt, "Rejected measurement")
+
+
+
 
 
     l = lines_detected[0]
