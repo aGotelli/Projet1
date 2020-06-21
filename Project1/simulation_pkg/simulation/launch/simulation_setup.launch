@@ -30,6 +30,7 @@
 
   <arg name="use_joystick"  default="false" />
   <arg name="joystick_tag"  default="js1"   />
+  <arg name="QWERTY"        default="true"   />
 
 
   <arg name="record" default="true" />
@@ -53,6 +54,7 @@
 
   <!-- By default use the key node -->
   <node pkg="simulation" type="simulation_key_node" name="key_node" output="screen" unless="$(arg use_joystick)" >
+    <param name="QWERTY" value="$(arg QWERTY)" />
   </node>
 
 
