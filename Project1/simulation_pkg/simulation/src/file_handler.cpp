@@ -225,11 +225,12 @@ int main (int argc, char** argv)
 
   //  Obtain the namespace
   std::string group = ros::this_node::getNamespace() ;
-  ROS_INFO_STREAM(group);
+
   //  If the simulation is not defined in a namespace then the group is incorrect
   if( group == "/" )
     group = "";
 
+  ROS_INFO_STREAM("Group : " << group);
   //  Save all the parameters ( if required )
   if( saveParams ) {
 
