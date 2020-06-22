@@ -245,13 +245,12 @@ int main(int argc, char** argv)
 
   ros::Rate estimatorRate( frequency );
 
-<<<<<<< HEAD
+
   //ros::Duration(2.0).sleep();
-=======
+
 
   //  Initialize the time
   ros::Time prevTime = ros::Time::now() ;
->>>>>>> 19cce73aca03a571782bba8817d9a6c5c98dfec0
 
   while( ros::ok() ) {
 
