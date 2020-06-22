@@ -48,7 +48,7 @@
           is computed and the filter checks if the measurement is acceptable or not.
 
             Once, it gets all the measurements, it performs the estimation per se.
-          
+
 
  *
  */
@@ -87,12 +87,22 @@ void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
 // Callback function for sensor reading
 RobotSensors robotSensors;
 std::vector<Measurement> measurements;
+std::vector<Sensor> activatedSensors;
 
 // State vector
 Eigen::Vector3d X;
 void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 {
 
+  //  Received sensors status
+  if( state->sens1 )
+    activatedSensors.push_back( robotSensors.sens1() );
+
+  if( state->sens2 )
+    activatedSensors.push_back( robotSensors.sens2() );
+
+
+  /*
   //  Received sensors status
   if( state->sens1 ) {
     robotSensors.sens1().UpdateTransform( X );
@@ -107,6 +117,10 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
     measurements.push_back( robotSensors.sens2().getMeasurement() );
 
   }
+
+  */
+
+
 
 }
 
@@ -195,7 +209,7 @@ int main(int argc, char** argv)
 
   // Declare your node's subscriptions and service clients
   ros::Subscriber readEncoders = nh_glob.subscribe<simulation_messages::Encoders>("/EncodersReading", 1, EncoderReading);
-  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 1, IRSensorsReading);
+  ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 5, IRSensorsReading);
 
   // Declare your publishers and service servers
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
@@ -259,7 +273,13 @@ int main(int argc, char** argv)
     previousTime = ros::Time::now();
 
     // Check for any measurements
-    for(const auto& measurement : measurements ) {
+    for(const auto& sensor : activatedSensors ) {
+
+      //  Once a measurement changes the state vector, the one storaged in the
+      //  sensor should change as well
+      sensor.UpdateTransform( X );
+
+      const Measurement measurement = sensor.getMeasurement();
 
       double dMaha;
       Eigen::MatrixXd C(1, 3);
@@ -268,10 +288,10 @@ int main(int argc, char** argv)
       if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
 
         // Compute matrix C
-        C << 0, 1,  measurement.activeSensor->RelativePosition().x*cos(X(2)) - measurement.activeSensor->RelativePosition().y*sin(X(2)) ;
+        C << 0, 1,  sensor.RelativePosition().x*cos(X(2)) - sensor.RelativePosition().y*sin(X(2)) ;
 
         const double Y = measurement.lineIndex ;
-        const double Yhat = measurement.activeSensor->AbsolutePosition().y;
+        const double Yhat = sensor.AbsolutePosition().y;
 
         innov = Y - Yhat ;
 
@@ -280,10 +300,10 @@ int main(int argc, char** argv)
       } else {  //  In this case the line detected is "vertical"
 
         // Compute matrix C
-        C << 1, 0, - measurement.activeSensor->RelativePosition().x*sin(X(2)) - measurement.activeSensor->RelativePosition().y*cos(X(2)) ;
+        C << 1, 0, - sensor.RelativePosition().x*sin(X(2)) - sensor.RelativePosition().y*cos(X(2)) ;
 
         const double Y =   measurement.lineIndex ;
-        const double Yhat = measurement.activeSensor->AbsolutePosition().x;
+        const double Yhat = sensor.AbsolutePosition().x;
 
         innov =  Y - Yhat ;
 
@@ -298,12 +318,12 @@ int main(int argc, char** argv)
         kalman.Estimation(P, X, C, innov) ;
 
         //  Than publish the newly measurement
-        shareMeasurements.publish( Accepted( measurement, dMaha ) ) ;
+        shareMeasurements.publish( Accepted( sensor, measurement, dMaha ) ) ;
 
       } else {
 
         //  Than publish the newly measurement
-        shareMeasurements.publish( Rejected( measurement, dMaha ) ) ;
+        shareMeasurements.publish( Rejected( sensor, measurement, dMaha ) ) ;
 
       }
 
@@ -323,6 +343,8 @@ int main(int argc, char** argv)
 
     //  Clear measurements for not repeating
     measurements.clear();
+
+    activatedSensors.clear();
 
     //  Wait remaining time
     estimatorRate.sleep();

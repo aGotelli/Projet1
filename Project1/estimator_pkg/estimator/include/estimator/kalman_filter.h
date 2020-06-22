@@ -183,7 +183,7 @@ geometry_msgs::PoseWithCovariance Estimation(const Eigen::Vector3d& X, const Eig
 
 
 // Publish measurements accepted
-estimator_messages::Measurement Accepted(const Measurement& _measurement, const double dMaha)
+estimator_messages::Measurement Accepted(const Sensor& sensor, const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
   estimator_messages::Measurement measurement;
@@ -195,8 +195,8 @@ estimator_messages::Measurement Accepted(const Measurement& _measurement, const 
   measurement.line_index = _measurement.lineIndex;
 
   //  Include the position
-  measurement.pose.position.x = _measurement.activeSensor->AbsolutePosition().x ;
-  measurement.pose.position.y = _measurement.activeSensor->AbsolutePosition().y ;
+  measurement.pose.position.x = sensor.AbsolutePosition().x ;
+  measurement.pose.position.y = sensor.AbsolutePosition().y ;
 
   //  Set the Mahalanobis distance of the measurement
   measurement.distance = dMaha ;
@@ -211,7 +211,7 @@ estimator_messages::Measurement Accepted(const Measurement& _measurement, const 
 
 
 // Publish measurements rejected
-estimator_messages::Measurement Rejected(const Measurement& _measurement, const double dMaha)
+estimator_messages::Measurement Rejected(const Sensor& sensor, const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
   estimator_messages::Measurement measurement;
@@ -223,8 +223,8 @@ estimator_messages::Measurement Rejected(const Measurement& _measurement, const 
   measurement.line_index = _measurement.lineIndex;
 
   //  Include the position
-  measurement.pose.position.x = _measurement.activeSensor->AbsolutePosition().x ;
-  measurement.pose.position.y = _measurement.activeSensor->AbsolutePosition().y ;
+  measurement.pose.position.x = sensor.AbsolutePosition().x ;
+  measurement.pose.position.y = sensor.AbsolutePosition().y ;
 
   //  Set the Mahalanobis distance of the measurement
   measurement.distance = dMaha ;
