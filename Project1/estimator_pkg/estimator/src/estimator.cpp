@@ -245,7 +245,7 @@ int main(int argc, char** argv)
 
   ros::Rate estimatorRate( frequency );
 
-  ros::Duration(2.0).sleep();
+  //ros::Duration(2.0).sleep();
 
   while( ros::ok() ) {
 

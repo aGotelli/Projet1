@@ -115,7 +115,7 @@
               sensor_1_x:=$(arg sensor_1_x)
               sensor_1_y:=$(arg sensor_1_y)
               sensor_2_x:=$(arg sensor_2_x)
-              sensor_2_x:=$(arg sensor_2_x) " />
+              sensor_2_y:=$(arg sensor_2_y) " />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
   </node>

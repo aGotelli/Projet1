@@ -521,7 +521,7 @@ if __name__ == '__main__':
 
     #   Create a second plot with the Mahalanobis distances
     p2 = win2.addPlot(title="Mahalanobis distances")
-    p2.setLogMode(False, True)
+    #p2.setLogMode(False, True)
     p2.plot([processedMeasurements[0].time , processedMeasurements[-1].time], [threshold, threshold], pen=pg.mkPen('r', width=2), name="Threshold")
 
     p2.setLabel('left', "x", units='undimensional distances')
