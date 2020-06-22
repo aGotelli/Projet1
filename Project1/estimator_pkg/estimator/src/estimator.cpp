@@ -215,7 +215,7 @@ int main(int argc, char** argv)
   ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
-  ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/Velocities", 1);
+  ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/EstimatedVelocities", 1);
 
 
 
@@ -245,7 +245,9 @@ int main(int argc, char** argv)
 
   ros::Rate estimatorRate( frequency );
 
-  ros::Duration(2.0).sleep();
+
+  //  Initialize the time
+  ros::Time prevTime = ros::Time::now() ;
 
   while( ros::ok() ) {
 
@@ -266,11 +268,7 @@ int main(int argc, char** argv)
     // Update propagation error matrix
     kalman.Propagation(P, A, B);
 
-    ros::Time previousTime;
-    ros::Time currentTime;
-    ros::Duration timeElapsed;
 
-    previousTime = ros::Time::now();
 
     // Check for any measurements
     for(const auto& sensor : activatedSensors ) {
@@ -332,10 +330,15 @@ int main(int argc, char** argv)
     //  Publish estimated posture and standard deviations
     estPosture.publish( Estimation(X, P) );
 
+    // Time handling
+    ros::Time currentTime = ros::Time::now() ;
+    ros::Duration timeElapsed = currentTime - prevTime;
+    prevTime = currentTime ;
+
     //  Publish velocities
     geometry_msgs::Twist vel;
-    vel.linear.x = input[0]/timeElapsed.toSec() ;
-    vel.angular.z = input[1]/timeElapsed.toSec() ;
+    vel.linear.x = input(0)/timeElapsed.toSec() ;
+    vel.angular.z = input(1)/timeElapsed.toSec() ;
     pubInput.publish( vel );
 
     //  Update before next iteration
