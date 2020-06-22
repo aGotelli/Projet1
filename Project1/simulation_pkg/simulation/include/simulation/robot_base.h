@@ -118,6 +118,9 @@ protected:
   //  The twist received from the controller
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
 
+   //  The velocities
+  geometry_msgs::Twist velocities;         //  No need of default initialization
+
   //  A marker containing all the robot position, in order to display the path
   //  that has been generated.
   visualization_msgs::Marker generatedPath;   //  No need of default initialization
@@ -162,6 +165,10 @@ private:
 
   //  Publish a joint state message to control the URDF model
   ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
+
+  //  Publish the robot velocities as message
+  ros::Publisher Vel { nh_glob.advertise<geometry_msgs::Twist>("RobotVelocities", 1) } ;
+
 
   // Setting a timer
   ros::Timer timer { nh_glob.createTimer(ros::Duration(0.5), &RobotBase::TimerCallback, this) };
@@ -215,6 +222,9 @@ void RobotBase::isMoving()
 
       //  Publish current robot posture
       Robot.publish( robotPosture );
+
+      //  Publish current robot velocities
+      Vel.publish( velocities );
 
       //  Publish current wheels orientations
       Encoders.publish( wheelsRotations );

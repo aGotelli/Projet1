@@ -39,6 +39,7 @@
     <remap from="/simulation/RobotPosture"    to="/RobotPosture"    />
     <remap from="/simulation/EncodersReading" to="/EncodersReading" />
     <remap from="/simulation/IRSensorsStatus" to="/IRSensorsStatus" />
+    <remap from="/simulation/RobotVelocities" to="/RobotVelocities" />
     <remap from="/simulation/RobotOdometry"   to="/RobotOdometry"   />
   </node>
 
@@ -56,7 +57,7 @@
 
   <!-- The node to save all the needed data -->
   <node pkg="simulation" type="simulation_file_handler" name="file_handler" args="$(find data)/$(arg save_into_folder)  $(arg save_as)" output="screen"  >
-    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture Velocities Measurements RobotPosture RobotOdometry"      />
+    <param name="topics_to_save"  value="Mahalanobis EstimatedPosture EstimatedVelocities Measurements RobotPosture RobotVelocities RobotOdometry"      />
   </node>
 
 
