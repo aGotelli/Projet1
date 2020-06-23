@@ -1,6 +1,6 @@
-1)  Comment plotting
+/1)  Comment plotting
 2)  Rearrange estimator.cpp (it still does not convince me)
-3)  Reduce sigma tuning
+/3)  Reduce sigma tuning
 4)  Test for rectangular tiles
 5)  Stress test with large tiles and larger and larger errors
 6)  Simulate problematic situations from observability study
@@ -8,3 +8,5 @@
 8)  Do the UML for estimator and plotting
 9)  Complete the README
 10) Add explaination of performances
+11) Change names for velocieties
+12) Update robot UML
