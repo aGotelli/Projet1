@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="loop" />
+  <arg name="file_name"         value="test_velocities" />
 
   <!-- Select the folder containig the desired estimation file -->
   <arg name="take_from_folder"  value="processed_lunedi"   />

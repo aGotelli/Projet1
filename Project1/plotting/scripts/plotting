@@ -44,6 +44,8 @@
 """
 
 # importing modules, ROS related stuff and multithreading
+from __future__ import division #   Need for having floating number as result of a division of
+                                #   integers. To be disable when using python3
 import rospy
 import rosbag
 import sys
@@ -52,6 +54,8 @@ from pyqtgraph.Qt import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 from tf.transformations import euler_from_quaternion
+
+
 
 
 
@@ -178,22 +182,23 @@ if __name__ == '__main__':
                     lines_detected.append(pos)
                     prev_v = meas.line_index
 
-
+    class RobotTwist:
+        def __init__(self, linear, angular, time):
+            self.linear = linear
+            self.angular = angular
+            self.time = time
 
     #   Obtain the input velocities from simulation
-    linear_real = []
-    angular_real = []
+    realTwist = []
     for topic, vel_real, t in bag.read_messages(topics=['/RobotVelocities']):
-        linear_real.append( vel_real.linear.x )
-        angular_real.append( vel_real.angular.z )
+        realTwist.append( RobotTwist(vel_real.linear.x, vel_real.angular.z, t.to_sec()) )
 
 
     #   Obtain the input velocities from estimation
-    linear_estm = []
-    angular_estm = []
+    estimatedTwist = []
     for topic, vel_estm, t in bag.read_messages(topics=['/EstimatedVelocities']):
-        linear_estm.append( vel_estm.linear.x )
-        angular_estm.append( vel_estm.angular.z )
+        estimatedTwist.append( RobotTwist(vel_estm.linear.x, vel_estm.angular.z, t.to_sec()) )
+
 
 
     #   No need of the bag file anymore
@@ -218,12 +223,18 @@ if __name__ == '__main__':
 
     #   Extract relevant data by removing motionless parts
     del realPosture[0: startIndex]
-    del linear_real[0: startIndex]
-    del angular_real[0: startIndex]
+    del realTwist[0: startIndex]
+
 
     del realPosture[stopIndex: -1]
-    del linear_real[stopIndex: -1]
-    del angular_real[stopIndex: -1]
+    del realTwist[stopIndex: -1]
+
+
+    #   Comute overall length of the path
+    pathLenght = 0
+    for index in range(1, len(realPosture)):
+        pathLenght += np.sqrt( (np.power(realPosture[index].x - realPosture[index-1].x, 2)) + (np.power(realPosture[index].y - realPosture[index-1].y, 2)))
+
 
 
 
@@ -242,17 +253,16 @@ if __name__ == '__main__':
     stopIndex = i
 
     #   Extract relevant data by removing motionless parts
-    del linear_estm[0: startIndex]
-    del angular_estm[0: startIndex]
+    del estimatedTwist[0: startIndex]
+    del estimatedTwist[stopIndex: -1]
 
-    del linear_estm[stopIndex: -1]
-    del angular_estm[stopIndex: -1]
 
     del estimatedPosture[0: startIndex]
     del estimatedPosture[stopIndex: -1]
 
     del odometryPosture[0: startIndex]
     del odometryPosture[stopIndex: -1]
+
 
 
 
@@ -275,6 +285,16 @@ if __name__ == '__main__':
     initial = odometryPosture[0].time
     for odompose in odometryPosture:
         odompose.time = odompose.time - initial
+
+    # Normalize odometry time
+    initial = estimatedTwist[0].time
+    for twist in estimatedTwist:
+        twist.time = twist.time - initial
+
+    # Normalize odometry time
+    initial = realTwist[0].time
+    for twist in realTwist:
+        twist.time = twist.time - initial
 
 
 
@@ -307,21 +327,38 @@ if __name__ == '__main__':
     win5.resize(1000,600)
     win5.setWindowTitle('Velocities')
 
-    time_estm = [estm.time for estm in estimatedPosture]
-    time_error = [error.time for error in errorPose]
+    estimatedTwist_time     = [estm.time for estm in estimatedTwist]
+    estimatedTwist_linear   = [estm.linear for estm in estimatedTwist]
+    estimatedTwist_angular  = [estm.angular for estm in estimatedTwist]
+
+    realTwist_time      = [real.time for real in realTwist]
+    realTwist_linear    = [real.linear for real in realTwist]
+    realTwist_angular   = [real.angular for real in realTwist]
 
     p12 = win5.addPlot(title="Linear Velocity")
-    p12.plot( time_estm, linear_estm, pen=(255,0,0), name="estm linear vel")
-    p12.plot( time_error, linear_real, pen=(0,0,255), name="real linear vel")
-    p12.setLabel('left', "linear vel")
+    p12.addLegend()
+
+    #   Change Background for readability
+    p12.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p12.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
+    p12.plot( estimatedTwist_time, estimatedTwist_linear, pen=(255,0,0), name="Estimated linear velocity")
+    p12.plot( realTwist_time, realTwist_linear, pen=pg.mkPen('b', width=4), name="Real linear velocity")
+    p12.setLabel('left', "Linear velocity", units='m/s')
     p12.setLabel('bottom', "time", units='s')
 
     win5.nextRow()
 
     p13 = win5.addPlot(title="Angular Velocity")
-    p13.plot( time_estm, angular_estm, pen=(255,0,0), name="estm angular vel")
-    p13.plot( time_error, angular_real, pen=(0,0,255), name="real angular vel")
-    p13.setLabel('left', "angular vel")
+    p13.addLegend()
+
+    #   Change Background for readability
+    p13.legend.setBrush(pg.mkBrush(200, 200, 200, 150))
+    p13.legend.setLabelTextColor(pg.mkColor(0, 0, 0))
+
+    p13.plot( estimatedTwist_time, estimatedTwist_angular, pen=(255,0,0), name="Estimated angular velocity")
+    p13.plot( realTwist_time, realTwist_angular, pen=pg.mkPen('b', width=4), name="Real angular velocity")
+    p13.setLabel('left', "Angular velocity", units='RAD/s')
     p13.setLabel('bottom', "time", units='s')
 
 
@@ -509,6 +546,15 @@ if __name__ == '__main__':
     x_meas = [m.x for m in processedMeasurements]
     y_meas = [m.y for m in processedMeasurements]
 
+    #   Count the number of rejected measurements
+    rejectedMeasurements = 0
+    for measurement in processedMeasurements:
+        if not measurement.accepted:
+            rejectedMeasurements = rejectedMeasurements + 1
+
+    #   Obtain a percentage of the rejected measurements
+    rejectedPercentage = float(rejectedMeasurements / len(processedMeasurements))*100
+
     p1.plot(x_meas, y_meas, pen=None, symbolSize=sizes, symbolBrush=brushes)
 
     #   Create a PlotDataItem to be displayed in the lagend
@@ -574,7 +620,11 @@ if __name__ == '__main__':
         ('Threshold',               threshold,                  ""),
         ('Initial position x',      xInit + xScost,             "[m]"),
         ('Initial position y',      yInit + yScost,             "[m]"),
-        ('Initial position theta',  thetaInit + thetaRot,       "[grad]")
+        ('Initial position theta',  thetaInit + thetaRot,       "[grad]"),
+        ('ESTIMATION RESULTS',      0.0,                        ""),
+        ('Rejected measurements',   rejectedMeasurements,       ""),
+        ('Percentage of rejected',  rejectedPercentage,         "[%]"),
+        ('Path lenght',             pathLenght,                 "[m]")
         ], dtype=[('Parameter', object), ('Value', float), ('Units', object)])
 
 
