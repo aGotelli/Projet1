@@ -1,16 +1,16 @@
 <launch>
 
   <!-- Select the folder where the user wants to put the estimator outputs file -->
-  <arg name="save_into_folder"  value="processed_martedi"  />
+  <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="loop_005s" />
+  <arg name="save_as"           value="horizontal_smart_0075s_wrong_initpose" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="loop" />
+  <arg name="file_name"         value="horizontal_smart" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="martedi"   />
+  <arg name="take_from_folder"  value="recorded_data"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator
@@ -23,7 +23,7 @@
   <arg name="subsample_rate"  value="2" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
-  <arg name="sigma_tuning"  value="0.05"   />
+  <arg name="sigma_tuning"  value="0.075"   />
 
   <!-- Assuming of being able to positioning the robot with a +- 2cm precision
         And with an orientation uncertainty of +-5 grad                      -->
@@ -33,9 +33,9 @@
 
 
 
-  <arg name="x_scost"       value="0.0"   />
-  <arg name="y_scost"       value="0.0"   />
-  <arg name="theta_rot"     value="0"   />
+  <arg name="x_scost"       value="0.01"   />
+  <arg name="y_scost"       value="-0.01"   />
+  <arg name="theta_rot"     value="3"   />
 
 
   <!-- Include the launch file which executes the estimation -->
