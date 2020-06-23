@@ -10,10 +10,10 @@
  * \param[in]
  *
  * Subscribes to: <BR>
- *
+ *    
  *
  * Publishes to: <BR>
- *
+ *    
  *
  * Description
             This file takes the data from a rosbag and a yaml file with the same name
