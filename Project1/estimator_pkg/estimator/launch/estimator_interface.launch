@@ -4,10 +4,10 @@
   <arg name="save_into_folder"  value="stress_test"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="low_errors_lf_010s" />
+  <arg name="save_as"           value="long_path_0075s" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="low_errors" />
+  <arg name="file_name"         value="long_path" />
 
   <!-- Select the folder containig the desired simulation file -->
   <arg name="take_from_folder"  value="stress_test"   />
@@ -20,10 +20,10 @@
   <!-- This parameter allows to run the estimator at a frequency n-th times lower
   than the simulation frequency. In this way it is possible to test the
   simulation in worst conditions.                                            -->
-  <arg name="subsample_rate"  value="5" />
+  <arg name="subsample_rate"  value="2" />
 
   <arg name="threshold"     value="3.8415"   /><!-- chi2inv(0.95,1) = 3.8415 -->
-  <arg name="sigma_tuning"  value="0.10"   />
+  <arg name="sigma_tuning"  value="0.075"   />
 
   <!-- Assuming of being able to positioning the robot with a +- 2cm precision
         And with an orientation uncertainty of +-5 grad                      -->
@@ -33,8 +33,8 @@
 
 
 
-  <arg name="x_scost"       value="0.02"   />
-  <arg name="y_scost"       value="-0.02"   />
+  <arg name="x_scost"       value="0.01"   />
+  <arg name="y_scost"       value="-0.01"   />
   <arg name="theta_rot"     value="3"   />
 
 
