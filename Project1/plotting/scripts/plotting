@@ -10,10 +10,10 @@
  * \param[in]
  *
  * Subscribes to: <BR>
- *    
+ *
  *
  * Publishes to: <BR>
- *    
+ *
  *
  * Description
             This file takes the data from a rosbag and a yaml file with the same name
@@ -171,7 +171,7 @@ if __name__ == '__main__':
             self.x_var = x_var
             self.y_var = y_var
             self.theta_var = theta_var
-            
+
     estimatedPosture = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
         orientation_q = estm.pose.orientation

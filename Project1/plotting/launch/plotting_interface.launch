@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="square_0075s" />
+  <arg name="file_name"         value="inclined_line_0075s_wrong_initpose" />
 
   <!-- Select the folder containig the desired estimation file -->
   <arg name="take_from_folder"  value="processed_data"   />
