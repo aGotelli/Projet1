@@ -6,7 +6,7 @@
 6)  Simulate problematic situations from observability study
 7)  Add the results in the report
 8)  Do the UML for estimator and plotting
-9)  Complete the README
+/9)  Complete the README
 10) Add explaination of performances
 /11) Change names for velocieties
-12) Update robot UML
+/12) Update robot UML

@@ -95,14 +95,14 @@ provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/
 The core of the simulation is composed by the (2, 0) robot and its sensors. The following UML describes the
 high level architecture  
 
-  ![Projet1](images/simulation_core.png)
+  ![Projet1](images/simulation_core_version4.png)
 
 For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Sensor](#S-Sensor) and [Interfaces](#S-Interfaces).
 
   The following UML shows the architecture for the intended interface.
 
 
-![Projet1](images/saving_and_display.png)
+![Projet1](images/saving_and_display-version4.png)
 
   The components of this last UML are discussed in this document, see [Interfaces](#S-Interfaces).
 
@@ -130,7 +130,7 @@ This last package contains a python script and a related interface as launch fil
 The script simply loops into the rosbag corresponding to the desired file to be loaded.
 Then it plots the result in some PyQtGraph windows. (see [PyQtGraph](#S-PyQtGraph) )
 
-The windows and the types of plots are explained in the script. 
+The windows and the types of plots are explained in the script.
 
 
 
