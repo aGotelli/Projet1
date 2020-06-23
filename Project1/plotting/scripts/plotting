@@ -33,12 +33,47 @@
         topic from a single loop. However, this single loop will be executed several
         times, one for each topic, so the two approach take the same amount of time.
 
+            Some classes are used to simplify collecting the data from the rosbag
+        and to carry it around the code. Often, each reading has its own istance of
+        the time. This repetion comes from the need of ensuring vectors of qual
+        sizes no matter of the lenght or characteristic of the simulation.
+
             Once all the messages have been saved in the program, the motionless
         parts will be deleted, in order to focus the attention only in the results
         when the robot is moving.
 
             Once the data is prepared, the Qt Console is started and the plot
-        are displayed.
+        are displayed. The script prepares the following windows:
+
+        1)  A table with the parameters that have been used and the estimation
+            results
+
+        2)  A plot showing a tiled ground (which for practise is composed by black
+            tiles separeted by white lines, it is simply more convenient to use
+            this layout, as black Background improves the visualization. Moreover,
+            the system could also work with black tiles and white line if some
+            Change are done in the sensor at low level). The plots shows the following:
+            *   The real path in green
+            *   The path computed with the odometry only, in red
+            *   The trajectory that the estimator has computed, in blue.
+            *   The accepted measurements as medium blue dots
+            *   The rejected measurements as small red dots
+            *   The line that has been estimated of being detected as dashed yellow line
+
+            This window also has a plot showing the Mahalanobis distances, using the same
+            relation for dot type for the accepted/rejected measurements. It is useful to
+            compare the distances with the threshold.
+
+        3)  The third window shows the error between the estimated and real path. Additionally
+            is shows the interval of +-3 sigma for each component of the state vector.
+            Moreover, it also has a functionality of zooming in the selected area of a plot.
+
+        4)  The fourth window has three plots with the evolutio of the sigmas for each
+            component of the state vector
+
+        5)  The last window shows the velocities for the robot. In the context of a simulation
+            it is possible to compare the velocity tat the robot really has, with the velocity
+            that has beed estimated.
 
  *
 """
@@ -136,7 +171,7 @@ if __name__ == '__main__':
             self.x_var = x_var
             self.y_var = y_var
             self.theta_var = theta_var
-
+            
     estimatedPosture = []
     for topic, estm, t in bag.read_messages(topics=['/EstimatedPosture']):
         orientation_q = estm.pose.orientation
