@@ -4,10 +4,10 @@
   <arg name="save_into_folder"  value="processed_errors"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="test_computations" />
+  <arg name="save_as"           value="test_velocities" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="test_computations" />
+  <arg name="file_name"         value="test_velocities" />
 
   <!-- Select the folder containig the desired simulation file -->
   <arg name="take_from_folder"  value="lunedi"   />
