@@ -29,9 +29,9 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="-4.5" />  <!-- meters -->
-  <arg name="y_init"      value="0.0" />  <!-- meters -->
-  <arg name="theta_init"  value="0" />  <!-- grad -->
+  <arg name="x_init"      value="0.106066" />  <!-- meters -->
+  <arg name="y_init"      value="0.106066" />  <!-- meters -->
+  <arg name="theta_init"  value="-135" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
   y_spacing represent the offset of the lines along x and y respectively.
@@ -62,8 +62,8 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   recreate the simulation -->
-  <arg name="file_name"   value="horizontal_smart" />
-  <arg name="folder_name" value="recorded_data" />
+  <arg name="file_name"   value="stod_two_meas" />
+  <arg name="folder_name" value="observability_problem" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick

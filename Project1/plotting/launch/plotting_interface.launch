@@ -1,10 +1,10 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="inclined_line_0075s_wrong_initpose" />
+  <arg name="file_name"         value="stod_two_meas" />
 
   <!-- Select the folder containig the desired estimation file -->
-  <arg name="take_from_folder"  value="processed_data"   />
+  <arg name="take_from_folder"  value="processed_obs_prob"   />
 
   <!-- Include the launch file which plots the results -->
   <include file="$(find plotting)/launch/plotting.launch" pass_all_args="true">
