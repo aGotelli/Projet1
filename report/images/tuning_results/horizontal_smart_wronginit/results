@@ -1,0 +1,25 @@
+Parameter	Value	Units
+WORLD PARAMETERS	0.0	
+x_spacing	0.25	[m]
+y_spacing	0.25	[m]
+line_thickness	0.005	[m]
+ROBOT PARAMETERS	0.0	
+Wheel radius	0.05	[m]
+Track gauge	0.4	[m]
+Initial position x	-4.5	[m]
+Initial position y	0.0	[m]
+Initial position theta	0.0	[grad]
+ODOMETRY PARAMETERS	0.0	
+wheel_1_error	3.0	[%]
+track_gauge_error	1.0	[%]
+encoders_resolution	120.0	[dots/revolution]
+ESTIMATOR PARAMETERS	0.0	
+sigma_tuning	0.075	
+Threshold	3.8415	
+Initial position x	-4.49	[m]
+Initial position y	-0.01	[m]
+Initial position theta	3.0	[grad]
+ESTIMATION RESULTS	0.0	
+Rejected measurements	74.0	
+Percentage of rejected	22.2222222222	[%]
+Path lenght	11.5172343621	[m]

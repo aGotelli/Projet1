@@ -49,9 +49,9 @@ an interface is provided, and the user should only use this last one to change t
 there is no need to change anything in the code to use this application. As a result, anyone with a basic
 knowledge of YAML file can use this package. (see [Launch File](#S-Launch) ).
 
-  The project has four packages: the simulation meta package and the estimator, data and plotting packages.
+  The project has four packages: the simulation and estimator meta packages and data and plotting packages.
 The data package exists to be used as storage unit for the file that are generated. In this way, there is no
-risk of having to find files around the project.The plotting package is to take the desired file form the
+risk of having to find files around the project. The plotting package is to take the desired file form the
 data package, which contains the processed data, and plot the results.
 
   The simulation package is the first to be discussed, with all its components.
@@ -95,14 +95,14 @@ provided in the [C++ Core Guidelines](http://isocpp.github.io/CppCoreGuidelines/
 The core of the simulation is composed by the (2, 0) robot and its sensors. The following UML describes the
 high level architecture  
 
-  ![Projet1](images/simulation_core.png)
+  ![Projet1](images/simulation_core_version4.png)
 
 For understand the components in detail see: [Robot(2,0)](#S-Robot(2,0)), [Sensor](#S-Sensor) and [Interfaces](#S-Interfaces).
 
   The following UML shows the architecture for the intended interface.
 
 
-![Projet1](images/saving_and_display.png)
+![Projet1](images/saving_and_display-version4.png)
 
   The components of this last UML are discussed in this document, see [Interfaces](#S-Interfaces).
 
@@ -120,13 +120,17 @@ divide the package are the same as before. (see [simulation_messages package](#S
 
 ### <a name="Ri-estimator"></a>The estimator package
 
-WORK IN PROGRESS
+The estimator package is for implement and estimator which interfaces the ROS framework. This estimator
+is based on a Kalman Filter to evaluate the measurements and the evolution model. The description of the
+process is explained in detail in the related file. The reader is encouraged to read it from there.
 
 ## <a name="Ri-plotting"></a>The plotting package
 
 This last package contains a python script and a related interface as launch file.
 The script simply loops into the rosbag corresponding to the desired file to be loaded.
 Then it plots the result in some PyQtGraph windows. (see [PyQtGraph](#S-PyQtGraph) )
+
+The windows and the types of plots are explained in the script.
 
 
 
