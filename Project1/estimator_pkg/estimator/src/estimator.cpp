@@ -34,18 +34,45 @@
  *    ° simulation/IRSensorsStatus
  *
  * Publishes to: <BR>
- *    ° /Mahalanobis
  *    ° /EstimatedPosture
  *    ° /Measurements
  *    ° /Velocities
  *
  * Description
-            The aim of this file is to perform the estimation. Starting from the
-          values of the elementary rotations and the state of the sensors, the
-          input is calculated. With this and the state vector, the evolution
-          model is computed and the matrices that represent the filter are updated.
-          After updating also the propagation error matrix, the Mahalanobis distance
-          is computed and the filter checks if the measurement is acceptable or not.
+            The aim of this file is to create an estimator for localise the robot
+          using the result of a simulation. The estimator works as an usual
+          Kalman Filter based estimator. It is designed for having a ROS interface
+          so it can be used in any real robot which satisfies the criteria of this
+          project.
+
+            The estimator obtains the current readings from the encoders with a
+          simple callback function. It uses the knowledge of the wheels rotations
+          to perform a prediction of the current state and the error propagation.
+
+            If some sensors are active, in the callback they are storaged in a
+          vector. This phase is important, because there are two sensors located
+          in different positions and they muste be distinguished.
+
+            After the prediction, for every sensor in the vector, information
+          about the measurement are obtained.
+
+            At this point the Kalman Filter perform a coherence test and if
+          the measurement satisfies the test, then the estimation is performed.
+
+
+
+            The callbacks for the sensors states and the encoders readind differs
+          from the point of view of the buffer size. This comes from the
+          consideration that the estimator can run at a lower frequency than the
+          simulation. Practically, this estimator is to be implemented in a real
+          robot, outside the context of a simulation. In a real robot, encoders
+          have their own frquency and resolution, so the estimator takes the last
+          input form the encoders to retrieve the current rotations.  On the other
+          hand, the sensors usually have a specific component, that works at best
+          effort to publish the sensor state. Here comes the need of a larger buffer
+          size: the estimator must know if a sensor was active in between the
+          current and the last iteration. So, it must storage all the messages in
+          the buffer and process them in the next iteration. 
 
             Once, it gets all the measurements, it performs the estimation per se.
 
@@ -193,7 +220,6 @@ int main(int argc, char** argv)
   ros::Subscriber readIRSensors = nh_glob.subscribe<simulation_messages::IRSensors>("/IRSensorsStatus", 5, IRSensorsReading);
 
   // Declare your publishers and service servers
-  ros::Publisher Mahalanobis = nh_glob.advertise<std_msgs::Float32>("/Mahalanobis", 1);
   ros::Publisher estPosture = nh_glob.advertise<geometry_msgs::PoseWithCovariance>("/EstimatedPosture", 1);
   ros::Publisher shareMeasurements = nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1);
   ros::Publisher pubInput = nh_glob.advertise<geometry_msgs::Twist>("/EstimatedVelocities", 1);
