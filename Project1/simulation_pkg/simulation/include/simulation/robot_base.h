@@ -118,8 +118,8 @@ protected:
   //  The twist received from the controller
   geometry_msgs::Twist twistReceived;         //  No need of default initialization
 
-   //  The velocities
-  geometry_msgs::Twist velocities;         //  No need of default initialization
+   //  The twist that the robot can handle
+  geometry_msgs::Twist robotTwist;            //  No need of default initialization
 
   //  A marker containing all the robot position, in order to display the path
   //  that has been generated.
@@ -167,7 +167,7 @@ private:
   ros::Publisher JointsController { nh_glob.advertise<sensor_msgs::JointState>("/joint_states", 1) } ;
 
   //  Publish the robot velocities as message
-  ros::Publisher Vel { nh_glob.advertise<geometry_msgs::Twist>("RobotVelocities", 1) } ;
+  ros::Publisher CurrentTwist { nh_glob.advertise<geometry_msgs::Twist>("RobotVelocities", 1) } ;
 
 
   // Setting a timer
@@ -224,7 +224,7 @@ void RobotBase::isMoving()
       Robot.publish( robotPosture );
 
       //  Publish current robot velocities
-      Vel.publish( velocities );
+      CurrentTwist.publish( robotTwist );
 
       //  Publish current wheels orientations
       Encoders.publish( wheelsRotations );

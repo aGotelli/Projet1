@@ -8,5 +8,5 @@
 8)  Do the UML for estimator and plotting
 9)  Complete the README
 10) Add explaination of performances
-11) Change names for velocieties
+/11) Change names for velocieties
 12) Update robot UML
