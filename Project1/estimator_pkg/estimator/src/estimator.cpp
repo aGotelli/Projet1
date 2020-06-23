@@ -86,7 +86,8 @@ void EncoderReading(const simulation_messages::Encoders::ConstPtr& encoders)
 
 // Callback function for sensor reading
 RobotSensors robotSensors;
-std::vector<Measurement> measurements;
+
+//  Sensors which were activated in the time between two iterations
 std::vector<Sensor> activatedSensors;
 
 // State vector
@@ -100,27 +101,6 @@ void IRSensorsReading(const simulation_messages::IRSensors::ConstPtr& state)
 
   if( state->sens2 )
     activatedSensors.push_back( robotSensors.sens2() );
-
-
-  /*
-  //  Received sensors status
-  if( state->sens1 ) {
-    robotSensors.sens1().UpdateTransform( X );
-    //robotSensors.sens1().getMeasurement( measurements ) ;
-    measurements.push_back( robotSensors.sens1().getMeasurement() );
-
-  }
-
-  if( state->sens2 ) {
-    robotSensors.sens2().UpdateTransform( X );
-    //robotSensors.sens2().getMeasurement( measurements );
-    measurements.push_back( robotSensors.sens2().getMeasurement() );
-
-  }
-
-  */
-
-
 
 }
 
@@ -156,6 +136,7 @@ int main(int argc, char** argv)
   double sigmaTuning;
   nh_loc.param("sigma_tuning", sigmaTuning, sqrt(pow(2/encodersResolution*M_PI, 2)/12));
   //  Default only takes into account the encoders resolution, with a perfect an high freq. model
+
 
   double sigmaX, sigmaY, sigmaTheta;
   nh_loc.param("sigma_x", sigmaX, 0.0);
@@ -246,9 +227,6 @@ int main(int argc, char** argv)
   ros::Rate estimatorRate( frequency );
 
 
-  //ros::Duration(2.0).sleep();
-
-
   //  Initialize the time
   ros::Time prevTime = ros::Time::now() ;
 
@@ -276,57 +254,7 @@ int main(int argc, char** argv)
     // Check for any measurements
     for(const auto& sensor : activatedSensors ) {
 
-      //  Once a measurement changes the state vector, the one storaged in the
-      //  sensor should change as well
-      sensor.UpdateTransform( X );
-
-      const Measurement measurement = sensor.getMeasurement();
-
-      double dMaha;
-      Eigen::MatrixXd C(1, 3);
-      double innov;
-      //  First filter the type of line
-      if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
-
-        // Compute matrix C
-        C << 0, 1,  sensor.RelativePosition().x*cos(X(2)) - sensor.RelativePosition().y*sin(X(2)) ;
-
-        const double Y = measurement.lineIndex ;
-        const double Yhat = sensor.AbsolutePosition().y;
-
-        innov = Y - Yhat ;
-
-        dMaha = kalman.ComputeMahalanobis( innov, C, P );
-
-      } else {  //  In this case the line detected is "vertical"
-
-        // Compute matrix C
-        C << 1, 0, - sensor.RelativePosition().x*sin(X(2)) - sensor.RelativePosition().y*cos(X(2)) ;
-
-        const double Y =   measurement.lineIndex ;
-        const double Yhat = sensor.AbsolutePosition().x;
-
-        innov =  Y - Yhat ;
-
-        dMaha = kalman.ComputeMahalanobis( innov, C, P );
-
-      }
-
-      // Check if the measurement should be accepted
-      if( dMaha <= threshold ) {
-
-        //  Only if we referred to a good line, update
-        kalman.Estimation(P, X, C, innov) ;
-
-        //  Than publish the newly measurement
-        shareMeasurements.publish( Accepted( sensor, measurement, dMaha ) ) ;
-
-      } else {
-
-        //  Than publish the newly measurement
-        shareMeasurements.publish( Rejected( sensor, measurement, dMaha ) ) ;
-
-      }
+      kalman.EvaluateMeasurement(sensor, X, P);
 
     }
 
@@ -347,9 +275,7 @@ int main(int argc, char** argv)
     //  Update before next iteration
     previousReading = currentReading ;
 
-    //  Clear measurements for not repeating
-    measurements.clear();
-
+    //  Clear vector for not repeating
     activatedSensors.clear();
 
     //  Wait remaining time

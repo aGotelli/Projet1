@@ -4,13 +4,13 @@
   <arg name="save_into_folder"  value="processed_errors"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="loop_smooth" />
+  <arg name="save_as"           value="test_computations" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="loop_smooth" />
+  <arg name="file_name"         value="test_computations" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="domenica"   />
+  <arg name="take_from_folder"  value="lunedi"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator

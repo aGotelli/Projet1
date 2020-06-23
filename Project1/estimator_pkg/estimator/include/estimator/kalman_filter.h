@@ -50,9 +50,9 @@ public:
                   sigmaY(_sigmaY),
                   sigmaTheta(_sigmaTheta)
                   {
-                    ROS_INFO_STREAM("Qwheels                            : " << Qwheels );
-                    ROS_INFO_STREAM("Qbeta                              : " << Qbeta );
-                    ROS_INFO_STREAM("Qgamma                             : " << Qgamma );
+                    ROS_INFO_STREAM("Qwheels :                                       " << Qwheels );
+                    ROS_INFO_STREAM("Qbeta :                                         " << Qbeta );
+                    ROS_INFO_STREAM("Qgamma :                                        " << Qgamma );
                   }
 
   //  Initialize the P matrix using the uncertainties on the robot posture
@@ -78,6 +78,8 @@ public:
                                       return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ;
                                     }
 
+  void EvaluateMeasurement(const Sensor& sensor, Eigen::Vector3d& X, Eigen::Matrix3d& P);
+
 
 private:
 
@@ -88,6 +90,8 @@ private:
 
   //  Uncertainty on the measurement
   const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
+
+  const double threshold {3.8415};
 
   //  Inversely proportional of the accurancy of the model
   const double sigmaTuning { 0.0 };  //  Default 0.0 not a good idea
@@ -105,6 +109,10 @@ private:
 
   //  The covariance on the measurement
   const double Qgamma { std::pow(sigmaMeasurement, 2) };
+
+  ros::NodeHandle nh_glob;
+
+  ros::Publisher shareMeasurements {nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1) };
 };
 
 
@@ -236,6 +244,63 @@ estimator_messages::Measurement Rejected(const Sensor& sensor, const Measurement
 
   return measurement;
 }
+
+
+void KalmanFilter::EvaluateMeasurement(const Sensor& sensor, Eigen::Vector3d& X, Eigen::Matrix3d& P)
+{
+  //  Once a measurement changes the state vector, the one storaged in the
+  //  sensor should change as well
+  sensor.UpdateTransform( X );
+
+  const Measurement measurement = sensor.getMeasurement();
+
+  double dMaha;
+  Eigen::MatrixXd C(1, 3);
+  double innov;
+  //  First filter the type of line
+  if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
+
+    // Compute matrix C
+    C << 0, 1,  sensor.RelativePosition().x*cos(X(2)) - sensor.RelativePosition().y*sin(X(2)) ;
+
+    const double Y = measurement.lineIndex ;
+    const double Yhat = sensor.AbsolutePosition().y;
+
+    innov = Y - Yhat ;
+
+    dMaha = ComputeMahalanobis( innov, C, P );
+
+  } else {  //  In this case the line detected is "vertical"
+
+    // Compute matrix C
+    C << 1, 0, - sensor.RelativePosition().x*sin(X(2)) - sensor.RelativePosition().y*cos(X(2)) ;
+
+    const double Y =   measurement.lineIndex ;
+    const double Yhat = sensor.AbsolutePosition().x;
+
+    innov =  Y - Yhat ;
+
+    dMaha = ComputeMahalanobis( innov, C, P );
+
+  }
+
+  // Check if the measurement should be accepted
+  if( dMaha <= threshold ) {
+
+    //  Only if we referred to a good line, update
+    Estimation(P, X, C, innov) ;
+
+    //  Than publish the newly measurement
+    shareMeasurements.publish( Accepted( sensor, measurement, dMaha ) ) ;
+
+  } else {
+
+    //  Than publish the newly measurement
+    shareMeasurements.publish( Rejected( sensor, measurement, dMaha ) ) ;
+
+  }
+}
+
 
 
 
