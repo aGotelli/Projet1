@@ -1,0 +1,29 @@
+just by following the tutorial got the error:
+
+
+RLException: Roslaunch got a 'No such file or directory' error while attempting to run:
+
+valgrind --tool=callgrind --callgrind-out-file=callgrind.estimator.%p /home/agotelli/catkin_ws/devel/lib/simulation/simulation_file_handler /home/agotelli/catkin_ws/src/Project1/data/processed_errors loop_smooth __name:=file_handler __log:=/home/agotelli/.ros/log/8f02d088-b3a2-11ea-9a62-f4066972bee2/file_handler-4.log
+
+Please make sure that all the executables in this command exist and have
+executable permission. This is often caused by a bad launch-prefix.
+The traceback for the exception was written to the log file
+
+
+To install kcache 
+
+sudo apt-get update -y
+
+sudo apt-get install -y kcachegrind
+
+
+and then try again launch file
+
+ok got this :
+
+==23419== Callgrind, a call-graph generating cache profiler
+==23419== Copyright (C) 2002-2017, and GNU GPL'd, by Josef Weidendorfer et al.
+==23419== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==23419== Command: /home/agotelli/catkin_ws/devel/lib/simulation/simulation_file_handler /home/agotelli/catkin_ws/src/Project1/data/processed_errors loop_smooth __name:=file_handler __log:=/home/agotelli/.ros/log/8fb381ba-b3a4-11ea-9a62-f4066972bee2/file_handler-4.log
+==23419== 
+==23419== For interactive control, run 'callgrind_control -h'.

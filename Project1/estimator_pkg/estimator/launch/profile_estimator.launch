@@ -10,7 +10,7 @@
   <arg name="file_name"         value="loop" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="martedi"   />
+  <arg name="take_from_folder"  value="recorded_data"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator
