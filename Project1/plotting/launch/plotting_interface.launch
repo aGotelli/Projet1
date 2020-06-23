@@ -1,10 +1,10 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="stod_two_meas" />
+  <arg name="file_name"         value="high_errors_012s" />
 
   <!-- Select the folder containig the desired estimation file -->
-  <arg name="take_from_folder"  value="processed_obs_prob"   />
+  <arg name="take_from_folder"  value="stress_test"   />
 
   <!-- Include the launch file which plots the results -->
   <include file="$(find plotting)/launch/plotting.launch" pass_all_args="true">

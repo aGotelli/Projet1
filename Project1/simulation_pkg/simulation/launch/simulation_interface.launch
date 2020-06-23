@@ -18,7 +18,7 @@
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
   <arg name="wheel_1_error"       value="1.03"  />    <!-- [percentage] -->
-  <arg name="track_gauge_error"   value="1.01"  />    <!-- [percentage] -->
+  <arg name="track_gauge_error"   value="1.03"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
   The user is free to choose the values arbitrairly. However, the value of "c"
@@ -29,9 +29,9 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="0.106066" />  <!-- meters -->
-  <arg name="y_init"      value="0.106066" />  <!-- meters -->
-  <arg name="theta_init"  value="-135" />  <!-- grad -->
+  <arg name="x_init"      value="0.1" />  <!-- meters -->
+  <arg name="y_init"      value="0" />  <!-- meters -->
+  <arg name="theta_init"  value="45" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
   y_spacing represent the offset of the lines along x and y respectively.
@@ -45,8 +45,8 @@
   simulation frequency the dispacement is 0.0033 i.e. 3.33 mm.
   In other words, it is strongly recommended to use a line thikness
   proportionated at the robot parameters.  [all the parameters are in meters]-->
-  <arg name="x_spacing"       value="0.25"     />
-  <arg name="y_spacing"       value="0.25"     />
+  <arg name="x_spacing"       value="0.5"     />
+  <arg name="y_spacing"       value="0.5"     />
   <arg name="line_thickness"  value="0.005"   />
 
 
@@ -54,16 +54,16 @@
   As for the wheels the sensor numeration follows the same logic.
   In other words the sensor one is beside the wheel one ecc.                 -->
   <arg name="sensor_1_x" value="0.0"  />
-  <arg name="sensor_1_y" value="-0.15" />
+  <arg name="sensor_1_y" value="-0.3" />
 
   <arg name="sensor_2_x" value="0.0" />
-  <arg name="sensor_2_y" value="0.15" />
+  <arg name="sensor_2_y" value="0.3" />
 
 
   <!-- Specify the file name and the folder where to save the files needed to
   recreate the simulation -->
-  <arg name="file_name"   value="stod_two_meas" />
-  <arg name="folder_name" value="observability_problem" />
+  <arg name="file_name"   value="high_errors" />
+  <arg name="folder_name" value="stress_test" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick
@@ -72,7 +72,7 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="true" />
+  <arg name="use_joystick"  value="false" />
   <arg name="joystick_tag"  value="js1"   />
   <arg name="QWERTY"        value="true"  />
 
