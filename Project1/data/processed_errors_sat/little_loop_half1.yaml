@@ -1,0 +1,18 @@
+estimator: {estimator_frequency: 75, sigma_theta: 8, sigma_tuning: 0.11, sigma_x: 0.015,
+  sigma_y: 0.015, theta_rot: 3, threshold: 3.8415, x_scost: 0.02, y_scost: -0.01}
+file_handler: {topics_to_save: Mahalanobis EstimatedPosture Velocities Measurements
+    RobotPosture RobotOdometry}
+robot_2_0: {a: 0.2, actuator_max_speed: 10.0, b: 0.4, c: 0.1, encoders_resolution: 120,
+  theta_init: 45.0, track_gauge_error: 1.01, wheel_1_error: 1.01, wheel_radius: 0.05,
+  x_init: -2.2, y_init: -2.2}
+rosdistro: 'melodic
+
+  '
+roslaunch:
+  uris: {host_ubuntu__41657: 'http://ubuntu:41657/'}
+rosversion: '1.14.6
+
+  '
+run_id: d2cb0d5e-b310-11ea-a18f-000c2937f069
+sensor: {line_thickness: 0.005, x1_pos: 0.0, x2_pos: 0.0, x_spacing: 0.25, y1_pos: -0.1,
+  y2_pos: 0.1, y_spacing: 0.25}

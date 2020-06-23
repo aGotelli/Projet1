@@ -1,40 +1,32 @@
-from PyQt5 import QtWidgets
-from pyqtgraph import PlotWidget, plot
+#!/usr/bin/env python
+
+
+from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
-import sys  # We need sys so that we can pass argv to QApplication
-import os
+import numpy as np
 
-class MainWindow(QtWidgets.QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-
-        self.graphWidget = pg.PlotWidget()
-        self.setCentralWidget(self.graphWidget)
-
-        hour = [1,2,3,4,5,6,7,8,9,10]
-        temperature = [30,32,34,32,33,31,29,32,35,45]
+#   Start the console
+app = QtGui.QApplication([])
 
 
 
-        # Set background
-        #self.graphWidget.setBackground((200,200,200))
-        #self.graphWidget.plot(hour, temperature)
-        self.graphWidget.showGrid(x=True, y=True)
-        self.graphWidget.setXRange(-5, 5, padding=0)
-        self.graphWidget.setYRange(-5, 5, padding=0)
-
-        # plot data: x, y values
-        self.graphWidget.plot(hour, temperature)
+plt = pg.plot()
 
 
 
-def main():
-    app = QtWidgets.QApplication([])
-    main = MainWindow()
-    main.show()
-    sys.exit(app.exec_())
+lines = 2
+points = 10
+x = np.empty((lines, points))
+x[:] = np.arange(points)
+y = np.random.normal(size=(lines, points))
+connect = np.ones((lines, points), dtype=np.ubyte)
+connect[:,-1] = 0  #  disconnect segment between lines
+path = pg.arrayToQPath(x.reshape(lines*points), y.reshape(lines*points), connect.reshape(lines*points))
+item = pg.QtGui.QGraphicsPathItem(path)
+item.setPen(pg.mkPen('w'))
+plt.addItem(item)
 
 
-if __name__ == '__main__':
-    main()
+
+
+QtGui.QApplication.instance().exec_()

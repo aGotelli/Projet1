@@ -288,13 +288,13 @@ void Sensor::CheckStatus() const
   if( distances.minCoeff() <= world.LineThickness()/2 ) {
 
 //====================================~ TEMP ~==================================================
-    if( distances[0] <= cm && distances[2] <= cm  ||  //  left-bottom corner
-        distances[1] <= cm && distances[2] <= cm  ||  //  right bottom corner
-        distances[0] <= cm && distances[3] <= cm  ||  //  left upper corner
-        distances[1] <= cm && distances[3] <= cm      //  right upper corner
-      ) { state = false; } else { state = true; }
+    // if( distances[0] <= cm && distances[2] <= cm  ||  //  left-bottom corner
+    //     distances[1] <= cm && distances[2] <= cm  ||  //  right bottom corner
+    //     distances[0] <= cm && distances[3] <= cm  ||  //  left upper corner
+    //     distances[1] <= cm && distances[3] <= cm      //  right upper corner
+    //   ) { state = false; } else { state = true; }
 //====================================~ TEMP ~==================================================
-
+      state = true;
   } else {
       state = false;
   }

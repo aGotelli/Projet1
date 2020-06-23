@@ -35,6 +35,8 @@
 geometry_msgs::Twist twistToRobot;
 bool joystickIsReceived;
 
+double Kv = 1 ;
+
 // Callback to update the joystick state
 void JoystickStateUpdate(const sensor_msgs::Joy::ConstPtr& joystick)
 {
@@ -53,19 +55,19 @@ buttons: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 buttons: [1, 2, 3, 4, L1, R1, L2, R2, SELECT, START]
 
 */
-  double Kv = 1 ;
+
 
   if(joystick->buttons[0])
-    Kv = 0.25*joystick->buttons[0] ;
+    Kv = 0.15*joystick->buttons[0] ;
 
   if(joystick->buttons[1])
-    Kv = 0.5*joystick->buttons[1] ;
+    Kv = 0.25*joystick->buttons[1] ;
 
   if(joystick->buttons[2])
-    Kv = 1*joystick->buttons[2] ;
+    Kv = 0.5*joystick->buttons[2] ;
 
   if(joystick->buttons[3])
-    Kv = 1.5*joystick->buttons[3] ;
+    Kv = 1*joystick->buttons[3] ;
 
   // Obtaining data from joystick
   double v = joystick->axes[1] ;

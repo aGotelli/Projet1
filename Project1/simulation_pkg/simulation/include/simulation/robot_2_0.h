@@ -354,6 +354,10 @@ void Robot_2_0::PrepareMessages()
   wheelsRotations.phi_1f = q_odom.phi_1f ;
   wheelsRotations.phi_2f = q_odom.phi_2f ;
 
+  // Publish the current robot velocities
+  velocities.linear.x = u(0) ;
+  velocities.angular.z = u(1) ;
+
 
   //  Clear the joint state message
   actuations.name.clear() ;
@@ -375,6 +379,7 @@ void Robot_2_0::PrepareMessages()
   actuations.position.push_back(q.phi_2f) ;
   actuations.name.push_back("castor_wheel_joint") ;
   actuations.position.push_back(q.phi_3c) ;
+
 
 
 }

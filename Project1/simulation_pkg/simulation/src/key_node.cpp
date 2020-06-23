@@ -30,7 +30,7 @@
 #include <map>
 
 // Map for movement keys
-std::map<char, std::vector<double>> motion
+std::map<char, std::vector<double>> motionQWERTY
 {
   //  Configuration for the QWERTY
   {'w', {1, 0}},
@@ -38,35 +38,44 @@ std::map<char, std::vector<double>> motion
   {'a', {0, 1}},
   {'d', {0, -1}},
   {'x', {0, 0}},
-  //  Adding compatibility with AZERTY
+
+  {'q', {1, 1}},
+  {'e', {1, -1}},
+  {'z', {-1, 1}},
+  {'c', {-1, -1}}
+
+};
+
+// Map for movement keys
+std::map<char, std::vector<double>> motionAZERTY
+{
+  //  Configuration for the AZERTY
   {'z', {1, 0}},
-  {'q', {0, 1}}
+  {'s', {-1, 0}},
+  {'q', {0, 1}},
+  {'d', {0, -1}},
+  {'x', {0, 0}},
+
+  {'a', {1, 1}},
+  {'e', {1, -1}},
+  {'w', {-1, 1}},
+  {'c', {-1, -1}}
 
 };
 
-// Map for speed keys
-std::map<char, std::vector<double>> speed
- {
-    {'j', {1.1, 1}},
-    {'k', {0.9, 1}},
-    {'n', {1, 1.1}},
-    {'m', {1, 0.9}}
-};
+
 
 // Reminder message
 const char* msg = R"(
 Reading from the keyboard and Publishing to Twist!
 ---------------------------------------------------
- Moving around:      | Moving around (AZERTY)
-     w               |         z
- a    s    d         |     q   s   d
-                     |
+ Moving around:      |    Moving around (AZERTY)
+ q    w    e         |      a    z    e
+ a    s    d         |      q    s    d
+ z         c         |      w         c
 
-              Stop the robot:
-                    x
-
-j/k : increase/decrease only linear speed by 10%
-n/m : increase/decrease only angular speed by 10%
+               Stop the robot:
+                     x
 
 CTRL-C to quit
 )";
@@ -108,7 +117,7 @@ int main(int argc, char** argv)
   //ROS Initialization
   ros::init(argc, argv, "key_node");
 
-  ros::NodeHandle nh_glob;
+  ros::NodeHandle nh_glob, nh_loc("~");
 
   // Declare your publishers and service servers
   ros::Publisher robotControl = nh_glob.advertise<geometry_msgs::Twist>("/TwistToRobot", 1);
@@ -124,6 +133,16 @@ int main(int argc, char** argv)
 
   double scale_v = 1.0f;
   double scale_omega = 1.0f;
+
+  bool QWERTY;
+  nh_loc.param<bool>("QWERTY", QWERTY, true);
+
+  std::map<char, std::vector<double>> motion;
+
+  if(QWERTY)
+    motion = motionQWERTY;
+  else
+    motion = motionAZERTY;
 
   ros::Rate rate(50);
 
@@ -141,35 +160,14 @@ int main(int argc, char** argv)
 
     }
 
-    // Otherwise if it corresponds to a key in speed
-    else if ( speed.count(key) == 1 )
-    {
-      // Grab the speed data
-      scale_v *= speed[key][0];
-      scale_omega *= speed[key][1];
-
-    }
-
-    //  Limit the scale factor
-    if( scale_v > 3 ) {
-      scale_v = 3;
-    } else if ( scale_v < 0.01 ) {
-      scale_v = 0.1;
-    }
-
-    if( scale_omega > 3) {
-      scale_omega = 3;
-    } else if ( scale_omega < 0.01 ) {
-      scale_omega = 0.1;
-    }
 
     // Otherwise, quit the simulation ( CTRL C )
     else if ( key == '\x03' ) { break; }
 
 
     // Update the Twist message
-    twistToRobot.linear.x = v*scale_v;
-    twistToRobot.angular.z = omega*scale_omega;
+    twistToRobot.linear.x = v;
+    twistToRobot.angular.z = omega;
 
     // Publish it and resolve any remaining callbacks
     robotControl.publish( twistToRobot );

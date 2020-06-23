@@ -17,14 +17,21 @@
  *    ° /
  *
  * Description
+          In this file there are defined all the function needed from the estimator
+        to compute the estimated position and check if a measurement should be
+        accepted or rejected based on the comparison between the Mahalanobis distance
+        and the threshold.
 
+          Moreover, it contains all the inizialization of the matrix and some parameters
+        as they have always the same construction. In order to update them, some functions
+        are implemented.
  *
  */
 #include <geometry_msgs/PoseWithCovariance.h>
 
 #include <cmath>
 #include <iostream>
-#include <eigen3/Eigen/Dense>  //  usefull for matrix vectors operations
+#include <eigen3/Eigen/Dense>  //  useful for matrix vectors operations
 #include "simulation/utility.h"
 #include "simulation/sensor.h"
 #include "simulation/world.h"
@@ -34,14 +41,18 @@
 
 class KalmanFilter {
 public:
-  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning) :
+  KalmanFilter(const Eigen::Matrix2d& _jointToCartesian, const double _sigmaMeasurement, const double _sigmaTuning,
+                const double _sigmaX, const double _sigmaY, const double _sigmaTheta) :
                   jointToCartesian(_jointToCartesian),
                   sigmaMeasurement(_sigmaMeasurement),
-                  sigmaTuning(_sigmaTuning)
+                  sigmaTuning(_sigmaTuning),
+                  sigmaX(_sigmaX),
+                  sigmaY(_sigmaY),
+                  sigmaTheta(_sigmaTheta)
                   {
-                    ROS_INFO_STREAM("Qwheels                            : " << Qwheels );
-                    ROS_INFO_STREAM("Qbeta                              : " << Qbeta );
-                    ROS_INFO_STREAM("Qgamma                             : " << Qgamma );
+                    ROS_INFO_STREAM("Qwheels :                                       " << Qwheels );
+                    ROS_INFO_STREAM("Qbeta :                                         " << Qbeta );
+                    ROS_INFO_STREAM("Qgamma :                                        " << Qgamma );
                   }
 
   //  Initialize the P matrix using the uncertainties on the robot posture
@@ -60,26 +71,29 @@ public:
   void Estimation(Eigen::Matrix3d& P, Eigen::Vector3d& X, const Eigen::MatrixXd& C, const double innov);
 
   //  Compute the Mahalanobis distance given the current covariace matrix
-  inline double ComputeMahalanobis(double innov,
+  inline double ComputeMahalanobis(const double innov,
                                     Eigen::MatrixXd& C,
                                     Eigen::Matrix3d& P)
                                     {
-                                      //  Compute the Mahalanobis distance using the usual formula
                                       return std::pow(innov, 2 ) / ( (C*P*C.transpose()).value() + Qgamma ) ;
                                     }
+
+  void EvaluateMeasurement(const Sensor& sensor, Eigen::Vector3d& X, Eigen::Matrix3d& P);
 
 
 private:
 
   //  Uncertainties on the robot initial posture
-  const double sigmaX     { 0.008f };
-  const double sigmaY     { 0.008f };
-  const double sigmaTheta { 3*M_PI/180 };
+  const double sigmaX     { 0.00f };
+  const double sigmaY     { 0.00f };
+  const double sigmaTheta { 0.00f };
 
   //  Uncertainty on the measurement
   const double sigmaMeasurement { 0.0 };  //  Default 0.0 not a good idea
 
-  //  Inversely proportional on how accurate the model is
+  const double threshold {3.8415};
+
+  //  Inversely proportional of the accurancy of the model
   const double sigmaTuning { 0.0 };  //  Default 0.0 not a good idea
 
   const Eigen::Matrix2d jointToCartesian;
@@ -90,11 +104,15 @@ private:
   //  The covariance matrix for the input
   const Eigen::Matrix2d Qbeta { jointToCartesian*Qwheels*jointToCartesian.transpose() };
 
-  //  The covariance matrix of...
+  //  The covariance matrix set to zero
   const Eigen::Matrix3d Qalpha { Eigen::MatrixXd::Zero(3, 3) };
 
   //  The covariance on the measurement
   const double Qgamma { std::pow(sigmaMeasurement, 2) };
+
+  ros::NodeHandle nh_glob;
+
+  ros::Publisher shareMeasurements {nh_glob.advertise<estimator_messages::Measurement>("/Measurements", 1) };
 };
 
 
@@ -171,47 +189,117 @@ geometry_msgs::PoseWithCovariance Estimation(const Eigen::Vector3d& X, const Eig
   return estimatedPosture;
 }
 
-//  Publish estimated posture and standard deviations
-geometry_msgs::Pose PostureError(const geometry_msgs::Pose& realPosture, const geometry_msgs::PoseWithCovariance& estimatedPosture)
-{
-  geometry_msgs::Pose postureError;
 
-  postureError.position.x    = realPosture.position.x    - estimatedPosture.pose.position.x     ;
-  postureError.position.y    = realPosture.position.y    - estimatedPosture.pose.position.y     ;
-  postureError.orientation.x = realPosture.orientation.x - estimatedPosture.pose.orientation.x  ;
-  postureError.orientation.y = realPosture.orientation.y - estimatedPosture.pose.orientation.y  ;
-  postureError.orientation.z = realPosture.orientation.z - estimatedPosture.pose.orientation.z  ;
-  postureError.orientation.w = realPosture.orientation.w - estimatedPosture.pose.orientation.w  ;
-
-  return postureError;
-}
-
-
-estimator_messages::Measurement Accepted(const Measurement& measurement, const double dMaha)
+// Publish measurements accepted
+estimator_messages::Measurement Accepted(const Sensor& sensor, const Measurement& _measurement, const double dMaha)
 {
   //  Create a message to publish the current measurement
-  estimator_messages::Measurement accepted;
+  estimator_messages::Measurement measurement;
+
+  //  Set the state of the measurement
+  measurement.accepted = true;
 
   //  Indicate the index of the line
-  accepted.line_index.data = measurement.lineIndex;
+  measurement.line_index = _measurement.lineIndex;
 
   //  Include the position
-  accepted.pose.position.x = measurement.activeSensor->AbsolutePosition().x ;
-  accepted.pose.position.y = measurement.activeSensor->AbsolutePosition().y ;
+  measurement.pose.position.x = sensor.AbsolutePosition().x ;
+  measurement.pose.position.y = sensor.AbsolutePosition().y ;
 
   //  Set the Mahalanobis distance of the measurement
-  accepted.distance = dMaha ; 
+  measurement.distance = dMaha ;
   //  Filtering based on the type
-  if( measurement.lineType == utility::LINETYPE::HORIZONTAL )
-    accepted.line_type.data = "HORIZONTAL" ;
+  if( _measurement.lineType == utility::LINETYPE::HORIZONTAL )
+    measurement.line_type = "HORIZONTAL" ;
   else
-    accepted.line_type.data = "VERTICAL" ;
+    measurement.line_type = "VERTICAL" ;
 
-  return accepted;
+  return measurement;
 }
 
 
+// Publish measurements rejected
+estimator_messages::Measurement Rejected(const Sensor& sensor, const Measurement& _measurement, const double dMaha)
+{
+  //  Create a message to publish the current measurement
+  estimator_messages::Measurement measurement;
 
+  //  Set the state of the measurement
+  measurement.accepted = false;
+
+  //  Indicate the index of the line
+  measurement.line_index = _measurement.lineIndex;
+
+  //  Include the position
+  measurement.pose.position.x = sensor.AbsolutePosition().x ;
+  measurement.pose.position.y = sensor.AbsolutePosition().y ;
+
+  //  Set the Mahalanobis distance of the measurement
+  measurement.distance = dMaha ;
+  //  Filtering based on the type
+  if( _measurement.lineType == utility::LINETYPE::HORIZONTAL )
+    measurement.line_type = "HORIZONTAL" ;
+  else
+    measurement.line_type = "VERTICAL" ;
+
+  return measurement;
+}
+
+
+void KalmanFilter::EvaluateMeasurement(const Sensor& sensor, Eigen::Vector3d& X, Eigen::Matrix3d& P)
+{
+  //  Once a measurement changes the state vector, the one storaged in the
+  //  sensor should change as well
+  sensor.UpdateTransform( X );
+
+  const Measurement measurement = sensor.getMeasurement();
+
+  double dMaha;
+  Eigen::MatrixXd C(1, 3);
+  double innov;
+  //  First filter the type of line
+  if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
+
+    // Compute matrix C
+    C << 0, 1,  sensor.RelativePosition().x*cos(X(2)) - sensor.RelativePosition().y*sin(X(2)) ;
+
+    const double Y = measurement.lineIndex ;
+    const double Yhat = sensor.AbsolutePosition().y;
+
+    innov = Y - Yhat ;
+
+    dMaha = ComputeMahalanobis( innov, C, P );
+
+  } else {  //  In this case the line detected is "vertical"
+
+    // Compute matrix C
+    C << 1, 0, - sensor.RelativePosition().x*sin(X(2)) - sensor.RelativePosition().y*cos(X(2)) ;
+
+    const double Y =   measurement.lineIndex ;
+    const double Yhat = sensor.AbsolutePosition().x;
+
+    innov =  Y - Yhat ;
+
+    dMaha = ComputeMahalanobis( innov, C, P );
+
+  }
+
+  // Check if the measurement should be accepted
+  if( dMaha <= threshold ) {
+
+    //  Only if we referred to a good line, update
+    Estimation(P, X, C, innov) ;
+
+    //  Than publish the newly measurement
+    shareMeasurements.publish( Accepted( sensor, measurement, dMaha ) ) ;
+
+  } else {
+
+    //  Than publish the newly measurement
+    shareMeasurements.publish( Rejected( sensor, measurement, dMaha ) ) ;
+
+  }
+}
 
 
 
