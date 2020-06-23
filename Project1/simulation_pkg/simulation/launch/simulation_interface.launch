@@ -29,8 +29,8 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="-5" />  <!-- meters -->
-  <arg name="y_init"      value="-5" />  <!-- meters -->
+  <arg name="x_init"      value="-0.2" />  <!-- meters -->
+  <arg name="y_init"      value="0.2" />  <!-- meters -->
   <arg name="theta_init"  value="0" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
@@ -45,8 +45,8 @@
   simulation frequency the dispacement is 0.0033 i.e. 3.33 mm.
   In other words, it is strongly recommended to use a line thikness
   proportionated at the robot parameters.  [all the parameters are in meters]-->
-  <arg name="x_spacing"       value="0.5"     />
-  <arg name="y_spacing"       value="0.5"     />
+  <arg name="x_spacing"       value="0.25"     />
+  <arg name="y_spacing"       value="0.25"     />
   <arg name="line_thickness"  value="0.005"   />
 
 
@@ -54,16 +54,16 @@
   As for the wheels the sensor numeration follows the same logic.
   In other words the sensor one is beside the wheel one ecc.                 -->
   <arg name="sensor_1_x" value="0.0"  />
-  <arg name="sensor_1_y" value="-0.30" />
+  <arg name="sensor_1_y" value="-0.15" />
 
   <arg name="sensor_2_x" value="0.0" />
-  <arg name="sensor_2_y" value="0.30" />
+  <arg name="sensor_2_y" value="0.15" />
 
 
   <!-- Specify the file name and the folder where to save the files needed to
   recreate the simulation -->
-  <arg name="file_name"   value="test_computations" />
-  <arg name="folder_name" value="lunedi" />
+  <arg name="file_name"   value="loop" />
+  <arg name="folder_name" value="martedi" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick
@@ -72,7 +72,7 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="false" />
+  <arg name="use_joystick"  value="true" />
   <arg name="joystick_tag"  value="js1"   />
   <arg name="QWERTY"        value="true"  />
 
