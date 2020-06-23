@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Select the estimation files to be loaded -->
-  <arg name="file_name"         value="high_errors_012s" />
+  <arg name="file_name"         value="low_errors_lf_010s1" />
 
   <!-- Select the folder containig the desired estimation file -->
   <arg name="take_from_folder"  value="stress_test"   />
