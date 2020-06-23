@@ -72,7 +72,7 @@
           effort to publish the sensor state. Here comes the need of a larger buffer
           size: the estimator must know if a sensor was active in between the
           current and the last iteration. So, it must storage all the messages in
-          the buffer and process them in the next iteration. 
+          the buffer and process them in the next iteration.
 
             Once, it gets all the measurements, it performs the estimation per se.
 
@@ -280,7 +280,57 @@ int main(int argc, char** argv)
     // Check for any measurements
     for(const auto& sensor : activatedSensors ) {
 
-      kalman.EvaluateMeasurement(sensor, X, P);
+      //  Once a measurement changes the state vector, the one storaged in the
+      //  sensor should change as well
+      sensor.UpdateTransform( X );
+
+      const Measurement measurement = sensor.getMeasurement();
+
+      double dMaha;
+      Eigen::MatrixXd C(1, 3);
+      double innov;
+      //  First filter the type of line
+      if( measurement.lineType == utility::LINETYPE::HORIZONTAL ) {
+
+        // Compute matrix C
+        C << 0, 1,  sensor.RelativePosition().x*cos(X(2)) - sensor.RelativePosition().y*sin(X(2)) ;
+
+        const double Y = measurement.lineIndex ;
+        const double Yhat = sensor.AbsolutePosition().y;
+
+        innov = Y - Yhat ;
+
+        dMaha = kalman.ComputeMahalanobis( innov, C, P );
+
+      } else {  //  In this case the line detected is "vertical"
+
+        // Compute matrix C
+        C << 1, 0, - sensor.RelativePosition().x*sin(X(2)) - sensor.RelativePosition().y*cos(X(2)) ;
+
+        const double Y =   measurement.lineIndex ;
+        const double Yhat = sensor.AbsolutePosition().x;
+
+        innov =  Y - Yhat ;
+
+        dMaha = kalman.ComputeMahalanobis( innov, C, P );
+
+      }
+
+      // Check if the measurement should be accepted
+      if( dMaha <= threshold ) {
+
+        //  Only if we referred to a good line, update
+        kalman.Estimation(P, X, C, innov) ;
+
+        //  Than publish the newly measurement
+        shareMeasurements.publish( Accepted( sensor, measurement, dMaha ) ) ;
+
+      } else {
+
+        //  Than publish the newly measurement
+        shareMeasurements.publish( Rejected( sensor, measurement, dMaha ) ) ;
+
+      }
 
     }
 

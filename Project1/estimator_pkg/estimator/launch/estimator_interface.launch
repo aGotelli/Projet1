@@ -1,16 +1,16 @@
 <launch>
 
   <!-- Select the folder where the user wants to put the estimator outputs file -->
-  <arg name="save_into_folder"  value="processed_data"  />
+  <arg name="save_into_folder"  value="processed_obs_prob"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="horizontal_smart_0075s_wrong_initpose" />
+  <arg name="save_as"           value="stod_two_meas" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="horizontal_smart" />
+  <arg name="file_name"         value="stod_two_meas" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="recorded_data"   />
+  <arg name="take_from_folder"  value="observability_problem"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator
@@ -27,15 +27,15 @@
 
   <!-- Assuming of being able to positioning the robot with a +- 2cm precision
         And with an orientation uncertainty of +-5 grad                      -->
-  <arg name="sigma_x"       value="0.015"   />  <!--  [m]    -->
-  <arg name="sigma_y"       value="0.015"   />  <!--  [m]    -->
+  <arg name="sigma_x"       value="0.1"   />  <!--  [m]    -->
+  <arg name="sigma_y"       value="0.1"   />  <!--  [m]    -->
   <arg name="sigma_theta"   value="8"   />  <!-- [grad]  -->
 
 
 
-  <arg name="x_scost"       value="0.01"   />
-  <arg name="y_scost"       value="-0.01"   />
-  <arg name="theta_rot"     value="3"   />
+  <arg name="x_scost"       value="0.08"   />
+  <arg name="y_scost"       value="-0.08"   />
+  <arg name="theta_rot"     value="5"   />
 
 
   <!-- Include the launch file which executes the estimation -->
