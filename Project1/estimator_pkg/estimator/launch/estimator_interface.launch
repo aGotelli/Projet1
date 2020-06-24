@@ -1,21 +1,21 @@
 <launch>
 
   <!-- Select the folder where the user wants to put the estimator outputs file -->
-  <arg name="save_into_folder"  value="processed_obs_prob"  />
+  <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="stod_two_meas" />
+  <arg name="save_as"           value="loop_path_0075s" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="stod_two_meas" />
+  <arg name="file_name"         value="loop" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="observability_problem"   />
+  <arg name="take_from_folder"  value="recorded_data"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator
   accordingly.                                                               -->
-  <arg name="speed_factor"    value="1" />
+  <arg name="speed_factor"    value="2" />
 
   <!-- This parameter allows to run the estimator at a frequency n-th times lower
   than the simulation frequency. In this way it is possible to test the
@@ -27,15 +27,15 @@
 
   <!-- Assuming of being able to positioning the robot with a +- 2cm precision
         And with an orientation uncertainty of +-5 grad                      -->
-  <arg name="sigma_x"       value="0.1"   />  <!--  [m]    -->
-  <arg name="sigma_y"       value="0.1"   />  <!--  [m]    -->
+  <arg name="sigma_x"       value="0.015"   />  <!--  [m]    -->
+  <arg name="sigma_y"       value="0.015"   />  <!--  [m]    -->
   <arg name="sigma_theta"   value="8"   />  <!-- [grad]  -->
 
 
 
-  <arg name="x_scost"       value="0.08"   />
-  <arg name="y_scost"       value="-0.08"   />
-  <arg name="theta_rot"     value="5"   />
+  <arg name="x_scost"       value="0.01"   />
+  <arg name="y_scost"       value="-0.01"   />
+  <arg name="theta_rot"     value="3"   />
 
 
   <!-- Include the launch file which executes the estimation -->

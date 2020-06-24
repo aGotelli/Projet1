@@ -17,7 +17,7 @@
   <arg name="r"                   value="0.05"  />    <!--  meters   -->
   <arg name="w_max"               value="10.0"  />    <!--   RAD/s   -->
   <arg name="encoders_resolution" value="120"   />    <!-- dots/wheel rotation -->
-  <arg name="wheel_1_error"       value="1.03"  />    <!-- [percentage] -->
+  <arg name="wheel_1_error"       value="1.01"  />    <!-- [percentage] -->
   <arg name="track_gauge_error"   value="1.01"  />    <!-- [percentage] -->
 
   <!-- Parameters of the robot overall geometry [in meters].
@@ -29,9 +29,9 @@
   <arg name="c" value="$(eval arg('r') + 0.05)"  />
 
   <!-- Initial posture for the robot -->
-  <arg name="x_init"      value="0.106066" />  <!-- meters -->
-  <arg name="y_init"      value="0.106066" />  <!-- meters -->
-  <arg name="theta_init"  value="-135" />  <!-- grad -->
+  <arg name="x_init"      value="0.1" />  <!-- meters -->
+  <arg name="y_init"      value="0" />  <!-- meters -->
+  <arg name="theta_init"  value="45" />  <!-- grad -->
 
   <!-- Parameters of the world, i.e. the description of the lines. x_spacing and
   y_spacing represent the offset of the lines along x and y respectively.
@@ -62,8 +62,8 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   recreate the simulation -->
-  <arg name="file_name"   value="stod_two_meas" />
-  <arg name="folder_name" value="observability_problem" />
+  <arg name="file_name"   value="file_name" />
+  <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick
@@ -72,8 +72,11 @@
   control the robot.
   The argument joystick tag is to be filled with the tag of the joystick in the
   computer. To check the name run "sudo ls /dev/input/"                      -->
-  <arg name="use_joystick"  value="true" />
+  <arg name="use_joystick"  value="false" />
   <arg name="joystick_tag"  value="js1"   />
+
+  <!--  For using a keyboard set the parameter to true if the keyboard is QWERTY
+  and false if the keyboard is AZERTY                                        -->
   <arg name="QWERTY"        value="true"  />
 
 
