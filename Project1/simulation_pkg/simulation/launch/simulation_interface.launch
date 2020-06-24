@@ -62,8 +62,8 @@
 
   <!-- Specify the file name and the folder where to save the files needed to
   recreate the simulation -->
-  <arg name="file_name"   value="high_errors" />
-  <arg name="folder_name" value="stress_test" />
+  <arg name="file_name"   value="file_name" />
+  <arg name="folder_name" value="recorded_data" />
 
   <!-- If the a joystick is available, it is possible to use it to control the
   robot. However it may be required to create anther adapet as the joystick
@@ -74,6 +74,9 @@
   computer. To check the name run "sudo ls /dev/input/"                      -->
   <arg name="use_joystick"  value="false" />
   <arg name="joystick_tag"  value="js1"   />
+
+  <!--  For using a keyboard set the parameter to true if the keyboard is QWERTY
+  and false if the keyboard is AZERTY                                        -->
   <arg name="QWERTY"        value="true"  />
 
 

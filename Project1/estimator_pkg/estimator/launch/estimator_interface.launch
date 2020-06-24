@@ -1,16 +1,16 @@
 <launch>
 
   <!-- Select the folder where the user wants to put the estimator outputs file -->
-  <arg name="save_into_folder"  value="stress_test"  />
+  <arg name="save_into_folder"  value="processed_data"  />
 
   <!-- Select the name for the file containig the estimator outputs -->
-  <arg name="save_as"           value="long_path_0075s" />
+  <arg name="save_as"           value="loop_path_0075s" />
 
   <!-- Select the simulation files to be loaded -->
-  <arg name="file_name"         value="long_path" />
+  <arg name="file_name"         value="loop" />
 
   <!-- Select the folder containig the desired simulation file -->
-  <arg name="take_from_folder"  value="stress_test"   />
+  <arg name="take_from_folder"  value="recorded_data"   />
 
   <!-- Select the desired computation acceleration. This parameter increases the
   rate at which the rosbag publishes the data and the rate of the estimator
